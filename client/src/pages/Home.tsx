@@ -12,7 +12,7 @@ import { useLocation, Link } from "wouter";
 import { useState, useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 
-const LOGIN_URL = import.meta.env.DEV ? "/dev-login" : getLoginUrl();
+const LOGIN_URL = import.meta.env.DEV ? "/dev-login" : "/staff-login";
 
 const TEAL  = "#0A1F1C";
 const GREEN = "#34A853";

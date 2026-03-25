@@ -27,6 +27,7 @@ import AskMePage from "./pages/AskMePage";
 import AffiliatePage from "./pages/AffiliatePage";
 import AffiliateDashboard from "./pages/AffiliateDashboard";
 import PricingPage from "./pages/PricingPage";
+import StaffLoginPage from "./pages/StaffLoginPage";
 import SkillsCEOPage from "./pages/SkillsCEOPage";
 import CTOPage from "./pages/CTOPage";
 import ClientDashboard from "./pages/ClientDashboard";
@@ -36,17 +37,18 @@ const DevLogin = lazy(() => import("./pages/DevLogin"));
 import { trpc } from "./lib/trpc";
 import { getLoginUrl } from "./const";
 
-// Role hierarchy — who can access which /hub/* route
+// Strict role access — each person only sees their own dashboard
+// Only the founder has cross-dashboard visibility
 const ROLE_ACCESS: Record<string, string[]> = {
   "/founder/dashboard": ["founder"],
   "/hub/ceo":           ["founder", "ceo"],
-  "/hub/cso":           ["founder", "ceo", "cso"],
-  "/hub/finance":       ["founder", "ceo", "finance"],
-  "/hub/hr":            ["founder", "ceo", "hr"],
-  "/hub/bizdev":        ["founder", "ceo", "bizdev"],
-  "/hub/federal":       ["founder", "ceo", "cso", "finance", "hr", "bizdev"],
-  "/bizdoc/dashboard":  ["founder", "ceo", "cso", "department_staff"],
-  "/skills/admin":      ["founder", "ceo", "department_staff"],
+  "/hub/cso":           ["founder", "cso"],
+  "/hub/finance":       ["founder", "finance"],
+  "/hub/hr":            ["founder", "hr"],
+  "/hub/bizdev":        ["founder", "bizdev"],
+  "/hub/federal":       ["founder", "cso", "finance", "hr", "bizdev"],
+  "/bizdoc/dashboard":  ["founder", "cso", "department_staff"],
+  "/skills/admin":      ["founder", "department_staff"],
   "/skills/ceo":        ["founder", "ceo"],
   "/systemise/cto":     ["founder", "ceo"],
 };
@@ -66,7 +68,7 @@ function RoleGuard({ allowedRoles, children }: { allowedRoles: string[]; childre
 
   if (!me.data) {
     // Not authenticated — redirect to login
-    window.location.href = import.meta.env.DEV ? "/dev-login" : getLoginUrl();
+    window.location.href = import.meta.env.DEV ? "/dev-login" : "/staff-login";
     return null;
   }
 
@@ -181,6 +183,7 @@ function Router() {
       <Route path={"/consultant"} component={ConsultantPage} />
       <Route path={"/ask"} component={AskMePage} />
       <Route path={"/pricing"} component={PricingPage} />
+      <Route path={"/staff-login"} component={StaffLoginPage} />
 
       {/* Dev Login (development only — excluded from production bundle) */}
       {import.meta.env.DEV && (

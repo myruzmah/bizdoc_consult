@@ -102,6 +102,18 @@ export const appRouter = router({
         });
         return lead;
       }),
+
+    /** Client portal lookup — phone-based, rate limited, no auth needed */
+    clientPortal: rateLimitedProcedure
+      .input(z.object({ phone: z.string().min(10) }))
+      .query(async ({ input }) => {
+        const task = await getTaskByPhone(input.phone);
+        if (!task) return null;
+        const checklist = await getChecklistItemsByTaskId(task.id);
+        const docs = await getDocumentsByTaskId(task.id);
+        const activity = await getActivityLogsByTaskId(task.id);
+        return { task, checklist, docs, activity };
+      }),
   }),
 
   // ─── Tasks (Protected) ───────────────────────────────────────────────────

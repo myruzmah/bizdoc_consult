@@ -271,14 +271,30 @@ class SDKServer {
     // ─── Dev mode bypass — no DB or OAuth needed ────────────────────────────
     if (process.env.NODE_ENV !== "production" && sessionUserId.startsWith("dev__")) {
       const parts = sessionUserId.split("__");
-      const role = parts[1] === "admin" ? "admin" : "user";
+      const hamzuryRole = parts[1] || "department_staff";
       return {
         id: Number(parts[2]) || 1,
         openId: sessionUserId,
         name: session.name,
-        email: `${role}@hamzury.local`,
+        email: `${hamzuryRole}@hamzury.local`,
         loginMethod: "dev",
-        role: role as "admin" | "user",
+        role: "admin" as "admin" | "user",
+        hamzuryRole,
+        lastSignedIn: new Date(),
+      } as User;
+    }
+    // ─── Staff / Founder login bypass — password-gated, no OAuth ────────────
+    if (sessionUserId.startsWith("staff__") || sessionUserId.startsWith("founder__")) {
+      const parts = sessionUserId.split("__");
+      const hamzuryRole = sessionUserId.startsWith("founder__") ? "founder" : parts[1] || "department_staff";
+      return {
+        id: 0,
+        openId: sessionUserId,
+        name: session.name,
+        email: `${hamzuryRole}@hamzury.com`,
+        loginMethod: "password",
+        role: "admin" as "admin" | "user",
+        hamzuryRole,
         lastSignedIn: new Date(),
       } as User;
     }

@@ -39,6 +39,31 @@ async function startServer() {
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
 
+  // ─── Staff Login — role-based, env-password-gated ────────────────────────
+  app.post("/api/staff-login", async (req, res) => {
+    try {
+      const { role, password } = req.body ?? {};
+      const ROLE_CONFIG: Record<string, { envKey: string; name: string; openId: string; dashboard: string }> = {
+        ceo:     { envKey: "CEO_PW",     name: "Idris Ibrahim",     openId: "staff__ceo__1",     dashboard: "/hub/ceo" },
+        cso:     { envKey: "CSO_PW",     name: "CSO",               openId: "staff__cso__1",     dashboard: "/hub/cso" },
+        finance: { envKey: "FINANCE_PW", name: "Finance",           openId: "staff__finance__1", dashboard: "/hub/finance" },
+        hr:      { envKey: "HR_PW",      name: "HR",                openId: "staff__hr__1",      dashboard: "/hub/hr" },
+        bizdev:  { envKey: "BIZDEV_PW",  name: "BizDev",            openId: "staff__bizdev__1",  dashboard: "/hub/bizdev" },
+      };
+      const config = ROLE_CONFIG[role];
+      if (!config) return res.status(400).json({ error: "Invalid role." });
+      const expected = process.env[config.envKey];
+      if (!expected) return res.status(503).json({ error: `${role.toUpperCase()} access not configured on this server.` });
+      if (!password || password !== expected) return res.status(401).json({ error: "Incorrect password." });
+      const token = await sdk.createSessionToken(config.openId, { name: config.name });
+      const cookieOptions = getSessionCookieOptions(req);
+      res.cookie(COOKIE_NAME, token, { ...cookieOptions, sameSite: "lax", maxAge: 8 * 60 * 60 * 1000 });
+      res.json({ success: true, name: config.name, role, dashboard: config.dashboard });
+    } catch (err) {
+      res.status(500).json({ error: String(err) });
+    }
+  });
+
   // ─── Founder Login — password-gated, env-controlled ─────────────────────
   app.post("/api/founder-login", async (req, res) => {
     try {

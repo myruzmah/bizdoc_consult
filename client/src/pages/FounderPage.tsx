@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { Link } from "wouter";
 import { ArrowLeft, Target, Rocket, Globe } from "lucide-react";
 import PageMeta from "@/components/PageMeta";
 
@@ -24,7 +24,6 @@ function FounderLoginCard() {
   const [pw, setPw]           = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState("");
-  const [, setLocation]       = useLocation();
   async function login() {
     if (!pw) { setError("Enter the password."); return; }
     setLoading(true);
@@ -37,7 +36,7 @@ function FounderLoginCard() {
         body: JSON.stringify({ password: pw }),
       });
       if (!res.ok) throw new Error(await res.text());
-      setLocation("/founder/dashboard");
+      window.location.href = "/founder/dashboard";
     } catch (e) {
       setError(String(e));
     } finally {

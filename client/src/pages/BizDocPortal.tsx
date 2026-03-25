@@ -7,7 +7,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 
-const LOGIN_URL = import.meta.env.DEV ? "/dev-login" : getLoginUrl();
+const LOGIN_URL = import.meta.env.DEV ? "/dev-login" : "/staff-login";
 
 const G  = "#1B4D3E";
 const Au = "#C9A97E";
@@ -1611,9 +1611,16 @@ export default function BizDocPortal() {
           {/* Desktop right */}
           <div className="hidden md:flex items-center gap-3">
             {isAuthenticated ? (
-              <button onClick={logout} className="flex items-center gap-1.5 text-[11px] font-medium opacity-50 hover:opacity-90 transition-opacity" style={{ color: scrolled ? G : W }}>
-                <LogOut size={13} /> Logout
-              </button>
+              <div className="flex items-center gap-3">
+                <a href="/bizdoc/dashboard"
+                  className="text-[11px] font-semibold uppercase tracking-wider px-5 py-2.5 rounded-full transition-all hover:opacity-90"
+                  style={{ backgroundColor: Au, color: G }}>
+                  Lead Dashboard
+                </a>
+                <button onClick={logout} className="flex items-center gap-1.5 text-[11px] font-medium opacity-50 hover:opacity-90 transition-opacity" style={{ color: scrolled ? G : W }}>
+                  <LogOut size={13} /> Logout
+                </button>
+              </div>
             ) : (
               <button
                 onClick={() => { window.location.href = LOGIN_URL; }}
@@ -1640,9 +1647,10 @@ export default function BizDocPortal() {
         <div className="fixed inset-0 z-40 md:hidden flex flex-col pt-[64px]" style={{ backgroundColor: G }}>
           <div className="flex flex-col gap-1 px-6 pt-8">
             {[
-              { label: "Home", action: () => { window.location.href = "/"; } },
-              { label: "Blueprint", action: () => { blueprintRef.current?.scrollIntoView({ behavior: "smooth" }); setMobileMenuOpen(false); } },
-              { label: "Founder", action: () => { window.location.href = "/founder"; } },
+              { label: "Home",       action: () => { window.location.href = "/"; } },
+              { label: "Blueprint",  action: () => { blueprintRef.current?.scrollIntoView({ behavior: "smooth" }); setMobileMenuOpen(false); } },
+              { label: "Pricing",    action: () => { window.location.href = "/pricing"; } },
+              { label: "Consultant", action: () => { window.location.href = "/consultant"; } },
             ].map(item => (
               <button key={item.label} onClick={item.action}
                 className="text-left text-[22px] font-semibold py-4 border-b"
@@ -1650,11 +1658,19 @@ export default function BizDocPortal() {
                 {item.label}
               </button>
             ))}
-            <button onClick={() => { window.location.href = LOGIN_URL; }}
-              className="mt-6 text-[13px] font-semibold px-6 py-3 rounded-2xl"
-              style={{ backgroundColor: Au, color: G }}>
-              Staff Login
-            </button>
+            {isAuthenticated ? (
+              <a href="/bizdoc/dashboard"
+                className="mt-6 block text-center text-[13px] font-semibold px-6 py-3 rounded-2xl"
+                style={{ backgroundColor: Au, color: G }}>
+                Lead Dashboard
+              </a>
+            ) : (
+              <button onClick={() => { window.location.href = LOGIN_URL; }}
+                className="mt-6 text-[13px] font-semibold px-6 py-3 rounded-2xl w-full"
+                style={{ backgroundColor: Au, color: G }}>
+                Staff Login
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -2106,7 +2122,10 @@ export default function BizDocPortal() {
           <div className="flex items-center gap-6">
             <Link href="/privacy"><span className="hover:opacity-100 transition-opacity cursor-pointer">Privacy</span></Link>
             <Link href="/terms"><span className="hover:opacity-100 transition-opacity cursor-pointer">Terms</span></Link>
-            <button onClick={() => { window.location.href = LOGIN_URL; }} className="hover:opacity-100 transition-opacity">Staff Login</button>
+            {isAuthenticated
+              ? <a href="/bizdoc/dashboard" className="hover:opacity-100 transition-opacity">Lead Dashboard</a>
+              : <button onClick={() => { window.location.href = LOGIN_URL; }} className="hover:opacity-100 transition-opacity">Staff Login</button>
+            }
           </div>
         </div>
       </footer>
