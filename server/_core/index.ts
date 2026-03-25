@@ -44,11 +44,12 @@ async function startServer() {
     try {
       const { role, password } = req.body ?? {};
       const ROLE_CONFIG: Record<string, { envKey: string; name: string; openId: string; dashboard: string }> = {
-        ceo:     { envKey: "CEO_PW",     name: "Idris Ibrahim",     openId: "staff__ceo__1",     dashboard: "/hub/ceo" },
-        cso:     { envKey: "CSO_PW",     name: "CSO",               openId: "staff__cso__1",     dashboard: "/hub/cso" },
-        finance: { envKey: "FINANCE_PW", name: "Finance",           openId: "staff__finance__1", dashboard: "/hub/finance" },
-        hr:      { envKey: "HR_PW",      name: "HR",                openId: "staff__hr__1",      dashboard: "/hub/hr" },
-        bizdev:  { envKey: "BIZDEV_PW",  name: "BizDev",            openId: "staff__bizdev__1",  dashboard: "/hub/bizdev" },
+        founder: { envKey: "FOUNDER_PW",  name: "Muhammad Hamzury",  openId: "founder__admin__1", dashboard: "/founder/dashboard" },
+        ceo:     { envKey: "CEO_PW",      name: "Idris Ibrahim",     openId: "staff__ceo__1",     dashboard: "/hub/ceo" },
+        cso:     { envKey: "CSO_PW",      name: "CSO",               openId: "staff__cso__1",     dashboard: "/hub/cso" },
+        finance: { envKey: "FINANCE_PW",  name: "Finance",           openId: "staff__finance__1", dashboard: "/hub/finance" },
+        hr:      { envKey: "HR_PW",       name: "HR",                openId: "staff__hr__1",      dashboard: "/hub/hr" },
+        bizdev:  { envKey: "BIZDEV_PW",   name: "BizDev",            openId: "staff__bizdev__1",  dashboard: "/hub/bizdev" },
       };
       const config = ROLE_CONFIG[role];
       if (!config) return res.status(400).json({ error: "Invalid role." });

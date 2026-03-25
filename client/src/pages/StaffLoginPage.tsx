@@ -8,11 +8,12 @@ const WHITE = "#FFFFFF";
 const DARK  = "#2C2C2C";
 
 const ROLES = [
-  { id: "ceo",     label: "Chief Executive Officer",  dashboard: "/hub/ceo"     },
-  { id: "cso",     label: "Client Success Officer",   dashboard: "/hub/cso"     },
-  { id: "finance", label: "Finance Officer",          dashboard: "/hub/finance" },
-  { id: "hr",      label: "HR Officer",               dashboard: "/hub/hr"      },
-  { id: "bizdev",  label: "Business Development",     dashboard: "/hub/bizdev"  },
+  { id: "founder", label: "Founder — Muhammad Hamzury",  dashboard: "/founder/dashboard" },
+  { id: "ceo",     label: "CEO — Idris Ibrahim",         dashboard: "/hub/ceo"           },
+  { id: "cso",     label: "Client Success Officer",      dashboard: "/hub/cso"           },
+  { id: "finance", label: "Finance Officer",             dashboard: "/hub/finance"       },
+  { id: "hr",      label: "HR Officer",                  dashboard: "/hub/hr"            },
+  { id: "bizdev",  label: "Business Development",        dashboard: "/hub/bizdev"        },
 ];
 
 export default function StaffLoginPage() {
@@ -133,17 +134,10 @@ export default function StaffLoginPage() {
             {loading ? "Signing in…" : "Sign In"}
           </button>
 
-          {/* Founder link */}
-          <div className="text-center pt-1">
-            <a href="/founder" className="text-[11px] opacity-30 hover:opacity-60 transition-opacity" style={{ color: TEAL }}>
-              Founder Access →
-            </a>
-          </div>
         </form>
 
-        {/* Back */}
         <div className="text-center mt-6">
-          <a href="/" className="text-[12px] opacity-40 hover:opacity-70 transition-opacity" style={{ color: TEAL }}>
+          <a href="/" className="text-[12px] opacity-30 hover:opacity-60 transition-opacity" style={{ color: TEAL }}>
             ← Back to hamzury.com
           </a>
         </div>
