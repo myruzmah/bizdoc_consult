@@ -35,7 +35,9 @@ type ChatState =
   | "SCHEDULE_DATE"
   | "SCHEDULE_TIME"
   | "SCHEDULE_PHONE"
-  | "AI_CHAT";
+  | "AI_CHAT"
+  | "DIRECT_TELL"
+  | "DIRECT_PACKAGE";
 
 type LeadData = {
   service?: string;
@@ -45,6 +47,7 @@ type LeadData = {
   phone?: string;
   schedDate?: string;
   schedTime?: string;
+  selectedServices?: string[];
 };
 
 type Props = {
@@ -111,6 +114,7 @@ const SERVICES: Record<Department, { label: string; value: string }[]> = {
     { label: "Annual Returns", value: "AnnualReturns" },
     { label: "Trademark and IP", value: "Trademark" },
     { label: "Foreign Business Registration", value: "Foreign" },
+    { label: "SCUML Registration", value: "SCUML" },
   ],
   systemise: [
     { label: "Website Design and Development", value: "Website" },
@@ -128,6 +132,37 @@ const SERVICES: Record<Department, { label: string; value: string }[]> = {
     { label: "Custom Training for Teams", value: "CustomTraining" },
   ],
 };
+
+const PRICING: Record<string, { label: string; price: string; amount: number }> = {
+  CAC: { label: "CAC Registration", price: "\u20A650,000", amount: 50000 },
+  License: { label: "Industry License", price: "\u20A680,000", amount: 80000 },
+  Tax: { label: "Tax Compliance", price: "\u20A660,000", amount: 60000 },
+  Legal: { label: "Legal Documentation", price: "from \u20A640,000", amount: 40000 },
+  AnnualReturns: { label: "Annual Returns", price: "\u20A630,000", amount: 30000 },
+  Trademark: { label: "Trademark & IP", price: "\u20A675,000", amount: 75000 },
+  Foreign: { label: "Foreign Registration", price: "\u20A6150,000", amount: 150000 },
+  SCUML: { label: "SCUML Registration", price: "\u20A645,000", amount: 45000 },
+  Website: { label: "Website Design", price: "from \u20A6200,000", amount: 200000 },
+  SocialMedia: { label: "Social Media Management", price: "\u20A6100,000/mo", amount: 100000 },
+  Branding: { label: "Brand Identity", price: "from \u20A6150,000", amount: 150000 },
+  Automation: { label: "Business Automation", price: "from \u20A6120,000", amount: 120000 },
+  CRM: { label: "CRM & Lead Gen", price: "from \u20A6180,000", amount: 180000 },
+  Content: { label: "Podcast/Content", price: "from \u20A6100,000", amount: 100000 },
+  BusinessBootcamp: { label: "Business Bootcamp", price: "\u20A635,000", amount: 35000 },
+  DigitalMarketing: { label: "Digital Marketing", price: "\u20A645,000", amount: 45000 },
+  DataAnalysis: { label: "Data Analysis", price: "\u20A650,000", amount: 50000 },
+  AIBundle: { label: "AI Business Bundle", price: "\u20A655,000", amount: 55000 },
+  CustomTraining: { label: "Custom Training", price: "Contact us", amount: 0 },
+  FullBuild: { label: "Full Business Setup", price: "from \u20A6500,000", amount: 500000 },
+  Training: { label: "Skills Training", price: "from \u20A635,000", amount: 35000 },
+};
+
+const ALL_SERVICES_LIST = [
+  ...SERVICES.general,
+  ...SERVICES.bizdoc,
+  ...SERVICES.systemise,
+  ...SERVICES.skills,
+].filter((s, i, arr) => arr.findIndex(x => x.value === s.value) === i);
 
 const TEASERS: Record<Department, string[]> = {
   general: [
@@ -252,6 +287,35 @@ export default function ChatWidget({ department = "general", open: externalOpen,
     setAiMessages([]);
   }, []);
 
+  /** Build pricing summary from selected services */
+  const buildPricingSummary = (services: string[]): string => {
+    const lines = services.map(s => {
+      const p = PRICING[s];
+      return p ? `- ${p.label}: ${p.price}` : `- ${s}`;
+    });
+    const total = services.reduce((sum, s) => sum + (PRICING[s]?.amount || 0), 0);
+    const hasContactUs = services.some(s => PRICING[s]?.amount === 0);
+    const totalLine = hasContactUs
+      ? `Estimated total: \u20A6${total.toLocaleString()} (plus items requiring a custom quote)`
+      : `Estimated total: \u20A6${total.toLocaleString()}`;
+    return `Here is your package summary:\n\n${lines.join("\n")}\n\n${totalLine}\n\nThis is an estimate. Final pricing depends on your specific requirements.`;
+  };
+
+  /** Show remaining services for multi-select in DIRECT_PACKAGE */
+  const showRemainingServices = (alreadySelected: string[]) => {
+    const available = SERVICES[department]
+      .filter(s => !alreadySelected.includes(s.value))
+      .map(s => {
+        const p = PRICING[s.value];
+        return { label: p ? `${s.label} (${p.price})` : s.label, value: s.value };
+      });
+    const opts = [
+      ...available,
+      { label: "That is all I need", value: "DONE_SELECTING" },
+    ];
+    addBotOptions(opts);
+  };
+
   // Show initial paths immediately on open
   useEffect(() => {
     if (isOpen && messages.length === 0) {
@@ -353,10 +417,9 @@ export default function ChatWidget({ department = "general", open: externalOpen,
     if (chatState === "PATHS") {
       if (val === "DIRECT") {
         setTimeout(() => {
-          addBotMsg("What service do you need?");
-          addBotOptions(SERVICES[department].map(s => ({ label: s.label, value: s.value })));
+          addBotMsg("Tell me what you need. Be as specific as you like.");
         }, 400);
-        setChatState("SERVICE_SELECT");
+        setChatState("DIRECT_TELL");
         return;
       }
       if (val === "GUIDANCE") {
@@ -386,7 +449,71 @@ export default function ChatWidget({ department = "general", open: externalOpen,
       return;
     }
 
-    // Service selection
+    // DIRECT_TELL: user typed what they need
+    if (chatState === "DIRECT_TELL") {
+      setLeadData(prev => ({ ...prev, service: val }));
+      setTimeout(() => {
+        addBotMsg("Got it. Would you like us to handle just that, or would you prefer a full diagnosis so we can recommend the best package for your situation?");
+        addBotOptions([
+          { label: "Just this, please", value: "JUST_THIS" },
+          { label: "Full diagnosis", value: "FULL_DIAGNOSIS" },
+        ]);
+      }, 500);
+      return;
+    }
+
+    if (val === "JUST_THIS") {
+      setLeadData(prev => ({ ...prev, selectedServices: [] }));
+      setTimeout(() => {
+        addBotMsg("Based on what you need, here are services you might also want to consider. Select all that apply.");
+        showRemainingServices([]);
+      }, 400);
+      setChatState("DIRECT_PACKAGE");
+      return;
+    }
+
+    if (val === "FULL_DIAGNOSIS") {
+      setTimeout(() => {
+        addBotMsg("Let me help you find the right solution. Tell me about your business and what challenge you are facing right now.");
+      }, 400);
+      setChatState("AI_CHAT");
+      return;
+    }
+
+    // DIRECT_PACKAGE: multi-select services
+    if (chatState === "DIRECT_PACKAGE") {
+      if (val === "DONE_SELECTING") {
+        const selected = leadData.selectedServices || [];
+        if (selected.length === 0) {
+          // Nothing extra selected, just proceed with original service
+          setTimeout(() => {
+            addBotMsg("No problem. Let me open a file for you. What is your full name?");
+          }, 400);
+          setChatState("LEAD_NAME");
+          return;
+        }
+        setTimeout(() => {
+          addBotMsg(buildPricingSummary(selected));
+          setTimeout(() => {
+            addBotMsg("I will open a file for this. What is your full name?");
+          }, 600);
+        }, 400);
+        setChatState("LEAD_NAME");
+        return;
+      }
+      // User selected an additional service
+      const updated = [...(leadData.selectedServices || []), val];
+      setLeadData(prev => ({ ...prev, selectedServices: updated }));
+      const p = PRICING[val];
+      const lbl = p ? p.label : val;
+      setTimeout(() => {
+        addBotMsg(`Added: ${lbl}. Anything else?`);
+        showRemainingServices(updated);
+      }, 300);
+      return;
+    }
+
+    // Service selection (legacy path from AI_CHAT "I am ready to proceed")
     if (chatState === "SERVICE_SELECT") {
       setLeadData(prev => ({ ...prev, service: val }));
       setTimeout(() => addBotMsg("Are you looking for a new setup, a renewal, or a modification?"), 500);
@@ -418,18 +545,22 @@ export default function ChatWidget({ department = "general", open: externalOpen,
     if (chatState === "LEAD_PHONE") {
       const finalData = { ...leadData, phone: val, name: leadData.name || "" };
       setLeadData(finalData);
+      // Combine primary service with any additional selected services for context
+      const allServices = [
+        finalData.service || "General",
+        ...(finalData.selectedServices || []).map(s => PRICING[s]?.label || s),
+      ].join(", ");
       submitLead.mutate(
         {
           name: finalData.name,
           businessName: finalData.businessName,
           phone: finalData.phone,
-          service: finalData.service || "General",
+          service: allServices,
           context: finalData.context,
         },
         {
           onSuccess: (result) => {
-            addBotMsg(`Your file is created. Reference: **${result.ref}**`);
-            addBotMsg("A team member has been notified and will reach out to you shortly via WhatsApp with next steps.");
+            addBotMsg(`Your file is created. Reference: **${result.ref}**\n\nWe have sent your reference and a guide on how to track your file on our website to your WhatsApp.\n\nTo track anytime, visit our site and click Track.`);
             addBotOptions([
               { label: "Ask another question", value: "RESTART" },
               { label: "Schedule a call", value: "SCHEDULE" },
@@ -549,10 +680,9 @@ export default function ChatWidget({ department = "general", open: externalOpen,
 
     if (val === "DIRECT") {
       setTimeout(() => {
-        addBotMsg("What service do you need?");
-        addBotOptions(SERVICES[department].map(s => ({ label: s.label, value: s.value })));
+        addBotMsg("Tell me what you need. Be as specific as you like.");
       }, 400);
-      setChatState("SERVICE_SELECT");
+      setChatState("DIRECT_TELL");
       return;
     }
   }, [chatState, leadData, submitLead, submitAppointment, department]);
@@ -563,7 +693,7 @@ export default function ChatWidget({ department = "general", open: externalOpen,
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, `<a href="$2" style="color:${GOLD};text-decoration:underline;">$1</a>`)
       .replace(/\n/g, "<br/>");
 
-  const inputDisabled = chatState === "SUCCESS" || chatState === "SCHEDULE_TIME";
+  const inputDisabled = chatState === "SUCCESS" || chatState === "SCHEDULE_TIME" || chatState === "DIRECT_PACKAGE";
 
   const chatPanel = (
     <div
