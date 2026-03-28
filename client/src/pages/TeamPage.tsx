@@ -10,6 +10,7 @@ const DARK  = "#2C2C2C";
 
 interface StaffMember {
   name: string;
+  slug: string;
   role: string;
   dept: string;
   initials: string;
@@ -20,75 +21,129 @@ interface StaffMember {
 const TEAM: StaffMember[] = [
   {
     name: "Idris Ibrahim",
+    slug: "idris-ibrahim",
     role: "Chief Executive Officer",
     dept: "HAMZURY",
     initials: "II",
     color: "#0A1F1C",
-    bio: "Leads HAMZURY's overall strategy, growth, and innovation. Responsible for vision-setting, team leadership, and institutional partnerships.",
+    bio: "Leads HAMZURY's strategy, growth, and partnerships. 5 years building business infrastructure across Nigeria. Every department reports to this desk.",
   },
   {
     name: "Barrister Abdullahi Musa",
+    slug: "abdullahi-musa",
     role: "Head of Compliance & Legal",
     dept: "BizDoc Consult",
     initials: "AM",
     color: "#1B4D3E",
-    bio: "Licensed legal practitioner and Nigeria's compliance specialist. Handles CAC, FIRS, sector licences, and corporate legal frameworks.",
+    bio: "Licensed legal practitioner. Specialises in CAC registration, FIRS compliance, sector licences, and corporate legal frameworks. Over 250 businesses registered.",
   },
   {
-    name: "Digital Systems Lead",
-    role: "CTO & Systems Architect",
-    dept: "Systemize",
-    initials: "SL",
-    color: "#1E3A5F",
-    bio: "Architects all digital infrastructure, automation systems, and technology strategy across HAMZURY's portfolio.",
+    name: "Yusuf",
+    slug: "yusuf",
+    role: "Compliance Officer",
+    dept: "BizDoc Consult",
+    initials: "YU",
+    color: "#1B4D3E",
+    bio: "Ensures every client file meets regulatory standards. Manages document verification, deadline tracking, and compliance monitoring.",
   },
   {
-    name: "Programmes Lead",
-    role: "CEO, HAMZURY Skills",
-    dept: "HAMZURY Skills",
-    initials: "PL",
-    color: "#1B2A4A",
-    bio: "Designs and delivers HAMZURY's education programs. Oversees cohort curriculum, trainer quality, and learner outcomes.",
-  },
-  {
-    name: "Client Success Lead",
-    role: "Head of Client Experience",
+    name: "Tabitha",
+    slug: "tabitha",
+    role: "Chief Success Officer",
     dept: "CSO Division",
-    initials: "CS",
+    initials: "TB",
     color: "#0A1F1C",
-    bio: "Manages every client relationship from onboarding to delivery. Ensures no client ever needs to chase HAMZURY.",
+    bio: "Manages every client relationship from first contact to final delivery. No client ever needs to chase HAMZURY.",
   },
   {
-    name: "Finance Lead",
-    role: "Finance & Accounts Officer",
-    dept: "Finance",
-    initials: "FL",
+    name: "Maryam",
+    slug: "maryam",
+    role: "CSO Assistant & Media",
+    dept: "CSO Division",
+    initials: "MY",
     color: "#0A1F1C",
-    bio: "Manages financial planning, reporting, and compliance. Handles accounts payable/receivable and budget oversight.",
+    bio: "Supports client success operations and manages media communications. Bridges client needs with internal teams.",
   },
   {
-    name: "People & Culture Lead",
-    role: "HR & Talent Officer",
-    dept: "Human Resources",
-    initials: "HR",
+    name: "Khadija",
+    slug: "khadija",
+    role: "Business Development & HR",
+    dept: "BizDev & HR",
+    initials: "KD",
     color: "#0A1F1C",
-    bio: "Leads recruitment, staff development, and organisational culture. Ensures every HAMZURY hire is a culture fit.",
+    bio: "Drives lead generation, strategic partnerships, and talent acquisition. Also oversees AI content strategy.",
   },
   {
-    name: "Partnerships Lead",
-    role: "Business Development & Growth",
+    name: "Faree",
+    slug: "faree",
+    role: "Business Development & Podcast",
     dept: "BizDev",
-    initials: "BD",
+    initials: "FR",
     color: "#0A1F1C",
-    bio: "Drives strategic partnerships, institutional alliances, and new revenue channels for HAMZURY.",
+    bio: "Builds partnerships and manages HAMZURY's podcast operations. Combines relationship building with content creation.",
   },
   {
-    name: "RIDI Programme Lead",
-    role: "Community Development Director",
-    dept: "RIDI Initiative",
-    initials: "RL",
-    color: "#E86A2E",
-    bio: "Coordinates RIDI's community outreach, scholar selection, and enablement delivery. Expanding access to rural opportunity.",
+    name: "Abubakar",
+    slug: "abubakar",
+    role: "Finance & Brand Officer",
+    dept: "Finance",
+    initials: "AB",
+    color: "#0A1F1C",
+    bio: "Manages financial planning, reporting, and brand consistency. Every naira is tracked. Every asset is on-brand.",
+  },
+  {
+    name: "Abdulmalik Musa",
+    slug: "abdulmalik-musa",
+    role: "Skills Lead / Cohort Manager",
+    dept: "HAMZURY Skills",
+    initials: "AM",
+    color: "#1B2A4A",
+    bio: "Designs and delivers HAMZURY's education programmes. Manages cohort scheduling, curriculum, and learner outcomes.",
+  },
+  {
+    name: "Dajot",
+    slug: "dajot",
+    role: "Skills / Code Instructor",
+    dept: "HAMZURY Skills",
+    initials: "DJ",
+    color: "#1B2A4A",
+    bio: "Technical instructor for coding and digital skills cohorts. Turns beginners into builders.",
+  },
+  {
+    name: "Hikma",
+    slug: "hikma",
+    role: "Media Manager",
+    dept: "Media",
+    initials: "HK",
+    color: "#0A1F1C",
+    bio: "Creates and manages content across all HAMZURY social platforms. Storytelling that builds trust and converts.",
+  },
+  {
+    name: "Salis",
+    slug: "salis",
+    role: "Video & Sound Producer",
+    dept: "Media",
+    initials: "SL",
+    color: "#0A1F1C",
+    bio: "Produces all video and audio content. Podcast production, client testimonials, and brand visuals.",
+  },
+  {
+    name: "Lalo",
+    slug: "lalo",
+    role: "Lead Designer",
+    dept: "Systemise",
+    initials: "LL",
+    color: "#1E3A5F",
+    bio: "Designs brand identities, marketing materials, and digital interfaces. Every HAMZURY visual passes through this desk.",
+  },
+  {
+    name: "Rabilu",
+    slug: "rabilu",
+    role: "Security & Operations",
+    dept: "Operations",
+    initials: "RB",
+    color: "#0A1F1C",
+    bio: "Manages physical security, office operations, and logistics. Keeps the building and team safe.",
   },
 ];
 
@@ -187,6 +242,17 @@ export default function TeamPage() {
         className="px-6 md:px-12 py-10 border-t"
         style={{ backgroundColor: TEAL, borderColor: `${GOLD}18` }}
       >
+        <div className="max-w-5xl mx-auto">
+          {/* Founder Quote */}
+          <div className="text-center mb-10 pb-8" style={{ borderBottom: `1px solid ${GOLD}18` }}>
+            <p className="text-[15px] font-light italic leading-relaxed max-w-lg mx-auto mb-3" style={{ color: CREAM, opacity: 0.6 }}>
+              "We don't hire to fill seats. We hire to build something that outlasts all of us."
+            </p>
+            <p className="text-[11px] font-medium tracking-[0.2em] uppercase" style={{ color: GOLD, opacity: 0.5 }}>
+              Muhammad Hamzury — Founder
+            </p>
+          </div>
+        </div>
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-5">
           <span className="text-[14px] font-light tracking-tight" style={{ color: CREAM, letterSpacing: "-0.02em" }}>
             HAMZURY
