@@ -1,16 +1,17 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { MessageSquare, X, Send, Loader2, MoreVertical, Phone, ThumbsUp } from "lucide-react";
+import { MessageSquare, X, Send, Loader2, MoreVertical, Phone, Star, Minus } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
 /* ═══════════════════════════════════════════════════════════════════════
-   CHAT WIDGET - Universal floating chat with department awareness
+   CHAT WIDGET - AWS "Ask" style floating chat with department awareness
    Features:
-   - Notification badge + teaser messages on page load
-   - Compact popup (not full screen)
+   - Fixed-size panel with scrollable messages area
+   - AWS-style initial view: colored header band, pills, disclaimer
+   - Typing animation on open
+   - Feedback star icon beside floating button
    - 4 empathetic conversation paths
-   - Department-specific AI personas (Amara/Nova/Zara/General)
-   - No dashes, no emojis
+   - Department-specific AI personas
    ═══════════════════════════════════════════════════════════════════════ */
 
 type Department = "general" | "bizdoc" | "systemise" | "skills";
@@ -70,29 +71,33 @@ const SLOGANS = [
   "Structure saves more money than hustle.",
 ];
 
-const PERSONA: Record<Department, { name: string; title: string; greeting: string; color: string }> = {
+const PERSONA: Record<Department, { name: string; title: string; greeting: string; subtitle: string; color: string }> = {
   general: {
-    name: "Evelyn Adam",
+    name: "Evelyn",
     title: "HAMZURY Advisor",
     greeting: "Welcome to HAMZURY. How can I help you today?",
+    subtitle: "Get helpful guidance on business registration, digital systems, and growth strategies.",
     color: TEAL,
   },
   bizdoc: {
-    name: "Hauwa Aristotle",
+    name: "Hauwa",
     title: "BizDoc Advisor",
     greeting: "Welcome to BizDoc. How can I help you?",
+    subtitle: "Get guidance on CAC registration, licensing, compliance, and legal documentation.",
     color: "#1B4D3E",
   },
   systemise: {
-    name: "Fatima Haitham",
+    name: "Fatima",
     title: "Systemise Advisor",
     greeting: "Welcome to Systemise. How can I help you?",
+    subtitle: "Get guidance on websites, branding, automation, and digital growth systems.",
     color: "#1E3A5F",
   },
   skills: {
-    name: "Maryam Jaffar",
+    name: "Maryam",
     title: "Skills Advisor",
     greeting: "Welcome to Skills. We train people who want real market ability, not just certificates. What are you looking to learn?",
+    subtitle: "Get guidance on bootcamps, digital skills training, and cohort programs.",
     color: "#1B2A4A",
   },
 };
@@ -157,13 +162,6 @@ const PRICING: Record<string, { label: string; price: string; amount: number }> 
   Training: { label: "Skills Training", price: "from \u20A635,000", amount: 35000 },
 };
 
-const ALL_SERVICES_LIST = [
-  ...SERVICES.general,
-  ...SERVICES.bizdoc,
-  ...SERVICES.systemise,
-  ...SERVICES.skills,
-].filter((s, i, arr) => arr.findIndex(x => x.value === s.value) === i);
-
 const TEASERS: Record<Department, string[]> = {
   general: [
     "Need help structuring your business?",
@@ -182,6 +180,31 @@ const TEASERS: Record<Department, string[]> = {
     "Our next cohort is filling up fast.",
   ],
 };
+
+/* ── Typing dots component ─────────────────────────────────────────── */
+function TypingDots({ color }: { color: string }) {
+  return (
+    <div className="flex items-center gap-1 px-3 py-2">
+      {[0, 1, 2].map(i => (
+        <span
+          key={i}
+          className="w-2 h-2 rounded-full"
+          style={{
+            backgroundColor: color,
+            opacity: 0.5,
+            animation: `typingBounce 1.2s ease-in-out ${i * 0.2}s infinite`,
+          }}
+        />
+      ))}
+      <style>{`
+        @keyframes typingBounce {
+          0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+          30% { transform: translateY(-4px); opacity: 0.8; }
+        }
+      `}</style>
+    </div>
+  );
+}
 
 export default function ChatWidget({ department = "general", open: externalOpen, onClose }: Props) {
   const isControlled = externalOpen !== undefined;
@@ -216,6 +239,12 @@ export default function ChatWidget({ department = "general", open: externalOpen,
 
   // Menu state
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Typing indicator for initial greeting
+  const [showInitTyping, setShowInitTyping] = useState(false);
+
+  // Track whether conversation has started (user clicked an option or typed)
+  const hasInteracted = messages.some(m => m.sender === "user");
 
   const persona = PERSONA[department];
 
@@ -285,6 +314,7 @@ export default function ChatWidget({ department = "general", open: externalOpen,
     setInput("");
     setInputError("");
     setAiMessages([]);
+    setShowInitTyping(false);
   }, []);
 
   /** Build pricing summary from selected services */
@@ -316,7 +346,7 @@ export default function ChatWidget({ department = "general", open: externalOpen,
     addBotOptions(opts);
   };
 
-  // Show initial paths immediately on open
+  // Show initial paths with typing animation on open
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       showInitialPaths();
@@ -325,17 +355,12 @@ export default function ChatWidget({ department = "general", open: externalOpen,
   }, [isOpen]);
 
   const showInitialPaths = () => {
-    addBotMsg(persona.greeting);
+    setShowInitTyping(true);
     setTimeout(() => {
-      addBotMsg("Tell us a little about what you are looking for.");
-      addBotOptions([
-        { label: "Returning client", value: "TRACK" },
-        { label: "I know what I need", value: "DIRECT" },
-        { label: "Help me figure it out", value: "GUIDANCE" },
-        { label: "Schedule a call", value: "SCHEDULE" },
-      ]);
+      setShowInitTyping(false);
+      addBotMsg(persona.greeting);
       setChatState("PATHS");
-    }, 400);
+    }, 1200);
   };
 
   const addBotMsg = (text: string) =>
@@ -416,11 +441,9 @@ export default function ChatWidget({ department = "general", open: externalOpen,
   const processLogic = useCallback((val: string) => {
     // From initial paths
     if (chatState === "PATHS") {
-      if (val === "DIRECT") {
-        setTimeout(() => {
-          addBotMsg("Tell me what you need. Be as specific as you like.");
-        }, 400);
-        setChatState("DIRECT_TELL");
+      if (val === "TRACK") {
+        setTimeout(() => addBotMsg("Enter your registered phone number and I will show your project status."), 400);
+        setChatState("TRACK_PHONE");
         return;
       }
       if (val === "GUIDANCE") {
@@ -430,16 +453,34 @@ export default function ChatWidget({ department = "general", open: externalOpen,
         setChatState("AI_CHAT");
         return;
       }
+      if (val === "CONTACT_TEAM") {
+        const wa = department === "bizdoc" ? "2348067149356" : "2349130700056";
+        window.open(`https://wa.me/${wa}`, "_blank");
+        return;
+      }
+      if (val === "CHANGE_LANG") {
+        setTimeout(() => {
+          addBotMsg("Language selection is coming soon. For now, our team speaks English, Hausa, and Pidgin. How can I help you?");
+          addBotOptions([
+            { label: "Track my progress", value: "TRACK" },
+            { label: "I need guidance", value: "GUIDANCE" },
+            { label: "Contact team", value: "CONTACT_TEAM" },
+          ]);
+        }, 400);
+        return;
+      }
+      if (val === "DIRECT") {
+        setTimeout(() => {
+          addBotMsg("Tell me what you need. Be as specific as you like.");
+        }, 400);
+        setChatState("DIRECT_TELL");
+        return;
+      }
       if (val === "SCHEDULE") {
         setTimeout(() => {
           addBotMsg("Let me get you scheduled with our team. What is your name?");
         }, 400);
         setChatState("SCHEDULE_NAME");
-        return;
-      }
-      if (val === "TRACK") {
-        setTimeout(() => addBotMsg("Enter your registered phone number and I will show your project status."), 400);
-        setChatState("TRACK_PHONE");
         return;
       }
     }
@@ -486,7 +527,6 @@ export default function ChatWidget({ department = "general", open: externalOpen,
       if (val === "DONE_SELECTING") {
         const selected = leadData.selectedServices || [];
         if (selected.length === 0) {
-          // Nothing extra selected, just proceed with original service
           setTimeout(() => {
             addBotMsg("No problem. Let me open a file for you. What is your full name?");
           }, 400);
@@ -546,7 +586,6 @@ export default function ChatWidget({ department = "general", open: externalOpen,
     if (chatState === "LEAD_PHONE") {
       const finalData = { ...leadData, phone: val, name: leadData.name || "" };
       setLeadData(finalData);
-      // Combine primary service with any additional selected services for context
       const allServices = [
         finalData.service || "General",
         ...(finalData.selectedServices || []).map(s => PRICING[s]?.label || s),
@@ -661,10 +700,10 @@ export default function ChatWidget({ department = "general", open: externalOpen,
       addBotMsg("How else can I help you?");
       setTimeout(() => {
         addBotOptions([
-          { label: "Returning client", value: "TRACK" },
-          { label: "I know what I need", value: "DIRECT" },
-          { label: "Help me figure it out", value: "GUIDANCE" },
-          { label: "Schedule a call", value: "SCHEDULE" },
+          { label: "Track my progress", value: "TRACK" },
+          { label: "I need guidance", value: "GUIDANCE" },
+          { label: "Contact team", value: "CONTACT_TEAM" },
+          { label: "Change language", value: "CHANGE_LANG" },
         ]);
       }, 300);
       setChatState("PATHS");
@@ -696,30 +735,211 @@ export default function ChatWidget({ department = "general", open: externalOpen,
 
   const inputDisabled = chatState === "SUCCESS" || chatState === "SCHEDULE_TIME" || chatState === "DIRECT_PACKAGE";
 
-  const chatPanel = (
+  /* ══════════════════════════════════════════════════════════════════
+     INITIAL VIEW — AWS "Ask" style
+     Shown before user has interacted (no user messages yet)
+     Layout: colored header band (name + subtitle + input) -> white area (pills + disclaimer)
+     ══════════════════════════════════════════════════════════════════ */
+  const initialView = (
     <div
       className={
         isControlled
           ? "w-full h-full flex flex-col overflow-hidden"
-          : "fixed z-50 flex flex-col overflow-hidden shadow-2xl rounded-2xl border border-[#0A1F1C]/10 inset-x-3 bottom-16 top-auto md:inset-auto md:bottom-4 md:right-4 md:w-[400px]"
+          : "fixed z-50 flex flex-col overflow-hidden shadow-2xl rounded-2xl border border-[#0A1F1C]/10 inset-x-3 bottom-24 top-auto md:inset-auto md:bottom-24 md:right-4 md:w-[400px]"
       }
-      style={isControlled ? {} : { backgroundColor: "white", maxHeight: "min(520px, 70vh)", transform: mounted ? "scale(1) opacity(1)" : "scale(0.95) opacity(0)", opacity: mounted ? 1 : 0, transition: "transform 0.2s ease-out, opacity 0.2s ease-out" }}
+      style={isControlled ? {} : {
+        backgroundColor: "white",
+        maxHeight: "calc(100dvh - 110px)",
+        transform: mounted ? "scale(1)" : "scale(0.95)",
+        opacity: mounted ? 1 : 0,
+        transition: "transform 0.2s ease-out, opacity 0.2s ease-out",
+      }}
     >
-      {/* Header — AWS style: compact, name + badge left, minimize right */}
+      {/* ─── Colored header band ─── */}
+      <div className="shrink-0 relative" style={{ backgroundColor: persona.color }}>
+        {/* Top row: menu, title, minimize */}
+        <div className="px-4 pt-3 pb-1 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <button onClick={() => setMenuOpen(v => !v)} className="text-white/40 hover:text-white/80 p-0.5 transition-colors">
+              <MoreVertical size={16} />
+            </button>
+            <h3 className="font-semibold text-[14px] text-white tracking-wide">
+              Ask {persona.name}
+            </h3>
+          </div>
+          <button onClick={close} className="text-white/40 hover:text-white/80 p-1 transition-colors" title="Minimize">
+            <Minus size={16} />
+          </button>
+        </div>
+
+        {/* Subtitle */}
+        <p className="px-4 pb-3 text-[12px] text-white/60 leading-snug">
+          {persona.subtitle}
+        </p>
+
+        {/* Input on colored bg */}
+        <div className="px-4 pb-4">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={input}
+              onChange={e => { setInput(e.target.value); if (inputError) setInputError(""); }}
+              onKeyDown={e => {
+                if (e.key === "Enter" && input.trim()) {
+                  // Transition to conversation mode
+                  addUserMsg(input.trim());
+                  setInput("");
+                  setChatState("AI_CHAT");
+                  handleAIChat(input.trim());
+                }
+              }}
+              placeholder="Ask a question"
+              className="flex-1 rounded-full px-4 py-2.5 text-[13px] outline-none border-0"
+              style={{ backgroundColor: "rgba(255,255,255,0.15)", color: "white", caretColor: "white" }}
+            />
+            <button
+              onClick={() => {
+                if (input.trim()) {
+                  addUserMsg(input.trim());
+                  setInput("");
+                  setChatState("AI_CHAT");
+                  handleAIChat(input.trim());
+                }
+              }}
+              className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-transform hover:scale-105"
+              style={{ backgroundColor: "rgba(255,255,255,0.15)", color: "white" }}
+            >
+              <Send size={16} />
+            </button>
+          </div>
+        </div>
+
+        {/* Three-dot menu dropdown */}
+        {menuOpen && (
+          <div className="absolute left-3 top-14 bg-white rounded-xl shadow-lg border border-[#0A1F1C]/8 py-1 z-10 min-w-[180px]">
+            <button
+              onClick={() => {
+                setMenuOpen(false);
+                const wa = department === "bizdoc" ? "2348067149356" : "2349130700056";
+                window.open(`https://wa.me/${wa}`, "_blank");
+              }}
+              className="w-full text-left px-4 py-2.5 text-[13px] hover:bg-[#F8F5F0] transition-colors flex items-center gap-2"
+              style={{ color: TEAL }}
+            >
+              <Phone size={14} />
+              Contact team
+            </button>
+            <button
+              onClick={() => {
+                setMenuOpen(false);
+                reset();
+                showInitialPaths();
+              }}
+              className="w-full text-left px-4 py-2.5 text-[13px] hover:bg-[#F8F5F0] transition-colors"
+              style={{ color: "#DC2626" }}
+            >
+              Clear conversation
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ─── White area: typing indicator or greeting + pills ─── */}
+      <div className="flex-1 flex flex-col px-5 pt-5 overflow-y-auto" style={{ backgroundColor: "white" }}>
+        {showInitTyping ? (
+          <div className="flex justify-start mb-3">
+            <div className="bg-[#F5F5F5] rounded-2xl rounded-tl-sm">
+              <TypingDots color={persona.color} />
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Bot greeting message */}
+            {messages.filter(m => m.sender === "bot" && m.text).length > 0 && (
+              <div className="flex justify-start mb-4">
+                <div
+                  className="max-w-[85%] px-4 py-3 text-[13px] leading-relaxed rounded-2xl rounded-tl-sm"
+                  style={{ backgroundColor: "#F5F5F5", color: "#2C2C2C" }}
+                  dangerouslySetInnerHTML={{ __html: formatText(messages.find(m => m.sender === "bot" && m.text)?.text || "") }}
+                />
+              </div>
+            )}
+
+            {/* "Want help getting started?" + pills */}
+            <p className="text-[14px] font-semibold mb-1" style={{ color: "#2C2C2C" }}>
+              Want help getting started?
+            </p>
+            <p className="text-[13px] mb-4" style={{ color: "#6B7280" }}>
+              Tell us a little about what you are looking for.
+            </p>
+
+            {/* 4 vertical pill buttons */}
+            <div className="flex flex-col gap-2.5">
+              {[
+                { label: "Track my progress", value: "TRACK" },
+                { label: "I need guidance", value: "GUIDANCE" },
+                { label: "Contact team", value: "CONTACT_TEAM" },
+                { label: "Change language", value: "CHANGE_LANG" },
+              ].map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => handleOptionClick(opt.value, opt.label)}
+                  className="w-full text-left px-4 py-3 text-[13px] border rounded-full hover:border-[#C9A97E] hover:bg-[#FAFAF8] transition-all"
+                  style={{ borderColor: "rgba(10,31,28,0.12)", color: TEAL }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Spacer */}
+            <div className="flex-1" />
+          </>
+        )}
+      </div>
+
+      {/* ─── Footer disclaimer ─── */}
+      <div className="shrink-0 px-5 py-3 border-t border-[#0A1F1C]/5" style={{ backgroundColor: "white" }}>
+        <p className="text-center text-[11px]" style={{ color: "#9CA3AF" }}>
+          By chatting, you agree to our{" "}
+          <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-70">disclaimer</a>.
+        </p>
+      </div>
+    </div>
+  );
+
+  /* ══════════════════════════════════════════════════════════════════
+     CONVERSATION VIEW — after user has interacted
+     Fixed size, scrollable messages, input pinned at bottom
+     ══════════════════════════════════════════════════════════════════ */
+  const conversationView = (
+    <div
+      className={
+        isControlled
+          ? "w-full h-full flex flex-col overflow-hidden"
+          : "fixed z-50 flex flex-col overflow-hidden shadow-2xl rounded-2xl border border-[#0A1F1C]/10 inset-x-3 bottom-24 top-auto md:inset-auto md:bottom-24 md:right-4 md:w-[400px]"
+      }
+      style={isControlled ? {} : {
+        backgroundColor: "white",
+        maxHeight: "calc(100dvh - 110px)",
+        transform: mounted ? "scale(1)" : "scale(0.95)",
+        opacity: mounted ? 1 : 0,
+        transition: "transform 0.2s ease-out, opacity 0.2s ease-out",
+      }}
+    >
+      {/* ─── Header — simplified: name + minimize ─── */}
       <div className="shrink-0 relative" style={{ backgroundColor: persona.color }}>
         <div className="px-4 py-3 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <button onClick={() => setMenuOpen(v => !v)} className="text-white/50 hover:text-white p-0.5">
+            <button onClick={() => setMenuOpen(v => !v)} className="text-white/40 hover:text-white/80 p-0.5 transition-colors">
               <MoreVertical size={16} />
             </button>
-            <h3 className="font-semibold text-[14px] text-white">{persona.name}</h3>
-            <span className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center" title="Verified">
-              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            </span>
-            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+            <h3 className="font-semibold text-[14px] text-white tracking-wide">
+              Ask {persona.name}
+            </h3>
           </div>
-          <button onClick={close} className="text-white/50 hover:text-white p-1" title="Minimize">
-            <span className="text-lg font-light">—</span>
+          <button onClick={close} className="text-white/40 hover:text-white/80 p-1 transition-colors" title="Minimize">
+            <Minus size={16} />
           </button>
         </div>
 
@@ -753,34 +973,35 @@ export default function ChatWidget({ department = "general", open: externalOpen,
         )}
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-3" style={{ backgroundColor: "#FAFAFA" }}>
+      {/* ─── Scrollable messages area ─── */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ backgroundColor: "#FAFAFA" }}>
         {messages.map((msg, i) => (
           <div key={i}>
             {msg.text && (
               <div className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
                 <div
-                  className={`max-w-[80%] p-3 text-[13px] leading-relaxed ${
+                  className={`max-w-[80%] px-4 py-3 text-[13px] leading-relaxed ${
                     msg.sender === "user"
                       ? "rounded-2xl rounded-tr-sm"
-                      : "rounded-2xl rounded-tl-sm border border-[#0A1F1C]/5"
+                      : "rounded-2xl rounded-tl-sm"
                   }`}
                   style={{
                     backgroundColor: msg.sender === "user" ? persona.color : "white",
                     color: msg.sender === "user" ? "#F8F5F0" : "#2C2C2C",
+                    ...(msg.sender === "bot" ? { border: "1px solid rgba(10,31,28,0.06)" } : {}),
                   }}
                   dangerouslySetInnerHTML={{ __html: formatText(msg.text) }}
                 />
               </div>
             )}
             {msg.options && (
-              <div className="flex flex-wrap gap-2 mt-2">
+              <div className="flex flex-col gap-2 mt-2">
                 {msg.options.map((opt, j) => (
                   <button
                     key={j}
                     onClick={() => handleOptionClick(opt.value, opt.label)}
-                    className="px-4 py-2 text-[13px] border rounded-full hover:border-[#C9A97E] hover:bg-[#F8F5F0] transition-all"
-                    style={{ borderColor: `${TEAL}20`, color: TEAL }}
+                    className="w-full text-left px-4 py-2.5 text-[13px] border rounded-full hover:border-[#C9A97E] hover:bg-[#FAFAF8] transition-all"
+                    style={{ borderColor: "rgba(10,31,28,0.12)", color: TEAL }}
                   >
                     {opt.label}
                   </button>
@@ -791,17 +1012,17 @@ export default function ChatWidget({ department = "general", open: externalOpen,
         ))}
         {aiLoading && (
           <div className="flex justify-start">
-            <div className="p-3 rounded-2xl rounded-tl-sm bg-white border border-[#0A1F1C]/5">
-              <Loader2 size={16} className="animate-spin opacity-40" />
+            <div className="rounded-2xl rounded-tl-sm bg-white border border-[#0A1F1C]/5">
+              <TypingDots color={persona.color} />
             </div>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
+      {/* ─── Input pinned at bottom ─── */}
       {!inputDisabled && (
-        <div className="px-3 pt-2 pb-3 bg-white border-t border-[#0A1F1C]/5 shrink-0">
+        <div className="px-4 pt-2 pb-3 bg-white border-t border-[#0A1F1C]/5 shrink-0">
           {inputError && <p className="text-[11px] mb-1.5 px-1 text-red-500">{inputError}</p>}
           <div className="flex gap-2">
             <input
@@ -822,61 +1043,112 @@ export default function ChatWidget({ department = "general", open: externalOpen,
               <Send size={16} />
             </button>
           </div>
-          <p className="text-center mt-1.5 text-[10px] opacity-40">
-            By continuing, you agree to our{" "}
-            <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline">terms</a>.
+          <p className="text-center mt-1.5 text-[10px]" style={{ color: "#9CA3AF" }}>
+            By chatting, you agree to our{" "}
+            <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-70">terms</a>.
           </p>
         </div>
       )}
     </div>
   );
 
+  // Choose which view to show
+  const chatPanel = hasInteracted ? conversationView : initialView;
+
+  // Feedback rating state
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+
+  const submitFeedback = () => {
+    if (feedbackRating === 0) return;
+    toast.success(`Thank you for your ${feedbackRating}-star feedback`);
+    setFeedbackOpen(false);
+    setFeedbackRating(0);
+    setFeedbackMsg("");
+  };
+
   return (
     <>
-      {/* Floating button with notification badge and teasers */}
-      {!isControlled && !isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
-          {/* Teaser notification bubbles */}
-          {!teaserDismissed && teasers.map((teaser, i) => (
+      {/* Teaser bubbles — only when chat is closed */}
+      {!isControlled && !isOpen && !teaserDismissed && (
+        <div className="fixed bottom-24 right-6 z-50 flex flex-col items-end gap-2">
+          {teasers.map((teaser, i) => (
             <div
               key={i}
               className="bg-white rounded-xl shadow-lg border border-[#0A1F1C]/8 px-4 py-2.5 max-w-[240px] text-[13px] cursor-pointer animate-in slide-in-from-right-2 fade-in duration-300"
               style={{ color: TEAL }}
-              onClick={() => {
-                setTeaserDismissed(true);
-                setTeasers([]);
-                setInternalOpen(true);
-                setShowBadge(false);
-              }}
+              onClick={() => { setTeaserDismissed(true); setTeasers([]); setInternalOpen(true); setShowBadge(false); }}
             >
               {teaser}
             </div>
           ))}
-
-          {/* Chat button */}
-          <button
-            onClick={() => {
-              setInternalOpen(true);
-              setShowBadge(false);
-              setTeaserDismissed(true);
-              setTeasers([]);
-            }}
-            className="w-12 h-12 rounded-full shadow-xl flex items-center justify-center transition-transform hover:scale-105 relative"
-            style={{ backgroundColor: persona.color, color: GOLD }}
-          >
-            <MessageSquare size={20} />
-            {/* Unread badge */}
-            {showBadge && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[11px] font-bold rounded-full flex items-center justify-center">
-                1
-              </span>
-            )}
-          </button>
         </div>
       )}
 
       {/* Chat panel */}
       {isOpen && chatPanel}
+
+      {/* Floating buttons — ALWAYS visible (star + chat) */}
+      {!isControlled && (
+        <div className="fixed bottom-4 right-4 z-[60] flex items-center gap-2">
+          {/* Feedback star */}
+          <button
+            onClick={() => setFeedbackOpen(v => !v)}
+            className="w-10 h-10 rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-110 border"
+            style={{ backgroundColor: "white", borderColor: "rgba(10,31,28,0.1)", color: GOLD }}
+            title="Rate us"
+          >
+            <Star size={18} />
+          </button>
+
+          {/* Chat button */}
+          <button
+            onClick={() => {
+              if (isOpen) { close(); } else { setInternalOpen(true); setShowBadge(false); setTeaserDismissed(true); setTeasers([]); }
+            }}
+            className="w-14 h-14 rounded-full shadow-xl flex items-center justify-center transition-transform hover:scale-105 relative"
+            style={{ backgroundColor: persona.color, color: GOLD }}
+          >
+            {isOpen ? <Minus size={22} /> : <MessageSquare size={22} />}
+            {!isOpen && showBadge && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[11px] font-bold rounded-full flex items-center justify-center">1</span>
+            )}
+          </button>
+        </div>
+      )}
+
+      {/* Feedback popup — 1-5 star rating + message */}
+      {feedbackOpen && (
+        <div className="fixed bottom-24 right-6 z-50 bg-white rounded-2xl shadow-2xl border border-[#0A1F1C]/10 p-5 w-72">
+          <div className="flex justify-between items-center mb-3">
+            <p className="text-[14px] font-semibold" style={{ color: TEAL }}>Rate your experience</p>
+            <button onClick={() => setFeedbackOpen(false)} className="opacity-40 hover:opacity-100"><X size={16} /></button>
+          </div>
+          <div className="flex gap-1 mb-3">
+            {[1, 2, 3, 4, 5].map(n => (
+              <button key={n} onClick={() => setFeedbackRating(n)} className="transition-transform hover:scale-110">
+                <Star size={28} fill={n <= feedbackRating ? "#C9A97E" : "none"} stroke={n <= feedbackRating ? "#C9A97E" : "#D1D5DB"} strokeWidth={1.5} />
+              </button>
+            ))}
+          </div>
+          <textarea
+            value={feedbackMsg}
+            onChange={e => setFeedbackMsg(e.target.value)}
+            placeholder="Tell us more (optional)"
+            className="w-full border rounded-xl px-3 py-2 text-[13px] outline-none resize-none h-20 mb-3"
+            style={{ borderColor: "rgba(10,31,28,0.1)", backgroundColor: "#FAFAFA" }}
+          />
+          <button
+            onClick={submitFeedback}
+            disabled={feedbackRating === 0}
+            className="w-full py-2.5 rounded-full text-[13px] font-medium text-white transition-opacity disabled:opacity-40"
+            style={{ backgroundColor: persona.color }}
+          >
+            Submit
+          </button>
+        </div>
+      )}
     </>
   );
 }
