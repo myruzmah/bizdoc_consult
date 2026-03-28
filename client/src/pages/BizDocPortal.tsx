@@ -1,10 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "wouter";
 import PageMeta from "@/components/PageMeta";
-import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight, MessageCircle, FileSearch, Play, X, Menu, Star } from "lucide-react";
-import { BizDocDesk } from "@/components/BizDocDesk";
-import { AskMeWidget } from "@/components/AskMeWidget";
-import { RateUsWidget } from "@/components/RateUsWidget";
+import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight, Play, X, Menu } from "lucide-react";
+import MotivationalQuoteBar from "@/components/MotivationalQuoteBar";
 import { trpc } from "@/lib/trpc";
 
 const G  = "#1B4D3E";
@@ -26,8 +24,8 @@ const PILLARS: PillarDef[] = [
     badge: "FOREIGN REGISTRATION",
     title: "I'm a foreign investor. I need to operate legally in Nigeria",
     sub: "Foreign Company Registration & Expatriate Compliance",
-    forWhom: "Foreign nationals, diaspora investors, and international companies entering the Nigerian market.",
-    pitch: "CAMA 2020, FEMA, and the Immigration Act require foreign businesses to complete precise registrations before operating. One missed document can mean deportation, asset seizure, or a permanent bar. We built the exact compliance roadmap. CAC foreign registration, CERPAC, Expatriate Quota, Business Permit, and SCUML. We are experts at this.",
+    forWhom: "Foreign nationals, diaspora investors, and international companies.",
+    pitch: "One missed document can mean deportation or asset seizure. We handle every foreign registration end to end.",
     items: [
       "CAC Foreign Company Registration (CAMA 2020. Section 54)",
       "Business Permit. Federal Ministry of Interior",
@@ -43,8 +41,8 @@ const PILLARS: PillarDef[] = [
     badge: "REGISTRATION",
     title: "My business isn't registered. I keep missing opportunities",
     sub: "CAC Registration & Modifications",
-    forWhom: "Any business owner who can't open a corporate account, sign contracts, or win tenders.",
-    pitch: "Without CAC registration, your business doesn't legally exist. Banks won't open your account. Government won't deal with you. Corporates won't sign. We handle everything, first registration to restructuring, annual returns, and director changes.",
+    forWhom: "Business owners who need a corporate account, contracts, or tenders.",
+    pitch: "Without CAC, your business doesn't legally exist. We handle registration through restructuring.",
     items: ["Business Name Registration", "Private Limited Company (RC)", "Annual Returns Filing", "Business Restructuring (BN → Ltd)", "Director & Shareholder Amendments", "Company Restoration", "Free corporate bank intro letter"],
   },
   {
@@ -52,8 +50,8 @@ const PILLARS: PillarDef[] = [
     badge: "COMPLIANCE",
     title: "I don't have the right licenses. I can't operate legally",
     sub: "Sector Licences & Permits",
-    forWhom: "Food businesses, oil & gas, healthcare, fintech, construction, mining, travel, and exporters.",
-    pitch: "In a regulated sector without the right permits? You're one inspection from shutdown, one tender from disqualification. We identify every licence your industry requires, file it correctly, and track every renewal.",
+    forWhom: "Regulated sectors: food, oil & gas, healthcare, fintech, construction, export.",
+    pitch: "One inspection from shutdown. We identify, file, and track every licence your sector requires.",
     items: ["NAFDAC Product Registration", "DPR / NMDPRA Petroleum Licence", "CBN / Fintech Approval", "COREN / ARCON Professional Licence", "NEPC Export Licence", "NITDA Accreditation", "State-Level Permits & Renewals"],
   },
   {
@@ -61,8 +59,8 @@ const PILLARS: PillarDef[] = [
     badge: "TAX",
     title: "FIRS is chasing me. my tax is a mess",
     sub: "Tax & FIRS Compliance",
-    forWhom: "Any business owner who is behind on filings, received a FIRS notice, or needs a Tax Clearance Certificate.",
-    pitch: "Outstanding tax liabilities attract compound penalties and can freeze operations. FIRS notices aren't warnings. They're enforcement. We register your TIN, file returns, handle FIRS correspondence, and obtain your Tax Clearance Certificate. Clean records unlock loans, contracts, and peace of mind.",
+    forWhom: "Behind on filings, received a FIRS notice, or need a TCC.",
+    pitch: "FIRS notices aren't warnings. They're enforcement. We handle TIN, returns, and clearance certificates.",
     items: ["TIN Registration", "VAT Registration & Monthly Filing", "PAYE Setup & Filing", "PENCOM Registration & Clearance", "Tax Clearance Certificate (TCC)", "FIRS Notice Response & Resolution", "Back-Filing for Previous Years"],
   },
   {
@@ -71,7 +69,7 @@ const PILLARS: PillarDef[] = [
     title: "I have no legal documents. Verbal agreements are hurting me",
     sub: "Corporate Documentation & Trademark",
     forWhom: "Any business dealing with clients, partners, staff, or investors.",
-    pitch: "One bad deal without a contract can cost more than your year's revenue. Verbal agreements give zero recourse. We draft every legal document your business needs, before anything goes wrong.",
+    pitch: "Verbal agreements give zero recourse. We draft every document your business needs.",
     items: ["Service & Client Agreements", "NDAs & Confidentiality Deeds", "Employment Contracts", "Shareholder Agreements", "Partnership Deeds", "Trademark Registration", "Board Resolutions"],
   },
   {
@@ -79,8 +77,8 @@ const PILLARS: PillarDef[] = [
     badge: "ANNUAL RETURNS",
     title: "I forgot to file annual returns. CAC may strike me off",
     sub: "Annual Returns & CAC Compliance Restoration",
-    forWhom: "Any registered business that has missed one or more annual return filing deadlines.",
-    pitch: "CAC requires annual returns from every registered company. Even if you didn't trade. Miss two years and they strike you off the register without warning. We file outstanding returns and restore your company to good standing.",
+    forWhom: "Registered businesses that have missed annual return deadlines.",
+    pitch: "Miss two years and CAC strikes you off without warning. We file and restore.",
     items: ["Annual Returns Filing (current year)", "Back-Filing for Missed Years", "Company Status Check", "Company Restoration (if struck off)", "CAC Good Standing Certificate", "Ongoing Annual Returns. Never miss again"],
   },
   {
@@ -88,8 +86,8 @@ const PILLARS: PillarDef[] = [
     badge: "RESTRUCTURING",
     title: "I want to grow but my structure is wrong",
     sub: "Business Restructuring & Corporate Changes",
-    forWhom: "Established businesses converting from sole trader to Ltd, adding partners, or preparing for investment.",
-    pitch: "The right structure protects assets, attracts investors, and positions you for contracts. The wrong one creates tax inefficiencies and liability. We handle every change, conversions, director amendments, share transfers, and mergers.",
+    forWhom: "Converting to Ltd, adding partners, or preparing for investment.",
+    pitch: "Wrong structure creates liability. We handle conversions, amendments, transfers, and mergers.",
     items: ["Business Name → Limited Company Conversion", "New Director Registration", "Share Transfer & Allotment", "Shareholder Agreement Drafting", "Company Name Change", "Registered Address Change"],
   },
   {
@@ -97,8 +95,8 @@ const PILLARS: PillarDef[] = [
     badge: "SUBSCRIPTION",
     title: "I want someone to handle my tax permanently",
     sub: "Tax Pro Max. Monthly Managed Compliance",
-    forWhom: "Any business that wants complete tax peace of mind with a dedicated officer handling everything monthly.",
-    pitch: "Every month managing FIRS, PAYE, VAT, and CAC deadlines is a month not spent building. Tax Pro Max assigns a dedicated compliance officer. We collect your data monthly, file everything, handle FIRS correspondence, and produce your annual audit. So you never think about tax again.",
+    forWhom: "Businesses that want tax handled completely. Every month.",
+    pitch: "A dedicated compliance officer handles your FIRS, PAYE, VAT, and CAC. Monthly. You never think about tax again.",
     price: "From ₦15,000/month",
     items: ["Monthly bookkeeping data collection", "Monthly PAYE & VAT filing on your behalf", "Quarterly compliance check + FIRS correspondence", "End-of-year Finance Audit Report", "Annual breakdown: what you owe, what we saved you, our fee", "FIRS Certificate of Good Standing (renewed annually)"],
   },
@@ -149,13 +147,15 @@ const BLUEPRINTS: Blueprint[] = [
         id: "financial", label: "Financial Setup", tagline: "The money infrastructure that keeps your business solvent, audit-ready, and investor-friendly.",
         primary: [
           { name: "Corporate Bank Account", note: "Business account separate from personal. Required for all formal contracts and government payments." },
-          { name: "Accounting Software", note: "QuickBooks or Zoho Books setup, chart of accounts, invoicing, expense tracking, P&L reports from day one." },
-          { name: "Payment Gateway", note: "Paystack or Flutterwave integrated, accept card, bank transfer, and USSD payments from clients instantly." },
-          { name: "Invoice + Payment Terms Template", note: "Professional invoice format with your RC number, TIN, bank details, and clear payment terms." },
-          { name: "PAYE + Payroll Setup", note: "Automated payroll processing with tax deductions, pension remittance, and payslip generation." },
+          { name: "Financial Reporting System", note: "Chart of accounts, invoicing, expense tracking, P&L reports from day one. Know exactly where your money goes — every naira, every month." },
+          { name: "Payment Collection Gateway", note: "Accept card, bank transfer, and USSD payments from clients instantly. Every hour without a payment system is revenue you're leaving on the table." },
+          { name: "Invoice + Payment Terms Template", note: "Professional invoice format with your RC number, TIN, bank details, and clear payment terms. Your competitors already have this." },
+          { name: "PAYE + Payroll Setup", note: "Automated payroll processing with tax deductions, pension remittance, and payslip generation. One mistake here costs you staff trust permanently." },
+          { name: "Tax Registration & Compliance", note: "VAT, CIT, and all statutory filings mapped to deadlines. Miss one filing and FIRS penalties start compounding immediately." },
+          { name: "Cash Flow Management", note: "Weekly cash position tracking, receivables ageing, and payment forecasting. The businesses that survive aren't the most profitable — they're the ones that never run out of cash." },
         ],
-        secondary: ["Monthly budget template", "Petty cash policy", "Vendor payment schedule", "Annual audit preparation checklist", "Expense policy for staff"],
-        automations: ["Auto-invoicing on project milestone", "QuickBooks bank reconciliation", "Payroll automation (Sage Payroll)", "Tax filing reminders from accounting software"],
+        secondary: ["Monthly budget template", "Petty cash policy", "Vendor payment schedule", "Annual audit preparation checklist", "Expense policy for staff", "Business restructuring guidance"],
+        automations: ["Auto-invoicing on project milestone", "Bank reconciliation automation", "Payroll processing automation", "Tax filing calendar with deadline alerts", "Financial dashboard with real-time P&L"],
         by: "BizDoc",
       },
       {
@@ -167,34 +167,34 @@ const BLUEPRINTS: Blueprint[] = [
           { name: "Instagram Business Account", note: "Content strategy, bio optimisation, highlights setup. Builds brand credibility and warm-audience leads." },
           { name: "LinkedIn Company Page", note: "B2B brand credibility. Corporate clients and procurement officers check LinkedIn before engaging." },
         ],
-        secondary: ["Brand guidelines document", "Content calendar (3x/week minimum)", "Email newsletter setup (Mailchimp)", "WhatsApp Business profile", "Facebook Business page"],
-        automations: ["Social media scheduler (Buffer/Hootsuite)", "Email automation sequences (Mailchimp)", "SEO monitoring (Google Search Console)", "Review request automation"],
+        secondary: ["Brand guidelines document", "Content calendar (3x/week minimum)", "Email newsletter setup", "WhatsApp Business profile", "Facebook Business page"],
+        automations: ["Social media scheduling and auto-posting", "Email automation sequences for leads and clients", "SEO performance monitoring", "Review request automation"],
         by: "Systemise",
       },
       {
         id: "sales", label: "Sales System", tagline: "How you convert interest into paying clients, consistently, not just when you get lucky.",
         primary: [
           { name: "Pricing Structure", note: "Clear service tiers, pricing rationale, and discount policy. Clients who can't find your price don't buy." },
-          { name: "CRM Setup", note: "HubSpot (free) or Zoho CRM. Every lead tracked, every follow-up automated, no revenue lost to forgetting." },
-          { name: "Proposal / Quote Template", note: "Professional, branded proposals that close deals faster. Includes scope, timeline, investment, and terms." },
+          { name: "Sales Pipeline Management", note: "Every lead tracked. Every follow-up automated. No revenue lost to forgetting. The businesses that close consistently are the ones with a system." },
+          { name: "Proposal / Quote Template", note: "Professional, branded proposals that close deals faster. Includes scope, timeline, investment, and terms. Your competitors already have this." },
           { name: "Client Onboarding Flow", note: "Welcome email, onboarding checklist, kickoff meeting agenda. Makes clients feel they made the right choice." },
           { name: "Referral Programme", note: "Structured system to turn happy clients into your best salespeople. Referrals close 70% faster at zero acquisition cost." },
         ],
         secondary: ["Testimonial collection system", "Upsell and cross-sell menu", "Lost deal tracking (why clients said no)", "Annual client review process", "Re-engagement sequence for past clients"],
-        automations: ["CRM pipeline automation", "WhatsApp Business auto-reply", "Proposal tool (PandaDoc/Proposify)", "Follow-up email sequences", "Meeting booking (Calendly)"],
+        automations: ["Sales pipeline automation", "WhatsApp Business auto-reply", "Proposal generation and tracking", "Follow-up email sequences", "Meeting booking automation"],
         by: "Systemise",
       },
       {
         id: "operations", label: "Operations", tagline: "How your business runs consistently. With or without you watching every detail.",
         primary: [
           { name: "Core SOPs", note: "Standard Operating Procedures for your 3 most important processes. Documented, tested, and followed by every team member." },
-          { name: "Project Management Tool", note: "ClickUp or Asana. Every task assigned, deadlined, and tracked. No project falls through the cracks." },
-          { name: "File Management System", note: "Google Drive structured folder system. Client files, company documents, templates all in the right place." },
-          { name: "Team Communication", note: "Slack or WhatsApp Business, defined channels, response time standards, no important messages lost in chat." },
+          { name: "Project & Task Tracking", note: "Every task assigned, deadlined, and tracked. No project falls through the cracks. When things slip, you know the same day — not the same month." },
+          { name: "File Management System", note: "Structured folder system for client files, company documents, and templates. Everything in the right place, accessible in under 30 seconds." },
+          { name: "Team Communication Hub", note: "Defined channels, response time standards, no important messages lost in chat. Clear communication is the difference between a team and a group chat." },
           { name: "Quality Control Checklist", note: "Per-service checklist reviewed before delivery. Prevents errors, maintains standards, protects your reputation." },
         ],
         secondary: ["Vendor/supplier management system", "Weekly reporting template", "Client portal for document sharing", "Incident/complaint resolution SOP", "Business continuity plan"],
-        automations: ["Zapier workflow automation", "Automated client status update emails", "Task reminder automation", "AI support chatbot for common enquiries"],
+        automations: ["Cross-system workflow automation", "Automated client status update emails", "Task reminder automation", "AI support chatbot for common enquiries"],
         by: "Systemise",
       },
       {
@@ -207,7 +207,7 @@ const BLUEPRINTS: Blueprint[] = [
           { name: "KPI Scorecard", note: "Monthly performance metrics per role. Objective, transparent, and tied to business outcomes." },
         ],
         secondary: ["Performance review cycle (quarterly)", "Training budget allocation", "Staff handbook", "Promotion and pay review framework", "Team communication charter"],
-        automations: ["HR management system (BambooHR/Zoho People)", "Payslip automation", "Leave management system", "Training tracker"],
+        automations: ["HR management and employee records system", "Payslip automation", "Leave management system", "Training tracker"],
         by: "Skills",
       },
     ],
@@ -232,7 +232,7 @@ const BLUEPRINTS: Blueprint[] = [
         id: "financial", label: "Financial Setup", tagline: "Construction cash flow is irregular, advance payments, retentions, and stage payments need careful management.",
         primary: [
           { name: "Corporate Bank Account (tier-1 bank)", note: "Required for advance payment guarantees and performance bonds. Tier-1 bank relationship is a prerequisite for most government contracts." },
-          { name: "Project Accounting System", note: "Sage or QuickBooks configured for project cost tracking, cost per contract, retention management, subcontractor payments." },
+          { name: "Project Accounting System", note: "Project cost tracking per contract, retention management, subcontractor payments. Every naira allocated before it's spent — not after." },
           { name: "VAT + PAYE Registration", note: "VAT applies to construction services. PAYE required for all site staff and head office employees." },
           { name: "Performance Bond Capacity", note: "Bank facility to issue advance payment guarantees and performance bonds, typically 10–15% of contract value." },
           { name: "Subcontractor Payment Schedule", note: "Formal payment process for subcontractors. Prevents site disputes, legal claims, and project stoppages." },
@@ -250,7 +250,7 @@ const BLUEPRINTS: Blueprint[] = [
           { name: "Company Profile Folder", note: "Full company profile document, CAC cert, COREN cert, TCC, BPP, bank references, key staff CVs. Ready to submit on any tender." },
         ],
         secondary: ["Google My Business for local discovery", "Project case studies (before/after)", "Client reference letter collection", "Award and certification display"],
-        automations: ["Portfolio update workflow", "LinkedIn content scheduler", "Tender alert system (BPP portal)"],
+        automations: ["Portfolio update workflow", "Social media content scheduling", "Tender alert system monitoring"],
         by: "Systemise",
       },
       {
@@ -268,7 +268,7 @@ const BLUEPRINTS: Blueprint[] = [
       {
         id: "operations", label: "Operations", tagline: "Projects that run on documented systems finish on time and on budget. Projects without them run over both.",
         primary: [
-          { name: "Project Management System", note: "MS Project or ClickUp. Programme of works, milestone tracking, resource allocation, daily progress logs." },
+          { name: "Project Management System", note: "Programme of works, milestone tracking, resource allocation, daily progress logs. Projects that track daily finish on time. The rest finish over budget." },
           { name: "Site Reporting SOP", note: "Daily site reports, weekly progress reports, monthly client reports. All standardised and non-negotiable." },
           { name: "HSE Management System", note: "Method statements, risk assessments, toolbox talks, incident reporting. Legal requirement for all construction sites." },
           { name: "Subcontractor Management", note: "Scope of work documents, payment schedules, performance tracking, variation order management." },
@@ -316,13 +316,13 @@ const BLUEPRINTS: Blueprint[] = [
         id: "financial", label: "Financial Setup", tagline: "Clean books attract investors. Messy books kill deals at due diligence. Every time.",
         primary: [
           { name: "Corporate Bank Account + USD Account", note: "NGN account for local operations. USD domiciliary account for SaaS subscriptions, international clients, and investor transfers." },
-          { name: "QuickBooks / Xero Setup", note: "Investor-ready financial reporting from day one. Monthly P&L, balance sheet, and cash flow statements automatically generated." },
-          { name: "Payment Gateway Integration", note: "Paystack or Flutterwave (NGN) + Stripe (international). Multiple payment options reduce churn and friction at checkout." },
+          { name: "Financial Reporting System", note: "Investor-ready financial reporting from day one. Monthly P&L, balance sheet, and cash flow statements automatically generated. Clean books attract investors. Messy books kill deals." },
+          { name: "Payment Collection Infrastructure", note: "Local and international payment options integrated. Multiple payment methods reduce churn and friction at checkout. Every failed payment is a customer you already won — and lost." },
           { name: "Cap Table Management", note: "Equity structure document tracking all shareholders, ESOP pool, and investor allocations. Required for every investor meeting." },
           { name: "Subscription Revenue Tracking", note: "MRR, ARR, churn rate, LTV/CAC ratios tracked monthly. Investors buy these metrics. Not just your product." },
         ],
         secondary: ["Runway calculator (months of cash remaining)", "Unit economics model", "Investor update template (monthly)", "Expense policy for team", "Payroll setup"],
-        automations: ["Chargebee/Stripe subscription management", "Automated investor updates", "Financial dashboard (QuickBooks)", "Expense tracking (Expensify)"],
+        automations: ["Subscription billing and revenue management", "Automated investor updates", "Real-time financial dashboard", "Expense tracking and categorisation"],
         by: "BizDoc",
       },
       {
@@ -334,31 +334,31 @@ const BLUEPRINTS: Blueprint[] = [
           { name: "Product Hunt Launch", note: "Structured launch strategy for product discovery. Top 5 on launch day drives thousands of signups and press attention." },
         ],
         secondary: ["Developer community presence (GitHub)", "G2 / Capterra product listing", "YouTube product demo videos", "Email newsletter for users", "Podcast / webinar series"],
-        automations: ["SEO monitoring (Ahrefs/SEMrush)", "Content scheduler", "Product analytics (Mixpanel/Amplitude)", "User feedback loops (Typeform/Hotjar)"],
+        automations: ["SEO rank tracking and keyword monitoring", "Content scheduling and auto-publishing", "Product usage analytics and funnel tracking", "User feedback collection and analysis"],
         by: "Systemise",
       },
       {
         id: "sales", label: "Sales System", tagline: "B2B SaaS sales is a system. Pipeline, demo, proposal, close, expand.",
         primary: [
-          { name: "CRM Setup (HubSpot/Salesforce)", note: "Every lead tracked, every demo scheduled, every deal staged. No revenue lost to 'I forgot to follow up.'" },
+          { name: "Sales Pipeline & CRM", note: "Every lead tracked. Every demo scheduled. Every deal staged. No revenue lost to 'I forgot to follow up.' Your competitors already have this." },
           { name: "Demo Flow + Sales Script", note: "Structured 30-minute demo that leads to a decision. A good demo is your most powerful sales asset." },
           { name: "Pricing Page + Freemium Tier", note: "Self-serve pricing lets buyers decide without a sales call. Freemium drives viral adoption in your target market." },
           { name: "MSA / Sales Agreement Template", note: "Master Service Agreement for enterprise clients. Reviewed by counsel, protects your IP, defines SLAs." },
         ],
         secondary: ["Outbound LinkedIn sequence", "Case studies (2 per industry)", "Referral/partner programme", "Customer success playbook", "Expansion revenue strategy (upsells)"],
-        automations: ["CRM deal stage automation", "Demo booking (Calendly)", "Automated onboarding emails", "Lead scoring", "Churn prediction alerts"],
+        automations: ["Deal stage automation and pipeline alerts", "Self-serve demo booking", "Automated onboarding emails", "Lead scoring", "Churn prediction alerts"],
         by: "Systemise",
       },
       {
         id: "operations", label: "Operations", tagline: "Engineering velocity, product quality, and customer success. All need systems.",
         primary: [
-          { name: "Agile / Sprint Workflow", note: "Jira or Linear. 2-week sprints, clear acceptance criteria, velocity tracking. Product ships faster with fewer bugs." },
+          { name: "Agile / Sprint Workflow", note: "2-week sprints, clear acceptance criteria, velocity tracking. Product ships faster with fewer bugs. Every week without sprints is a week of guessing." },
           { name: "Engineering Documentation", note: "API docs, architecture diagrams, onboarding guide for new devs. Reduces knowledge concentration risk." },
-          { name: "Customer Support System", note: "Intercom or Zendesk. Ticketing, live chat, knowledge base. Support quality is a retention lever, not just a cost." },
+          { name: "Customer Support System", note: "Ticketing, live chat, knowledge base. Support quality is a retention lever, not just a cost. One bad support experience loses a customer for life." },
           { name: "Incident Response SOP", note: "Downtime protocol: who is notified, in what order, what the public statement is, how it's resolved and communicated." },
         ],
-        secondary: ["Feature request management (Productboard)", "Bug tracking (GitHub Issues)", "DevOps CI/CD pipeline", "Vendor SLA management", "Security audit schedule"],
-        automations: ["CI/CD automation (GitHub Actions)", "Support ticket routing", "User behaviour tracking", "Automated status page (Statuspage.io)"],
+        secondary: ["Feature request management and prioritisation", "Bug tracking and triage workflow", "DevOps CI/CD pipeline", "Vendor SLA management", "Security audit schedule"],
+        automations: ["CI/CD build and deployment automation", "Support ticket routing", "User behaviour tracking", "Automated status page for uptime monitoring"],
         by: "Systemise",
       },
       {
@@ -370,7 +370,7 @@ const BLUEPRINTS: Blueprint[] = [
           { name: "DevOps / Cloud Engineer", note: "Owns infrastructure reliability. Downtime costs you users. A dedicated DevOps prevents most of it." },
         ],
         secondary: ["UX/UI Designer", "Customer Success Manager", "Marketing lead", "Data analyst", "Legal / IP counsel (part-time)"],
-        automations: ["HR system (Zoho People)", "Engineering time tracking (Toggl)", "Payroll automation", "Training platform (Coursera for Teams)"],
+        automations: ["HR management and employee records", "Engineering time tracking", "Payroll automation", "Team training and upskilling platform"],
         by: "Skills",
       },
     ],
@@ -399,7 +399,7 @@ const BLUEPRINTS: Blueprint[] = [
         id: "financial", label: "Financial Setup", tagline: "FMCG cash flow is volume-driven. Your financial system must handle high-frequency, multi-channel transactions.",
         primary: [
           { name: "Corporate Bank Account", note: "Separate from personal. Required for distributor payments, retail chain onboarding, and institutional invoicing." },
-          { name: "QuickBooks / Sage (FMCG)", note: "Configured for COGS tracking per product, distributor account management, and real-time margin analysis." },
+          { name: "FMCG Financial Reporting", note: "COGS tracking per product, distributor account management, and real-time margin analysis. Know exactly where your money goes u2014 per product, per channel." },
           { name: "Distributor Payment Terms", note: "Payment terms policy: who gets credit, for how long, and what happens when they default. Undocumented credit is a cash flow killer." },
           { name: "VAT + PAYE + Payroll", note: "VAT on sales above threshold. PAYE for all production and office staff. Automated payroll prevents underpayment disputes." },
         ],
@@ -479,7 +479,7 @@ const BLUEPRINTS: Blueprint[] = [
         id: "financial", label: "Financial Setup", tagline: "Oil & gas runs on USD. Your financial infrastructure must handle multi-currency contracts and sector-specific tax.",
         primary: [
           { name: "Corporate Bank Account (tier-1)", note: "Tier-1 bank required for IOC/NNPC payment processing. USD domiciliary account mandatory for upstream and export operations." },
-          { name: "Multi-Currency Accounting (QuickBooks/Sage)", note: "USD and NGN tracking per contract, invoicing in the currency of the contract, and forex reconciliation." },
+          { name: "Multi-Currency Accounting System", note: "USD and NGN tracking per contract, invoicing in the currency of the contract, and forex reconciliation." },
           { name: "Petroleum Profit Tax (PPT) Compliance", note: "Distinct from standard CIT. Oil sector companies are taxed under the PITA regime. different rates, different filing requirements." },
           { name: "Project Cost Control", note: "Cost tracking per contract. Mobilisation, direct costs, subcontractors, overheads. Oil contracts lose money through poor cost control, not bad prices." },
         ],
@@ -516,7 +516,7 @@ const BLUEPRINTS: Blueprint[] = [
         primary: [
           { name: "HSE Management System", note: "Method statements, risk assessments, toolbox talks, permit-to-work, incident reporting. Mandatory for all site operations and IOC audits." },
           { name: "Field Operations SOP", note: "Documented procedures for every field activity. IOCs audit your SOPs before contract award. Not after." },
-          { name: "Project Management for Active Contracts", note: "MS Project or Primavera. Programme, milestones, resource allocation, subcontractor management per contract." },
+          { name: "Project Management for Active Contracts", note: "Programme, milestones, resource allocation, subcontractor management per contract." },
           { name: "NCDMB Local Content Reporting", note: "Monthly local content reports required by NCDMB for active contracts. Non-compliance puts your NCDMB certificate at risk." },
         ],
         secondary: ["Equipment and asset tracking", "Site incident reporting system", "Subcontractor performance management", "Environmental monitoring records", "Expatriate quota management"],
@@ -637,7 +637,7 @@ const BLUEPRINTS: Blueprint[] = [
         id: "financial", label: "Financial Setup", tagline: "Mining revenue is lumpy. Your financial system must manage extraction cycles, royalties, and export proceeds.",
         primary: [
           { name: "Corporate Bank Account + Domiciliary", note: "NGN for local operations. USD account for mineral export proceeds from international buyers." },
-          { name: "Project Accounting (QuickBooks/Sage)", note: "Separate cost centres for exploration, extraction, processing, and administration. Mining capex/opex separation is critical for investor reporting." },
+          { name: "Project Cost Accounting", note: "Separate cost centres for exploration, extraction, processing, and administration. Mining capex/opex separation is critical for investor reporting." },
           { name: "Royalty Management System", note: "Automatic calculation of royalty obligations per mineral type (MMSD royalty schedule). Late payment = licence suspension." },
           { name: "PAYE + Payroll for Site Workers", note: "All site workers on payroll with PAYE remittance. Informal payment of site workers is a major FIRS audit trigger." },
         ],
@@ -796,7 +796,7 @@ const BLUEPRINTS: Blueprint[] = [
         id: "financial", label: "Financial Setup", tagline: "HMO reimbursements, cash payments, and government contracts each need separate tracking. Or revenue leaks everywhere.",
         primary: [
           { name: "Corporate Bank Account", note: "Required for HMO payments, government contract receipts, and institutional invoicing." },
-          { name: "QuickBooks (Healthcare Configured)", note: "Separate cost centres for HMO revenue, cash revenue, drug sales, and diagnostic revenue. Accurate reporting per revenue stream." },
+          { name: "Healthcare Financial Reporting", note: "Separate cost centres for HMO revenue, cash revenue, drug sales, and diagnostic revenue. Accurate reporting per revenue stream." },
           { name: "NHIA Capitation Tracking", note: "Monthly capitation payments from NHIA tracked per enrolled beneficiary. Discrepancies must be disputed within the billing cycle." },
           { name: "Drug Inventory Valuation", note: "Pharmaceutical stock valued at cost, selling price tracked per item, expiry monitoring. Drug inventory is your largest asset after equipment." },
           { name: "PAYE + Payroll for Clinical Staff", note: "Doctors, pharmacists, nurses. All on payroll with PAYE remittance. Informal clinical staff payment creates unlimited employment liability." },
@@ -914,7 +914,7 @@ const BLUEPRINTS: Blueprint[] = [
       {
         id: "operations", label: "Operations", tagline: "A development that runs over budget or behind schedule destroys your reputation and your margin. Simultaneously.",
         primary: [
-          { name: "Construction Project Management", note: "MS Project or ClickUp. Programme of works, milestone tracking, contractor management, material procurement per development." },
+          { name: "Construction Project Management", note: "Programme of works, milestone tracking, contractor management, material procurement per development." },
           { name: "Contractor Management System", note: "Scope of work, payment schedule, quality inspection protocol, variation management. Unmanaged contractors are the biggest cost overrun risk." },
           { name: "Site Progress Reporting", note: "Weekly site reports to management and (for off-plan) to buyers. Buyers who receive regular updates raise fewer panicked calls." },
           { name: "Handover Documentation", note: "Punch list management, snag resolution, handover inspection checklist, keys + documents package. A smooth handover drives referrals." },
@@ -961,7 +961,7 @@ const BLUEPRINTS: Blueprint[] = [
         id: "financial", label: "Financial Setup", tagline: "Logistics revenue is high volume and low margin. Financial precision separates profitable operations from cash-flow disasters.",
         primary: [
           { name: "Corporate Bank Account", note: "Required for institutional billing, government contract payments, and fleet financing applications." },
-          { name: "Fleet Cost Accounting", note: "QuickBooks or Sage configured for per-vehicle fuel, maintenance, insurance, driver cost tracking. Know which vehicle makes money and which bleeds it." },
+          { name: "Fleet Cost Accounting", note: "Per-vehicle fuel, maintenance, insurance, driver cost tracking. Know which vehicle makes money and which bleeds it." },
           { name: "Fuel Management System", note: "Fuel is the largest variable cost in logistics. Fuel card system with per-vehicle tracking eliminates leakage and driver fraud." },
           { name: "PAYE + Payroll for Drivers", note: "All drivers on formal payroll with PAYE remittance. Informal driver payment creates FIRS audit risk and employment liability." },
         ],
@@ -987,7 +987,7 @@ const BLUEPRINTS: Blueprint[] = [
           { name: "Service Level Agreement (SLA) Template", note: "Defines your liability ceiling for delays, damage, and loss. Without an SLA, you bear unlimited liability for every consignment." },
           { name: "Corporate Rate Card", note: "Published rates by load type, distance, and vehicle class. Corporate procurement managers need to see structured pricing before engaging." },
           { name: "Freight Quoting System", note: "Fast, accurate quotes with route, load type, timeline, and cost. Slow quotes lose contracts to whoever responds first." },
-          { name: "E-commerce Platform Partnerships", note: "Jumia, Konga, Paystack Commerce. formal logistics partner applications. E-commerce is the fastest-growing last-mile logistics market in Nigeria." },
+          { name: "E-commerce Platform Partnerships", note: "Formal logistics partner applications. E-commerce is the fastest-growing last-mile logistics market in Nigeria." },
         ],
         secondary: ["Manufacturer/retailer direct sales outreach", "JV/subcontracting network for coverage gaps", "Referral partner network (freight forwarders, clearing agents)"],
         automations: ["Freight quote generator", "SLA compliance dashboard", "Contract renewal alerts", "Customer satisfaction survey automation"],
@@ -1043,7 +1043,7 @@ const BLUEPRINTS: Blueprint[] = [
         id: "financial", label: "Financial Setup", tagline: "Grant-makers audit your financials before every disbursement. Your accounts must be clean, segregated, and documented.",
         primary: [
           { name: "Dedicated NGO Bank Account", note: "Separate account in the organisation's registered name. Donors and grant-makers will not disburse to personal accounts under any circumstances." },
-          { name: "Accounting Software (QuickBooks Nonprofit)", note: "Fund accounting configured per donor. Tracks each grant separately, generates donor-specific financial reports, and prepares for audit." },
+          { name: "Fund Accounting System", note: "Fund accounting configured per donor. Tracks each grant separately, generates donor-specific financial reports, and prepares for audit." },
           { name: "Annual Audit by Registered Auditor", note: "Required by most international donors and mandatory for SCUML compliance. Unaudited financials disqualify applications for most grants above ₦5M." },
           { name: "Procurement Policy", note: "Documented procedure for how the NGO spends donor funds. Quotation thresholds, approvals required, vendor blacklisting. Donor requirement for all grants." },
         ],
@@ -1059,7 +1059,7 @@ const BLUEPRINTS: Blueprint[] = [
           { name: "LinkedIn Organisation Page", note: "Foundation and corporate donors are on LinkedIn. An active page showing impact builds credibility with institutional funders." },
           { name: "Impact Photography + Data", note: "Documented evidence of programme delivery. Photos, beneficiary counts, testimonials. Funders cannot fund impact they cannot see." },
         ],
-        secondary: ["Facebook community page", "Newsletter to donor base (Mailchimp)", "YouTube programme documentation", "WhatsApp community management"],
+        secondary: ["Facebook community page", "Newsletter to donor base", "YouTube programme documentation", "WhatsApp community management"],
         automations: ["Social media content scheduler", "Donor newsletter automation", "Impact data dashboard (Google Data Studio)"],
         by: "Systemise",
       },
@@ -1078,7 +1078,7 @@ const BLUEPRINTS: Blueprint[] = [
       {
         id: "operations", label: "Operations", tagline: "Programme delivery must be documented. Every activity, every beneficiary, every naira spent.",
         primary: [
-          { name: "Programme Management System", note: "ClickUp or Asana configured for project-based work. Activity plans, deliverable tracking, M&E milestones, staff assignments." },
+          { name: "Programme Management System", note: "Project-based work management. Activity plans, deliverable tracking, M&E milestones, staff assignments." },
           { name: "M&E Framework", note: "Monitoring & Evaluation framework with indicators, data collection tools, and reporting templates. Required by all serious funders." },
           { name: "Beneficiary Database", note: "Registered beneficiaries with consent, demographics, and programme participation records. Evidence base for impact reports and audits." },
           { name: "Field Activity SOPs", note: "Standardised procedures for community outreach, training delivery, distribution events. Protects staff, beneficiaries, and the organisation's reputation." },
@@ -1142,7 +1142,7 @@ const BLUEPRINTS: Blueprint[] = [
           { name: "Social Media (Facebook + Instagram)", note: "Showcase school activities, events, achievements. Parents recommend schools to other parents based on active, positive online presence." },
         ],
         secondary: ["Annual school magazine / prospectus", "Open day events (twice yearly)", "Alumni association management", "WhatsApp parent community management"],
-        automations: ["Automated admission enquiry response", "Social media content scheduler", "Review request automation", "Parent newsletter (Mailchimp)"],
+        automations: ["Automated admission enquiry response", "Social media content scheduler", "Review request automation", "Parent newsletter automation"],
         by: "Systemise",
       },
       {
@@ -1154,7 +1154,7 @@ const BLUEPRINTS: Blueprint[] = [
           { name: "Corporate Partnership (Staff School Fees)", note: "Agreements with employers to subsidise school fees for employees' children. Provides predictable enrolment from corporate parents." },
         ],
         secondary: ["Scholarship programme for community goodwill", "After-school programme upsell", "Holiday programme revenue", "Alumni giving programme (older schools)"],
-        automations: ["Online admission form and tracking", "Enquiry CRM", "Automated tour scheduling (Calendly)", "Offer letter generation"],
+        automations: ["Online admission form and tracking", "Enquiry CRM", "Automated tour scheduling", "Offer letter generation"],
         by: "Systemise",
       },
       {
@@ -1207,7 +1207,7 @@ const BLUEPRINTS: Blueprint[] = [
         id: "financial", label: "Financial Setup", tagline: "Agriculture cash flows are seasonal. Your financial system must manage input cycles, harvest proceeds, and loan repayment schedules.",
         primary: [
           { name: "Corporate Bank Account", note: "Required for NIRSAL, BOA, and CBN Anchor Borrowers disbursements. All government agricultural schemes pay only to registered corporate accounts." },
-          { name: "Farm Management Accounting", note: "QuickBooks or Farmbooks. Cost per hectare, yield per crop cycle, input cost tracking, harvest revenue. Know your breakeven before planting." },
+          { name: "Farm Management Accounting", note: "Cost per hectare, yield per crop cycle, input cost tracking, harvest revenue. Know your breakeven before planting." },
           { name: "Agricultural Credit / NIRSAL Facility", note: "NIRSAL Microfinance Bank or BOA. Affordable credit for working capital, equipment, and infrastructure. Requires business plan and land documentation." },
           { name: "Input Cost Tracking", note: "Seeds, fertilisers, labour, fuel, pesticides. Tracked per crop cycle per plot. Without this, you cannot know if your farm is profitable." },
         ],
@@ -1365,7 +1365,7 @@ const BLUEPRINTS: Blueprint[] = [
       {
         id: "financial", label: "Financial Setup", tagline: "Manufacturing has high fixed costs and variable revenue. cost accounting and working capital management separate profitable factories from loss-making ones.",
         primary: [
-          { name: "Manufacturing Cost Accounting", note: "Sage or QuickBooks Manufacturing. Tracks raw material cost, direct labour, factory overhead per unit produced. Know your cost per SKU before setting any price." },
+          { name: "Manufacturing Cost Accounting", note: "Tracks raw material cost, direct labour, factory overhead per unit produced. Know your cost per SKU before setting any price." },
           { name: "Working Capital Facility", note: "Raw material procurement requires cash upfront. Revenue comes weeks or months later. A working capital facility from a commercial bank bridges this gap." },
           { name: "Inventory Management System", note: "Raw material stock, work-in-progress, finished goods inventory tracked daily. Stock-outs stop production. Overstock ties up capital." },
           { name: "VAT Compliance (Input + Output)", note: "Manufacturing creates both input VAT (on raw materials) and output VAT (on products sold). Proper VAT accounting recovers input VAT from FIRS." },
@@ -1446,7 +1446,7 @@ const BLUEPRINTS: Blueprint[] = [
       {
         id: "financial", label: "Financial Setup", tagline: "Retail margins are thin. Inventory management, shrinkage control, and cash flow optimisation determine whether you profit or bleed.",
         primary: [
-          { name: "Point of Sale (POS) System", note: "Paystack POS, Maka POS, or similar. Records every sale, tracks inventory depletion, generates daily sales reports. Manual cashbook retail loses 15-25% to errors and theft." },
+          { name: "Point of Sale (POS) System", note: "Records every sale, tracks inventory depletion, generates daily sales reports. Manual cashbook retail loses 15-25% to errors and theft." },
           { name: "Inventory Valuation System", note: "FIFO (First In, First Out) valuation for perishables. LIFO for non-perishables. Know the value of your stock at any point. Banks lend against verified inventory." },
           { name: "Gross Margin Tracking per SKU", note: "Know the margin on every product you sell. Retail profitability comes from margin management. Not just revenue growth." },
           { name: "Working Capital Management", note: "Stock financing facility to manage the gap between inventory purchase and sale. Supplier credit terms negotiation. Cash flow calendar for peak trading periods." },
@@ -1514,33 +1514,30 @@ const BLUEPRINTS: Blueprint[] = [
 // ── HOW WE WORK STEPS ────────────────────────────────────────────────────────
 const STEPS = [
   {
-    num: "01", title: "Ask Me", short: "Tell us what you need",
-    detail: "You speak to one of our advisors. Or use the Ask Me chat. And we ask the right questions. We listen for what you actually need, not just what you asked for. Most clients discover they need two or three things they hadn't thought of.",
+    num: "01", title: "Tell Us", short: "Tell us what you need",
+    detail: "We listen for what you actually need. Not just what you asked for.",
   },
   {
     num: "02", title: "We Scope It", short: "Exact plan + timeline",
-    detail: "We map every document, approval, and step required for your specific situation. You get a written scope of work: what we will do, in what order, how long it takes, and what it costs. No surprises.",
+    detail: "Written scope of work. What we do, the order, the timeline, the cost. No surprises.",
   },
   {
     num: "03", title: "You Pay", short: "Secure transfer. Tracked immediately",
-    detail: "Payment activates your tracking reference (HAM-2026-XX-XXXX). Every service is logged to your unique ref from the moment payment lands. You can check your status at any time from this page.",
+    detail: "Payment activates your tracking reference. Every service logged from the moment payment lands.",
   },
   {
     num: "04", title: "We Execute", short: "Specialists handle every step",
-    detail: "Depending on the service, our BizDoc compliance team, Systemise brand team, or Skills training team takes over. You receive progress updates. You are never left wondering what is happening.",
+    detail: "The right specialist team takes over. Progress updates throughout. No guessing.",
   },
   {
     num: "05", title: "We Deliver", short: "Certified and filed",
-    detail: "Completed documents are delivered digitally and in certified hard copy where required. Filings are confirmed with government receipts. Renewals are entered into your compliance calendar automatically.",
+    detail: "Delivered digitally and in certified hard copy. Renewals entered into your compliance calendar.",
   },
 ];
 
 // ── COMPONENT ─────────────────────────────────────────────────────────────────
 export default function BizDocPortal() {
-  const [deskOpen, setDeskOpen] = useState(false);
   const [navMenuOpen, setNavMenuOpen] = useState(false);
-  const [askMeOpen, setAskMeOpen] = useState(false);
-  const [rateUsOpen, setRateUsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const blueprintRef = useRef<HTMLElement>(null);
 
@@ -1562,7 +1559,7 @@ export default function BizDocPortal() {
   const [selectedBiz, setSelectedBiz] = useState<string | null>(null);
   const [activeBpTab, setActiveBpTab] = useState(0);
 
-  // My Update - full ref input (HAM-2026-XX-XXXX)
+  // Track - full ref input (HAM-2026-XX-XXXX)
   const [trackCode, setTrackCode] = useState("");
   const [trackSubmitted, setTrackSubmitted] = useState(false);
   const trackQuery = trpc.tracking.lookup.useQuery(
@@ -1655,23 +1652,16 @@ export default function BizDocPortal() {
           {/* Left: text */}
           <div>
             <h1 className="text-[clamp(34px,5vw,58px)] font-medium leading-[1.1] mb-6" style={{ color: W }}>
-              Your business is only as strong as its legal foundation.
+              Every filing. Every licence. Handled.
             </h1>
             <p className="text-[16px] leading-relaxed mb-10 opacity-65 max-w-lg" style={{ color: W }}>
-              CAC registration. Tax compliance. Sector licences. Legal documentation. Everything your business needs to operate, win contracts, and scale.
+              CAC registration. Tax compliance. Sector licences. Legal documentation. So you can operate, win contracts, and scale.
             </p>
             <div className="flex flex-wrap gap-3">
               <button
-                onClick={() => setDeskOpen(true)}
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl text-[14px] font-semibold transition-opacity hover:opacity-90"
-                style={{ backgroundColor: "#1B4D3E", color: "#FFFFFF" }}
-              >
-                Ask Me <ArrowRight size={16} />
-              </button>
-              <button
                 onClick={() => blueprintRef.current?.scrollIntoView({ behavior: "smooth" })}
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl text-[14px] font-semibold transition-opacity hover:opacity-80 border"
-                style={{ borderColor: `${Au}50`, color: Au, backgroundColor: "transparent" }}
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl text-[14px] font-semibold transition-opacity hover:opacity-90"
+                style={{ backgroundColor: Au, color: G }}
               >
                 Business Blueprint <ArrowRight size={16} />
               </button>
@@ -1696,6 +1686,61 @@ export default function BizDocPortal() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── HOW WE WORK ──────────────────────────────────────────────────── */}
+      <section className="py-20 md:py-28" style={{ backgroundColor: W }}>
+        <div className="max-w-4xl mx-auto px-5">
+          <p className="text-[11px] font-bold tracking-[0.25em] uppercase mb-3" style={{ color: Au }}>HOW WE WORK</p>
+          <h2 className="text-[clamp(28px,4vw,40px)] font-bold mb-12" style={{ color: G }}>Five steps. First conversation to certified delivery.</h2>
+
+          {/* Desktop: split layout */}
+          <div className="hidden md:grid md:grid-cols-[280px_1fr] gap-px rounded-2xl overflow-hidden border" style={{ borderColor: "rgba(27,77,62,0.12)" }}>
+            <div className="flex flex-col divide-y divide-black/5" style={{ backgroundColor: W }}>
+              {STEPS.map((step, i) => {
+                const active = activeStep === i;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => setActiveStep(i)}
+                    className="text-left px-7 py-5 flex items-start gap-4 transition-all duration-200"
+                    style={{ backgroundColor: active ? "#1B4D3E" : W }}
+                  >
+                    <span className="text-[12px] font-bold tracking-wider mt-0.5 shrink-0" style={{ color: active ? Au : `${Au}60` }}>{step.num}</span>
+                    <div>
+                      <p className="text-[14px] font-semibold" style={{ color: active ? W : G }}>{step.title}</p>
+                      <p className="text-[12px] mt-0.5" style={{ color: active ? "rgba(255,255,255,0.5)" : "rgba(28,28,30,0.4)" }}>{step.short}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="flex flex-col justify-center px-10 py-10" style={{ backgroundColor: Cr }}>
+              <span className="text-[clamp(56px,8vw,80px)] font-bold leading-none mb-4" style={{ color: `${Au}25` }}>{STEPS[activeStep].num}</span>
+              <h3 className="text-[24px] font-bold mb-3" style={{ color: G }}>{STEPS[activeStep].title}</h3>
+              <p className="text-[15px] leading-relaxed" style={{ color: G, opacity: 0.7 }}>{STEPS[activeStep].detail}</p>
+            </div>
+          </div>
+
+          {/* Mobile: accordion */}
+          <div className="md:hidden flex flex-col gap-3">
+            {STEPS.map((step, i) => {
+              const isOpen = openStep === i;
+              return (
+                <div key={i} className="rounded-2xl border overflow-hidden" style={{ borderColor: isOpen ? Au : "rgba(28,28,30,0.10)", backgroundColor: W }}>
+                  <button onClick={() => setOpenStep(isOpen ? null : i)} className="w-full text-left px-5 py-4 flex items-center gap-4">
+                    <span className="text-[11px] font-bold tracking-wider shrink-0" style={{ color: Au }}>{step.num}</span>
+                    <p className="flex-1 text-[14px] font-semibold" style={{ color: G }}>{step.title}</p>
+                    <ChevronDown size={16} style={{ color: Au, transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.3s" }} />
+                  </button>
+                  <div style={{ maxHeight: isOpen ? "400px" : "0px", overflow: "hidden", transition: "max-height 0.4s ease" }}>
+                    <p className="px-5 pb-5 text-[13px] leading-relaxed" style={{ color: G, opacity: 0.7 }}>{step.detail}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -1780,68 +1825,13 @@ export default function BizDocPortal() {
                       )}
 
                       <button
-                        onClick={() => setDeskOpen(true)}
+                        onClick={() => blueprintRef.current?.scrollIntoView({ behavior: "smooth" })}
                         className="inline-flex items-center gap-2 text-[13px] font-semibold"
                         style={{ color: Au }}
                       >
-                        Ask Me <ArrowRight size={14} />
+                        Get Started <ArrowRight size={14} />
                       </button>
                     </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ── HOW WE WORK ──────────────────────────────────────────────────── */}
-      <section className="py-20 md:py-28" style={{ backgroundColor: W }}>
-        <div className="max-w-4xl mx-auto px-5">
-          <p className="text-[11px] font-bold tracking-[0.25em] uppercase mb-3" style={{ color: Au }}>HOW WE WORK</p>
-          <h2 className="text-[clamp(28px,4vw,40px)] font-bold mb-12" style={{ color: G }}>From first conversation to certified delivery.</h2>
-
-          {/* Desktop: split layout */}
-          <div className="hidden md:grid md:grid-cols-[280px_1fr] gap-px rounded-2xl overflow-hidden border" style={{ borderColor: "rgba(27,77,62,0.12)" }}>
-            <div className="flex flex-col divide-y divide-black/5" style={{ backgroundColor: W }}>
-              {STEPS.map((step, i) => {
-                const active = activeStep === i;
-                return (
-                  <button
-                    key={i}
-                    onClick={() => setActiveStep(i)}
-                    className="text-left px-7 py-5 flex items-start gap-4 transition-all duration-200"
-                    style={{ backgroundColor: active ? "#1B4D3E" : W }}
-                  >
-                    <span className="text-[12px] font-bold tracking-wider mt-0.5 shrink-0" style={{ color: active ? Au : `${Au}60` }}>{step.num}</span>
-                    <div>
-                      <p className="text-[14px] font-semibold" style={{ color: active ? W : G }}>{step.title}</p>
-                      <p className="text-[12px] mt-0.5" style={{ color: active ? "rgba(255,255,255,0.5)" : "rgba(28,28,30,0.4)" }}>{step.short}</p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-            <div className="flex flex-col justify-center px-10 py-10" style={{ backgroundColor: Cr }}>
-              <span className="text-[clamp(56px,8vw,80px)] font-bold leading-none mb-4" style={{ color: `${Au}25` }}>{STEPS[activeStep].num}</span>
-              <h3 className="text-[24px] font-bold mb-3" style={{ color: G }}>{STEPS[activeStep].title}</h3>
-              <p className="text-[15px] leading-relaxed" style={{ color: G, opacity: 0.7 }}>{STEPS[activeStep].detail}</p>
-            </div>
-          </div>
-
-          {/* Mobile: accordion */}
-          <div className="md:hidden flex flex-col gap-3">
-            {STEPS.map((step, i) => {
-              const isOpen = openStep === i;
-              return (
-                <div key={i} className="rounded-2xl border overflow-hidden" style={{ borderColor: isOpen ? Au : "rgba(28,28,30,0.10)", backgroundColor: W }}>
-                  <button onClick={() => setOpenStep(isOpen ? null : i)} className="w-full text-left px-5 py-4 flex items-center gap-4">
-                    <span className="text-[11px] font-bold tracking-wider shrink-0" style={{ color: Au }}>{step.num}</span>
-                    <p className="flex-1 text-[14px] font-semibold" style={{ color: G }}>{step.title}</p>
-                    <ChevronDown size={16} style={{ color: Au, transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.3s" }} />
-                  </button>
-                  <div style={{ maxHeight: isOpen ? "400px" : "0px", overflow: "hidden", transition: "max-height 0.4s ease" }}>
-                    <p className="px-5 pb-5 text-[13px] leading-relaxed" style={{ color: G, opacity: 0.7 }}>{step.detail}</p>
                   </div>
                 </div>
               );
@@ -1973,10 +1963,10 @@ export default function BizDocPortal() {
                           ))}
                         </ul>
                       </div>
-                      <button onClick={() => setDeskOpen(true)}
+                      <button onClick={() => blueprintRef.current?.scrollIntoView({ behavior: "smooth" })}
                         className="mt-2 w-full py-3 rounded-xl text-[13px] font-semibold transition-opacity hover:opacity-90"
                         style={{ backgroundColor: G, color: Au }}>
-                        Ask Me →
+                        Get Started →
                       </button>
                     </div>
                   </div>
@@ -2007,18 +1997,18 @@ export default function BizDocPortal() {
         </div>
       </section>
 
-      {/* ── MY UPDATE ────────────────────────────────────────────────────── */}
-      <section id="my-update" className="py-20 md:py-28" style={{ backgroundColor: W }}>
+      {/* ── TRACK ──────────────────────────────────────────────────────── */}
+      <section id="track" className="py-20 md:py-28" style={{ backgroundColor: W }}>
         <div className="max-w-xl mx-auto px-5 text-center">
 
           {/* Label */}
           <p className="text-[11px] font-bold tracking-[0.25em] uppercase mb-3" style={{ color: Au }}>
-            MY UPDATE
+            TRACK
           </p>
 
           {/* Heading */}
           <h2 className="text-[clamp(24px,3.5vw,36px)] font-bold tracking-tight mb-3" style={{ color: G }}>
-            Already a client? Check your status.
+            Track Your File
           </h2>
 
           {/* Subtext */}
@@ -2108,11 +2098,11 @@ export default function BizDocPortal() {
             We stay ahead of every deadline. So you never face the consequences.
           </p>
           <button
-            onClick={() => setDeskOpen(true)}
+            onClick={() => blueprintRef.current?.scrollIntoView({ behavior: "smooth" })}
             className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl text-[15px] font-semibold transition-opacity hover:opacity-90"
             style={{ backgroundColor: Au, color: G }}
           >
-            Ask Me Now <ArrowRight size={18} />
+            Get Started <ArrowRight size={18} />
           </button>
         </div>
       </section>
@@ -2150,44 +2140,9 @@ export default function BizDocPortal() {
         </div>
       </footer>
 
-      {/* ── MOBILE BOTTOM NAV ────────────────────────────────────────────── */}
-      <div
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40"
-        style={{ backgroundColor: W, borderTop: `1px solid ${G}15`, paddingBottom: "env(safe-area-inset-bottom)" }}
-      >
-        <div className="flex items-stretch h-16">
-          <button
-            onClick={() => setRateUsOpen(true)}
-            className="flex flex-col items-center justify-center gap-1 flex-1 text-[10px] font-semibold uppercase tracking-wider"
-            style={{ color: Au, opacity: 0.55 }}>
-            <Star size={18} />
-            Rate Us
-          </button>
-          <button
-            onClick={() => setDeskOpen(true)}
-            className="flex flex-col items-center justify-center gap-1 flex-1 text-[11px] font-bold rounded-none"
-            style={{ backgroundColor: G, color: Au }}>
-            <MessageCircle size={18} />
-            Ask Me
-          </button>
-          <button
-            onClick={() => document.getElementById("my-update")?.scrollIntoView({ behavior: "smooth" })}
-            className="flex flex-col items-center justify-center gap-1 flex-1 text-[10px] font-semibold uppercase tracking-wider"
-            style={{ color: Au, opacity: 0.55 }}>
-            <FileSearch size={18} />
-            My Update
-          </button>
-        </div>
-      </div>
-
-      {/* ── BIZDOC DESK (CHAT) ───────────────────────────────────────────── */}
-      <BizDocDesk open={deskOpen} onClose={() => setDeskOpen(false)} />
-
-      {/* ── ASK ME WIDGET ────────────────────────────────────────────────── */}
-      <AskMeWidget open={askMeOpen} onClose={() => setAskMeOpen(false)} />
-
-      {/* ── RATE US WIDGET ───────────────────────────────────────────────── */}
-      <RateUsWidget open={rateUsOpen} onClose={() => setRateUsOpen(false)} />
+      {/* ── MOTIVATIONAL QUOTE BAR (mobile) ─────────────────────────────── */}
+      <MotivationalQuoteBar color="#1B4D3E" />
+      <div className="md:hidden h-10" />
     </>
   );
 }

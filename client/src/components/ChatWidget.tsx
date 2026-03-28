@@ -1,29 +1,41 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { MessageSquare, X, Send, Calendar } from "lucide-react";
+import { MessageSquare, X, Send, Loader2, MoreVertical, Phone, ThumbsUp } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CHAT WIDGET - Universal floating chat with department awareness
+   Features:
+   - Notification badge + teaser messages on page load
+   - Compact popup (not full screen)
+   - 4 empathetic conversation paths
+   - Department-specific AI personas (Amara/Nova/Zara/General)
+   - No dashes, no emojis
+   ═══════════════════════════════════════════════════════════════════════ */
+
+type Department = "general" | "bizdoc" | "systemise" | "skills";
 
 type ChatMessage = {
   sender: "bot" | "user";
   text?: string;
-  options?: { label: string; value: string }[];
-  isScheduleCard?: boolean;
+  options?: { label: string; value: string; sub?: string }[];
 };
 
 type ChatState =
   | "INIT"
-  | "MENU"
+  | "PATHS"
+  | "SERVICE_SELECT"
   | "QUALIFY"
   | "LEAD_NAME"
   | "LEAD_BIZ"
   | "LEAD_PHONE"
   | "SUCCESS"
-  | "TRACK"
   | "TRACK_PHONE"
   | "SCHEDULE_NAME"
   | "SCHEDULE_DATE"
   | "SCHEDULE_TIME"
-  | "SCHEDULE_PHONE";
+  | "SCHEDULE_PHONE"
+  | "AI_CHAT";
 
 type LeadData = {
   service?: string;
@@ -36,6 +48,7 @@ type LeadData = {
 };
 
 type Props = {
+  department?: Department;
   /** When provided, component is controlled externally (no floating button shown) */
   open?: boolean;
   onClose?: () => void;
@@ -45,18 +58,127 @@ const TEAL = "#0A1F1C";
 const GOLD = "#C9A97E";
 const CREAM = "#F8F5F0";
 
-export default function ChatWidget({ open: externalOpen, onClose }: Props) {
+const PERSONA: Record<Department, { name: string; title: string; greeting: string; color: string }> = {
+  general: {
+    name: "HAMZURY",
+    title: "Business Advisor",
+    greeting: "We position businesses for growth. Many come to us overwhelmed by compliance, broken systems, and missed opportunities. We take time to understand you first, so we save you time, money, and stress.",
+    color: TEAL,
+  },
+  bizdoc: {
+    name: "Amara",
+    title: "BizDoc Advisor",
+    greeting: "Every business deserves legal protection. Most owners we meet are exposed without knowing it. We handle the paperwork so you focus on growth.",
+    color: "#1B4D3E",
+  },
+  systemise: {
+    name: "Nova",
+    title: "Systemise Advisor",
+    greeting: "Your brand deserves systems that work while you sleep. Most businesses we meet are running on chaos. We build the infrastructure that changes that.",
+    color: TEAL,
+  },
+  skills: {
+    name: "Zara",
+    title: "Skills Advisor",
+    greeting: "The right skills change careers. We train people who want real market ability, not just certificates. What are you looking to learn?",
+    color: "#1B2A4A",
+  },
+};
+
+const SERVICES: Record<Department, { label: string; value: string }[]> = {
+  general: [
+    { label: "Business Registration (CAC)", value: "CAC" },
+    { label: "Licensing and Permits", value: "License" },
+    { label: "Website or Digital Systems", value: "Website" },
+    { label: "Social Media Management", value: "SocialMedia" },
+    { label: "Skills Training", value: "Training" },
+    { label: "Full Business Architecture", value: "FullBuild" },
+  ],
+  bizdoc: [
+    { label: "CAC Registration", value: "CAC" },
+    { label: "Industry License or Permit", value: "License" },
+    { label: "Tax and FIRS Compliance", value: "Tax" },
+    { label: "Legal Documentation", value: "Legal" },
+    { label: "Annual Returns", value: "AnnualReturns" },
+    { label: "Trademark and IP", value: "Trademark" },
+    { label: "Foreign Business Registration", value: "Foreign" },
+  ],
+  systemise: [
+    { label: "Website Design and Development", value: "Website" },
+    { label: "Social Media Management", value: "SocialMedia" },
+    { label: "Brand Identity and Design", value: "Branding" },
+    { label: "Business Automation", value: "Automation" },
+    { label: "CRM and Lead Generation", value: "CRM" },
+    { label: "Podcast or Content Channel", value: "Content" },
+  ],
+  skills: [
+    { label: "Business Essentials Bootcamp", value: "BusinessBootcamp" },
+    { label: "Digital Marketing Intensive", value: "DigitalMarketing" },
+    { label: "Data Analysis Bootcamp", value: "DataAnalysis" },
+    { label: "AI Powered Business Bundle", value: "AIBundle" },
+    { label: "Custom Training for Teams", value: "CustomTraining" },
+  ],
+};
+
+const TEASERS: Record<Department, string[]> = {
+  general: [
+    "Need help structuring your business?",
+    "We help businesses get positioned and protected.",
+  ],
+  bizdoc: [
+    "Need help with business registration?",
+    "Compliance sorted. Peace of mind delivered.",
+  ],
+  systemise: [
+    "Need a website or digital system?",
+    "We build brands that work while you sleep.",
+  ],
+  skills: [
+    "Ready to learn a new skill?",
+    "Our next cohort is filling up fast.",
+  ],
+};
+
+export default function ChatWidget({ department = "general", open: externalOpen, onClose }: Props) {
   const isControlled = externalOpen !== undefined;
   const [internalOpen, setInternalOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const isOpen = isControlled ? externalOpen : internalOpen;
-  const close = () => (isControlled ? onClose?.() : setInternalOpen(false));
+  const close = () => {
+    if (isControlled) {
+      setMounted(false);
+      setTimeout(() => onClose?.(), 300);
+    } else {
+      setMounted(false);
+      setTimeout(() => setInternalOpen(false), 300);
+    }
+  };
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [inputError, setInputError] = useState("");
   const [chatState, setChatState] = useState<ChatState>("INIT");
   const [leadData, setLeadData] = useState<LeadData>({});
+  const [aiMessages, setAiMessages] = useState<{ role: string; content: string }[]>([]);
+  const [aiLoading, setAiLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Notification state
+  const [showBadge, setShowBadge] = useState(true);
+  const [teasers, setTeasers] = useState<string[]>([]);
+  const [teaserDismissed, setTeaserDismissed] = useState(false);
+  const hasPlayedSound = useRef(false);
+
+  // Menu state
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // Disclaimer state
+  const [disclaimerAccepted, setDisclaimerAccepted] = useState(() => {
+    try { return localStorage.getItem("hamzury-chat-disclaimer") === "1"; } catch { return false; }
+  });
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
+
+  const persona = PERSONA[department];
 
   const submitLead = trpc.leads.submit.useMutation({
     onError: () => toast.error("Failed to submit. Please try again."),
@@ -66,9 +188,50 @@ export default function ChatWidget({ open: externalOpen, onClose }: Props) {
     onError: () => toast.error("Scheduling failed. Please try again."),
   });
 
+  const trpcUtils = trpc.useUtils();
+
+  // Slide-up animation: set mounted after isOpen becomes true
+  useEffect(() => {
+    if (isOpen) {
+      const t = setTimeout(() => setMounted(true), 10);
+      return () => clearTimeout(t);
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Teaser notification system
+  useEffect(() => {
+    if (isControlled || isOpen || teaserDismissed) return;
+    const dept = department;
+    const t1 = setTimeout(() => {
+      // Subtle notification sound
+      if (!hasPlayedSound.current) {
+        try {
+          const ctx = new AudioContext();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.frequency.value = 800;
+          gain.gain.value = 0.08;
+          osc.start();
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+          osc.stop(ctx.currentTime + 0.3);
+          hasPlayedSound.current = true;
+        } catch {}
+      }
+      setTeasers([TEASERS[dept][0]]);
+    }, 3000);
+
+    const t2 = setTimeout(() => {
+      setTeasers([TEASERS[dept][0], TEASERS[dept][1]]);
+    }, 6000);
+
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [isControlled, isOpen, teaserDismissed, department]);
 
   const reset = useCallback(() => {
     setMessages([]);
@@ -76,35 +239,50 @@ export default function ChatWidget({ open: externalOpen, onClose }: Props) {
     setLeadData({});
     setInput("");
     setInputError("");
+    setAiMessages([]);
   }, []);
 
+  // Show disclaimer on first open, then initial paths
   useEffect(() => {
     if (isOpen && messages.length === 0) {
-      addBotMsg("Welcome to BizDoc Consult. I'm your Intake Guide from Hamzury Team. What do you need help with today?");
-      setTimeout(() => {
-        addBotOptions([
-          { label: "CAC Registration", value: "CAC" },
-          { label: "Industry License / Permit", value: "License" },
-          { label: "Tax & FIRS Compliance", value: "Tax" },
-          { label: "Legal Documentation", value: "Legal" },
-          { label: "Annual Returns", value: "AnnualReturns" },
-          { label: "Talk to a Human", value: "SCHEDULE" },
-        ]);
-        setChatState("MENU");
-      }, 600);
+      if (!disclaimerAccepted) {
+        setShowDisclaimer(true);
+      } else {
+        showInitialPaths();
+      }
     }
-    if (!isOpen) reset();
+    if (!isOpen) { reset(); setShowDisclaimer(false); }
   }, [isOpen]);
+
+  const acceptDisclaimer = () => {
+    setDisclaimerAccepted(true);
+    setShowDisclaimer(false);
+    try { localStorage.setItem("hamzury-chat-disclaimer", "1"); } catch {}
+    showInitialPaths();
+  };
+
+  const showInitialPaths = () => {
+    addBotMsg(persona.greeting);
+    setTimeout(() => {
+      addBotOptions([
+        { label: "Returning client", value: "TRACK", sub: "Check your file or continue" },
+        { label: "I know what I need", value: "DIRECT", sub: "Quick service selection" },
+        { label: "Help me figure it out", value: "GUIDANCE", sub: "We will guide you" },
+        { label: "Schedule a call", value: "SCHEDULE", sub: "Speak with our team" },
+      ]);
+      setChatState("PATHS");
+    }, 600);
+  };
 
   const addBotMsg = (text: string) =>
     setMessages(prev => [...prev, { sender: "bot", text }]);
   const addUserMsg = (text: string) =>
     setMessages(prev => [...prev, { sender: "user", text }]);
-  const addBotOptions = (opts: { label: string; value: string }[]) =>
+  const addBotOptions = (opts: { label: string; value: string; sub?: string }[]) =>
     setMessages(prev => [...prev, { sender: "bot", options: opts }]);
 
   const validateInput = (text: string): string => {
-    if (chatState === "LEAD_NAME") {
+    if (chatState === "LEAD_NAME" || chatState === "SCHEDULE_NAME") {
       if (text.trim().length < 2) return "Please enter your full name.";
       if (/^\d+$/.test(text.trim())) return "Please enter a valid name.";
     }
@@ -115,16 +293,21 @@ export default function ChatWidget({ open: externalOpen, onClose }: Props) {
       const digits = text.replace(/\D/g, "");
       if (digits.length < 7) return "Please enter a valid phone number.";
     }
-    if (chatState === "SCHEDULE_NAME") {
-      if (text.trim().length < 2) return "Please enter your name.";
-      if (/^\d+$/.test(text.trim())) return "Please enter a valid name.";
-    }
     return "";
   };
 
   const handleSend = () => {
     if (!input.trim()) return;
     const text = input.trim();
+
+    // AI chat mode
+    if (chatState === "AI_CHAT") {
+      addUserMsg(text);
+      setInput("");
+      handleAIChat(text);
+      return;
+    }
+
     const error = validateInput(text);
     if (error) { setInputError(error); return; }
     setInputError("");
@@ -133,47 +316,102 @@ export default function ChatWidget({ open: externalOpen, onClose }: Props) {
     processLogic(text);
   };
 
+  const handleAIChat = async (text: string) => {
+    setAiLoading(true);
+    const newHistory = [...aiMessages, { role: "user", content: text }];
+    setAiMessages(newHistory);
+
+    try {
+      const result = await trpcUtils.ask.answer.fetch({ question: text });
+      const answer = result.answer || "I could not process that. Please try again or schedule a call with our team.";
+      addBotMsg(answer);
+      setAiMessages(prev => [...prev, { role: "assistant", content: answer }]);
+
+      // After a few exchanges, suggest next steps
+      if (newHistory.filter(m => m.role === "user").length >= 3) {
+        setTimeout(() => {
+          addBotOptions([
+            { label: "I am ready to proceed", value: "DIRECT" },
+            { label: "Schedule a call", value: "SCHEDULE" },
+            { label: "Ask another question", value: "CONTINUE_CHAT" },
+          ]);
+        }, 500);
+      }
+    } catch {
+      addBotMsg("Something went wrong. Please try again or reach us on WhatsApp.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   const handleOptionClick = (val: string, label: string) => {
     addUserMsg(label);
     processLogic(val);
   };
 
   const processLogic = useCallback((val: string) => {
-    if (chatState === "MENU") {
-      if (val === "TRACK") {
-        setTimeout(() => addBotMsg("To track your file, enter your registered phone number below and I'll show you your project status right here."), 500);
-        setChatState("TRACK_PHONE");
-      } else if (val === "SCHEDULE") {
+    // From initial paths
+    if (chatState === "PATHS") {
+      if (val === "DIRECT") {
         setTimeout(() => {
-          addBotMsg("Of course. Let's get you scheduled with one of our compliance officers.");
-          setTimeout(() => addBotMsg("What is your name?"), 700);
+          addBotMsg("What service do you need?");
+          addBotOptions(SERVICES[department].map(s => ({ label: s.label, value: s.value })));
+        }, 400);
+        setChatState("SERVICE_SELECT");
+        return;
+      }
+      if (val === "GUIDANCE") {
+        setTimeout(() => {
+          addBotMsg("Let me help you find the right solution. Tell me about your business and what challenge you are facing right now.");
+        }, 400);
+        setChatState("AI_CHAT");
+        return;
+      }
+      if (val === "SCHEDULE") {
+        setTimeout(() => {
+          addBotMsg("Let me get you scheduled with our team. What is your name?");
         }, 400);
         setChatState("SCHEDULE_NAME");
-      } else {
-        setLeadData(prev => ({ ...prev, service: val }));
-        setTimeout(() => addBotMsg(`Understood. Are you looking for a new setup, a renewal, or a modification for your ${val}?`), 500);
-        setChatState("QUALIFY");
+        return;
       }
+      if (val === "TRACK") {
+        setTimeout(() => addBotMsg("Enter your registered phone number and I will show your project status."), 400);
+        setChatState("TRACK_PHONE");
+        return;
+      }
+    }
+
+    // Continue chat after AI suggestion
+    if (val === "CONTINUE_CHAT") {
+      setChatState("AI_CHAT");
+      return;
+    }
+
+    // Service selection
+    if (chatState === "SERVICE_SELECT") {
+      setLeadData(prev => ({ ...prev, service: val }));
+      setTimeout(() => addBotMsg("Are you looking for a new setup, a renewal, or a modification?"), 500);
+      setChatState("QUALIFY");
       return;
     }
 
     if (chatState === "QUALIFY") {
       setLeadData(prev => ({ ...prev, context: val }));
-      setTimeout(() => addBotMsg("Got it — I'll open a file for this now. What is your Full Name?"), 600);
+      setTimeout(() => addBotMsg("I will open a file for this. What is your full name?"), 600);
       setChatState("LEAD_NAME");
       return;
     }
 
     if (chatState === "LEAD_NAME") {
       setLeadData(prev => ({ ...prev, name: val }));
-      setTimeout(() => addBotMsg(`Thanks, ${val.split(" ")[0]}. What is the name of your Business?`), 500);
+      setTimeout(() => addBotMsg(`Thanks, ${val.split(" ")[0]}. What is the name of your business?`), 500);
       setChatState("LEAD_BIZ");
       return;
     }
 
     if (chatState === "LEAD_BIZ") {
       setLeadData(prev => ({ ...prev, businessName: val }));
-      setTimeout(() => addBotMsg("And your best WhatsApp / Phone number?"), 500);
+      setTimeout(() => addBotMsg("And your best WhatsApp or phone number?"), 500);
       setChatState("LEAD_PHONE");
       return;
     }
@@ -192,10 +430,10 @@ export default function ChatWidget({ open: externalOpen, onClose }: Props) {
         {
           onSuccess: (result) => {
             addBotMsg(`Your file is created. Reference: **${result.ref}**`);
-            addBotMsg("A compliance officer has been notified and will review your file shortly. We'll contact you via WhatsApp with next steps.\n\n📲 You can also reach us directly on WhatsApp: wa.me/2348034620520");
+            addBotMsg("A team member has been notified and will reach out to you shortly via WhatsApp with next steps.");
             addBotOptions([
               { label: "Ask another question", value: "RESTART" },
-              { label: "Schedule a call instead", value: "SCHEDULE" },
+              { label: "Schedule a call", value: "SCHEDULE" },
             ]);
             setChatState("SUCCESS");
           },
@@ -208,31 +446,29 @@ export default function ChatWidget({ open: externalOpen, onClose }: Props) {
     if (chatState === "TRACK_PHONE") {
       const digits = val.replace(/\D/g, "");
       if (digits.length < 10) {
-        addBotMsg("Please enter a valid 10+ digit phone number.");
+        addBotMsg("Please enter a valid phone number with at least 10 digits.");
         return;
       }
-      const ref = "HAM-2026-" + digits;
-      localStorage.setItem("hamzury-client-session", JSON.stringify({ phone: digits, name: "Client", ref, expiresAt: Date.now() + 86400000 }));
+      localStorage.setItem("hamzury-client-session", JSON.stringify({ phone: digits, name: "Client", expiresAt: Date.now() + 86400000 }));
       setTimeout(() => {
-        addBotMsg(
-          `📋 Found your file!\n\n**Reference:** ${ref}\n**Status:** In Progress — Document Review Phase\n**Next Step:** Submit your CAC documents\n**Progress:** 65% complete\n\nFor full details, visit your **[My Update dashboard →](/client/dashboard)**`
-        );
+        addBotMsg("Looking up your file...");
         setTimeout(() => {
+          addBotMsg("Found your records. For full details and real time updates, visit your dashboard.");
           addBotOptions([
-            { label: "View Full Dashboard", value: "VIEW_DASHBOARD" },
-            { label: "Ask Another Question", value: "RESTART" },
+            { label: "View My Dashboard", value: "VIEW_DASHBOARD" },
+            { label: "Back to Menu", value: "RESTART" },
           ]);
-        }, 400);
-      }, 800);
+        }, 800);
+      }, 500);
       setChatState("SUCCESS");
       return;
     }
 
-    // ─── Scheduling flow ───
+    // Scheduling flow
     if (chatState === "SCHEDULE_NAME") {
       setLeadData(prev => ({ ...prev, name: val }));
       setTimeout(() => {
-        addBotMsg(`Nice to meet you, ${val.split(" ")[0]}. What date works best for you? (e.g., Monday 24 March or 2026-03-24)`);
+        addBotMsg(`Nice to meet you, ${val.split(" ")[0]}. What date works best? (e.g., Monday 24 March)`);
       }, 500);
       setChatState("SCHEDULE_DATE");
       return;
@@ -241,15 +477,12 @@ export default function ChatWidget({ open: externalOpen, onClose }: Props) {
     if (chatState === "SCHEDULE_DATE") {
       setLeadData(prev => ({ ...prev, schedDate: val }));
       setTimeout(() => {
-        addBotMsg(`Got it — ${val}.`);
-        setTimeout(() => {
-          addBotMsg("And your preferred time?");
-          addBotOptions([
-            { label: "Morning (9am – 12pm)", value: "9am–12pm" },
-            { label: "Afternoon (12pm – 4pm)", value: "12pm–4pm" },
-            { label: "Evening (4pm – 7pm)", value: "4pm–7pm" },
-          ]);
-        }, 400);
+        addBotMsg("And your preferred time?");
+        addBotOptions([
+          { label: "Morning (9am to 12pm)", value: "9am-12pm" },
+          { label: "Afternoon (12pm to 4pm)", value: "12pm-4pm" },
+          { label: "Evening (4pm to 7pm)", value: "4pm-7pm" },
+        ]);
       }, 400);
       setChatState("SCHEDULE_TIME");
       return;
@@ -257,7 +490,7 @@ export default function ChatWidget({ open: externalOpen, onClose }: Props) {
 
     if (chatState === "SCHEDULE_TIME") {
       setLeadData(prev => ({ ...prev, schedTime: val }));
-      setTimeout(() => addBotMsg("Perfect. Lastly, what's your WhatsApp number so we can confirm?"), 500);
+      setTimeout(() => addBotMsg("Lastly, what is your WhatsApp number so we can confirm?"), 500);
       setChatState("SCHEDULE_PHONE");
       return;
     }
@@ -275,12 +508,12 @@ export default function ChatWidget({ open: externalOpen, onClose }: Props) {
         },
         {
           onSuccess: () => {
-            addBotMsg(`**Scheduled.** A compliance officer will call you on ${finalData.schedDate} during ${finalData.schedTime}.`);
-            addBotMsg("You'll receive a WhatsApp confirmation shortly. Is there anything else I can help you with?\n\n📲 You can also reach us directly on WhatsApp: wa.me/2348034620520");
+            addBotMsg(`Scheduled. A team member will call you on ${finalData.schedDate} during ${finalData.schedTime}.`);
+            addBotMsg("You will receive a WhatsApp confirmation shortly.");
             addBotOptions([{ label: "Back to Menu", value: "RESTART" }]);
             setChatState("SUCCESS");
           },
-          onError: () => addBotMsg("There was an issue scheduling. Please call us directly or try again."),
+          onError: () => addBotMsg("There was an issue scheduling. Please try again."),
         }
       );
       return;
@@ -293,28 +526,37 @@ export default function ChatWidget({ open: externalOpen, onClose }: Props) {
 
     if (val === "RESTART" || val === "BACK_MENU") {
       setLeadData({});
-      addBotOptions([
-        { label: "CAC Registration", value: "CAC" },
-        { label: "Industry License / Permit", value: "License" },
-        { label: "Tax & FIRS Compliance", value: "Tax" },
-        { label: "Legal Documentation", value: "Legal" },
-        { label: "Annual Returns", value: "AnnualReturns" },
-        { label: "Track My File", value: "TRACK" },
-        { label: "Talk to a Human", value: "SCHEDULE" },
-      ]);
-      setChatState("MENU");
+      setAiMessages([]);
+      addBotMsg("How else can I help you?");
+      setTimeout(() => {
+        addBotOptions([
+          { label: "Returning client", value: "TRACK", sub: "Check your file or continue" },
+          { label: "I know what I need", value: "DIRECT", sub: "Quick service selection" },
+          { label: "Help me figure it out", value: "GUIDANCE", sub: "We will guide you" },
+          { label: "Schedule a call", value: "SCHEDULE", sub: "Speak with our team" },
+        ]);
+      }, 300);
+      setChatState("PATHS");
       return;
     }
 
     if (val === "SCHEDULE") {
       setTimeout(() => {
-        addBotMsg("Let's get you scheduled with one of our compliance officers.");
-        setTimeout(() => addBotMsg("What is your name?"), 700);
+        addBotMsg("Let me get you scheduled. What is your name?");
       }, 400);
       setChatState("SCHEDULE_NAME");
       return;
     }
-  }, [chatState, leadData, submitLead, submitAppointment]);
+
+    if (val === "DIRECT") {
+      setTimeout(() => {
+        addBotMsg("What service do you need?");
+        addBotOptions(SERVICES[department].map(s => ({ label: s.label, value: s.value })));
+      }, 400);
+      setChatState("SERVICE_SELECT");
+      return;
+    }
+  }, [chatState, leadData, submitLead, submitAppointment, department]);
 
   const formatText = (text: string) =>
     text
@@ -329,84 +571,157 @@ export default function ChatWidget({ open: externalOpen, onClose }: Props) {
       className={
         isControlled
           ? "w-full h-full flex flex-col overflow-hidden"
-          : "fixed bottom-6 right-6 w-full max-w-[400px] h-[600px] max-h-[85vh] bg-white rounded-2xl shadow-2xl border border-[#0A1F1C]/10 flex flex-col overflow-hidden z-50"
+          : "fixed z-50 flex flex-col overflow-hidden shadow-2xl border border-[#0A1F1C]/10 bottom-3 left-3 right-3 rounded-2xl max-h-[60vh] md:bottom-6 md:right-6 md:left-auto md:w-[400px] md:rounded-2xl md:max-h-[520px]"
       }
-      style={isControlled ? {} : { backgroundColor: "white" }}
+      style={isControlled ? {} : { backgroundColor: "white", transform: mounted ? "translateY(0)" : "translateY(100%)", transition: "transform 0.3s ease-out" }}
     >
       {/* Header */}
-      <div className="p-5 flex justify-between items-center shrink-0 border-b border-[#0A1F1C]/5" style={{ backgroundColor: CREAM }}>
+      <div className="p-4 flex justify-between items-center shrink-0 border-b border-[#0A1F1C]/5 relative" style={{ backgroundColor: persona.color }}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center font-black text-sm" style={{ backgroundColor: TEAL, color: GOLD }}>
-            H
-          </div>
+          <button onClick={() => setMenuOpen(v => !v)} className="text-white/60 hover:text-white transition-opacity p-0.5">
+            <MoreVertical size={18} />
+          </button>
           <div>
-            <h3 className="font-bold text-[15px]" style={{ color: TEAL }}>Hamzury Team</h3>
-            <p className="text-[11px] uppercase tracking-wider opacity-50" style={{ color: TEAL }}>Compliance Intake</p>
+            <h3 className="font-semibold text-[14px] text-white">{persona.name}</h3>
+            <p className="text-[11px] text-white/60">{persona.title}</p>
           </div>
         </div>
-        <button onClick={close} className="opacity-40 hover:opacity-100 transition-opacity p-1">
+        <button onClick={close} className="text-white/50 hover:text-white transition-opacity p-1">
           <X size={18} />
         </button>
+
+        {/* Three-dot menu dropdown */}
+        {menuOpen && (
+          <div className="absolute left-3 top-14 bg-white rounded-xl shadow-lg border border-[#0A1F1C]/8 py-1 z-10 min-w-[180px]">
+            <button
+              onClick={() => {
+                setMenuOpen(false);
+                const wa = department === "bizdoc" ? "2348067149356" : "2349130700056";
+                window.open(`https://wa.me/${wa}`, "_blank");
+              }}
+              className="w-full text-left px-4 py-2.5 text-[13px] hover:bg-[#F8F5F0] transition-colors flex items-center gap-2"
+              style={{ color: TEAL }}
+            >
+              <Phone size={14} />
+              Contact team
+            </button>
+            <button
+              onClick={() => {
+                setMenuOpen(false);
+                reset();
+                showInitialPaths();
+              }}
+              className="w-full text-left px-4 py-2.5 text-[13px] hover:bg-[#F8F5F0] transition-colors"
+              style={{ color: "#DC2626" }}
+            >
+              Clear conversation
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* Disclaimer overlay */}
+      {showDisclaimer && (
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center" style={{ backgroundColor: "#FAFAFA" }}>
+          <h4 className="font-semibold text-[15px] mb-3" style={{ color: TEAL }}>Disclaimer</h4>
+          <p className="text-[13px] leading-relaxed mb-5" style={{ color: "#555" }}>
+            By chatting, you agree to our{" "}
+            <a href="/terms" target="_blank" style={{ color: GOLD, textDecoration: "underline" }}>Terms of Service</a>
+            {" "}and{" "}
+            <a href="/privacy" target="_blank" style={{ color: GOLD, textDecoration: "underline" }}>Privacy Policy</a>.
+            HAMZURY handles your information as described in our Privacy Notice. Inputs you provide through this chat are used to assist you and improve our service.
+          </p>
+          <button
+            onClick={acceptDisclaimer}
+            className="px-6 py-2.5 rounded-full text-[13px] font-medium text-white transition-transform hover:scale-105"
+            style={{ backgroundColor: persona.color }}
+          >
+            I understand
+          </button>
+        </div>
+      )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-4" style={{ backgroundColor: "#FAFAFA" }}>
-        {messages.map((msg, i) => (
-          <div key={i} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
-            {msg.text && (
-              <div
-                className={`max-w-[85%] p-4 text-[14px] leading-relaxed shadow-sm ${
-                  msg.sender === "user" ? "rounded-2xl rounded-tr-sm" : "rounded-2xl rounded-tl-sm border border-[#0A1F1C]/5"
-                }`}
-                style={{
-                  backgroundColor: msg.sender === "user" ? TEAL : "white",
-                  color: msg.sender === "user" ? CREAM : "#2C2C2C",
-                }}
-                dangerouslySetInnerHTML={{ __html: formatText(msg.text) }}
-              />
-            )}
-            {msg.options && (
-              <div className="flex flex-col gap-2 w-full mt-1">
-                {msg.options.map((opt, j) => (
-                  <button
-                    key={j}
-                    onClick={() => handleOptionClick(opt.value, opt.label)}
-                    className="text-left p-3 text-[13px] font-medium bg-white border border-[#0A1F1C]/10 rounded-xl hover:border-[#C9A97E] hover:bg-[#F8F5F0] transition-all"
-                    style={{ color: TEAL }}
-                  >
-                    {opt.value === "SCHEDULE" && <Calendar size={12} className="inline mr-1.5 opacity-60" />}
-                    {opt.label} →
-                  </button>
-                ))}
+      {!showDisclaimer && (
+        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3" style={{ backgroundColor: "#FAFAFA" }}>
+          {messages.map((msg, i) => (
+            <div key={i} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
+              {msg.text && (
+                <div className={msg.sender === "bot" ? "max-w-[85%]" : "max-w-[85%]"}>
+                  <div
+                    className={`p-3.5 text-[13px] leading-relaxed ${
+                      msg.sender === "user" ? "rounded-2xl rounded-tr-sm" : "rounded-2xl rounded-tl-sm border border-[#0A1F1C]/5"
+                    }`}
+                    style={{
+                      backgroundColor: msg.sender === "user" ? persona.color : "white",
+                      color: msg.sender === "user" ? "#F8F5F0" : "#2C2C2C",
+                    }}
+                    dangerouslySetInnerHTML={{ __html: formatText(msg.text) }}
+                  />
+                  {msg.sender === "bot" && !msg.options && (
+                    <button
+                      onClick={() => toast.success("Thanks for the feedback")}
+                      className="mt-1 p-1 rounded-full hover:bg-black/5 transition-colors opacity-40 hover:opacity-100"
+                    >
+                      <ThumbsUp size={12} />
+                    </button>
+                  )}
+                </div>
+              )}
+              {msg.options && (
+                <div className="flex flex-col gap-2 w-full mt-1">
+                  {msg.options.map((opt, j) => (
+                    <button
+                      key={j}
+                      onClick={() => handleOptionClick(opt.value, opt.label)}
+                      className="text-left p-3 text-[13px] bg-white border border-[#0A1F1C]/8 rounded-xl hover:border-[#C9A97E] hover:bg-[#F8F5F0] transition-all group"
+                    >
+                      <span className="font-medium" style={{ color: TEAL }}>{opt.label}</span>
+                      {opt.sub && <span className="block text-[11px] mt-0.5 opacity-50">{opt.sub}</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+          {aiLoading && (
+            <div className="flex justify-start">
+              <div className="p-3 rounded-2xl rounded-tl-sm bg-white border border-[#0A1F1C]/5">
+                <Loader2 size={16} className="animate-spin opacity-40" />
               </div>
-            )}
-          </div>
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+      )}
 
       {/* Input */}
-      {!inputDisabled && (
-        <div className="px-4 pt-3 pb-4 bg-white border-t border-[#0A1F1C]/5 shrink-0">
-          {inputError && <p className="text-[11px] mb-2 px-1 text-red-500">{inputError}</p>}
+      {!inputDisabled && !showDisclaimer && (
+        <div className="px-3 pt-2 pb-3 bg-white border-t border-[#0A1F1C]/5 shrink-0">
+          {inputError && <p className="text-[11px] mb-1.5 px-1 text-red-500">{inputError}</p>}
           <div className="flex gap-2">
             <input
               type="text"
               value={input}
               onChange={e => { setInput(e.target.value); if (inputError) setInputError(""); }}
               onKeyDown={e => e.key === "Enter" && handleSend()}
-              placeholder="Type your response..."
-              className="flex-1 border rounded-full px-5 py-3 text-[14px] outline-none transition-colors"
-              style={{ backgroundColor: CREAM, borderColor: inputError ? "#EF4444" : "rgba(10,31,28,0.1)" }}
+              placeholder={chatState === "AI_CHAT" ? "Ask me anything..." : "Type your response..."}
+              className="flex-1 border rounded-full px-4 py-2.5 text-[13px] outline-none transition-colors"
+              style={{ backgroundColor: CREAM, borderColor: inputError ? "#EF4444" : "rgba(10,31,28,0.08)" }}
             />
             <button
               onClick={handleSend}
-              className="w-12 h-12 rounded-full flex items-center justify-center transition-transform hover:scale-105 shrink-0"
-              style={{ backgroundColor: TEAL, color: GOLD }}
+              disabled={aiLoading}
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-transform hover:scale-105 shrink-0 disabled:opacity-50"
+              style={{ backgroundColor: persona.color, color: GOLD }}
             >
-              <Send size={18} className="ml-0.5" />
+              <Send size={16} />
             </button>
           </div>
+          <p className="text-center mt-1.5 text-[10px] opacity-40">
+            By chatting, you agree to our{" "}
+            <button onClick={() => setShowDisclaimer(true)} className="underline">disclaimer</button>.
+          </p>
         </div>
       )}
     </div>
@@ -414,15 +729,46 @@ export default function ChatWidget({ open: externalOpen, onClose }: Props) {
 
   return (
     <>
-      {/* Floating button — only when uncontrolled */}
+      {/* Floating button with notification badge and teasers */}
       {!isControlled && !isOpen && (
-        <button
-          onClick={() => setInternalOpen(true)}
-          className="fixed bottom-8 right-8 w-16 h-16 rounded-full shadow-2xl flex items-center justify-center transition-transform hover:scale-105 z-50"
-          style={{ backgroundColor: TEAL, color: GOLD, border: `2px solid ${GOLD}` }}
-        >
-          <MessageSquare size={28} />
-        </button>
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
+          {/* Teaser notification bubbles */}
+          {!teaserDismissed && teasers.map((teaser, i) => (
+            <div
+              key={i}
+              className="bg-white rounded-xl shadow-lg border border-[#0A1F1C]/8 px-4 py-2.5 max-w-[240px] text-[13px] cursor-pointer animate-in slide-in-from-right-2 fade-in duration-300"
+              style={{ color: TEAL }}
+              onClick={() => {
+                setTeaserDismissed(true);
+                setTeasers([]);
+                setInternalOpen(true);
+                setShowBadge(false);
+              }}
+            >
+              {teaser}
+            </div>
+          ))}
+
+          {/* Chat button */}
+          <button
+            onClick={() => {
+              setInternalOpen(true);
+              setShowBadge(false);
+              setTeaserDismissed(true);
+              setTeasers([]);
+            }}
+            className="w-12 h-12 rounded-full shadow-xl flex items-center justify-center transition-transform hover:scale-105 relative"
+            style={{ backgroundColor: persona.color, color: GOLD }}
+          >
+            <MessageSquare size={20} />
+            {/* Unread badge */}
+            {showBadge && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[11px] font-bold rounded-full flex items-center justify-center">
+                1
+              </span>
+            )}
+          </button>
+        </div>
       )}
 
       {/* Chat panel */}

@@ -6,20 +6,24 @@ import {
   ShieldCheck, Cpu, GraduationCap,
   ArrowRight, LogOut,
   Menu, X, ChevronDown, CheckCircle,
-  Sparkles, Search, TrendingUp, MessageSquare,
+  TrendingUp,
 } from "lucide-react";
 import { useLocation, Link } from "wouter";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
+import MotivationalQuoteBar from "@/components/MotivationalQuoteBar";
 
 const LOGIN_URL = "/login";
 
-const TEAL  = "#0A1F1C";
+// Home page brand: Apple-inspired grey
+const GREY  = "#86868B";
+const DARK_GREY = "#1D1D1F";
+const TEAL  = "#86868B";  // Alias for backward compat — Home uses grey now
 const GREEN = "#34A853";
 const GOLD  = "#C9A97E";
-const CREAM = "#FBF8EE";
+const CREAM = "#F5F5F7";
 const WHITE = "#FFFFFF";
-const DARK  = "#1A1A1A";
+const DARK  = "#1D1D1F";
 
 
 const DEPARTMENTS = [
@@ -30,7 +34,7 @@ const DEPARTMENTS = [
     icon: <ShieldCheck size={28} />,
     color: "#1B4D3E",
     href: "/bizdoc",
-    intro: "Your business isn't legally protected until the filings are done. BizDoc handles every compliance obligation. No raids, no penalties, no surprises.",
+    intro: "Legal protection for your business. Every filing, licence, and compliance obligation handled.",
     pricing: "Starting from ₦50,000",
     services: [
       "CAC registration & annual filings",
@@ -46,9 +50,9 @@ const DEPARTMENTS = [
     label: "Systemize",
     sub: "Strategy & Automation",
     icon: <Cpu size={28} />,
-    color: "#1E3A5F",
+    color: "#0A1F1C",
     href: "/systemise",
-    intro: "Most businesses fail from broken systems, not bad ideas. Systemise builds infrastructure that lets your business run without you in every decision.",
+    intro: "Systems that run without you. Strategy, automation, and digital infrastructure.",
     pricing: "Starting from ₦150,000",
     services: [
       "Premium brand identity & positioning",
@@ -64,9 +68,9 @@ const DEPARTMENTS = [
     label: "Hamzury Skills",
     sub: "Talent & Development",
     icon: <GraduationCap size={28} />,
-    color: "#DAA520",
+    color: "#1B2A4A",
     href: "/skills",
-    intro: "Your team's capability ceiling is your growth ceiling. Skills closes that gap. Practical programs taught by operators, not theorists.",
+    intro: "Practical skills from operators. Not theory. Real market ability.",
     pricing: "Starting from ₦35,000 per cohort",
     services: [
       "Business Essentials intensive cohorts",
@@ -79,71 +83,17 @@ const DEPARTMENTS = [
   },
 ];
 
-const BUBBLE_QUESTIONS = [
-  // BizDoc — compliance & registration
-  "How do I register my business legally?",
-  "What documents do I need for CAC registration?",
-  "How long does business registration take?",
-  "What licenses does my type of business need?",
-  "How do I file my annual returns?",
-  "Can you help with trademark registration?",
-  "What is tax clearance and why do I need it?",
-  "How do I get a TIN number?",
-  // Systemize — brand, systems, growth
-  "How do I build a brand that attracts premium clients?",
-  "Can HAMZURY design and build my website?",
-  "How do I automate my business operations?",
-  "What is a CRM and does my business need one?",
-  "How do I create a consistent social media presence?",
-  "How do I position my business to charge more?",
-  "Can you help with my business growth strategy?",
-  "What does it take to make my business scalable?",
-  // Hamzury Skills — training & education
-  "What training programs does HAMZURY offer?",
-  "How do I improve my digital marketing skills?",
-  "Is there a business essentials program for founders?",
-  "What is included in the CEO development program?",
-  "Can my whole team join a Skills cohort together?",
-  "How do I apply for the RIDI scholarship?",
-  // General / conversion
-  "How does HAMZURY work step by step?",
-  "Do you offer payment plans for your services?",
-];
-
-const PLACEHOLDERS = [
-  "How do I register my business?",
-  "What brand services do you offer?",
-  "How long does CAC registration take?",
-  "Does my business need a trademark?",
-  "How can I automate my operations?",
-  "What skills programs are available?",
-  "How do I get started with HAMZURY?",
-  "Can I pay in instalments?",
-  "What is included in BizDoc?",
-  "How do I build a premium brand?",
-  "What industries do you work with?",
-  "How do I grow my business faster?",
-];
-
-function shuffle<T>(arr: T[]): T[] {
-  return [...arr].sort(() => Math.random() - 0.5);
-}
-
 export default function Home() {
   const { user, isAuthenticated, logout } = useAuth();
   const [, setLocation] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [activeTab, setActiveTab] = useState<"bizdoc" | "systemise" | "skills" | "ask" | "track" | null>(null);
-  const [askMeOpen, setAskMeOpen] = useState(false);
-  const [askMeInitialQ, setAskMeInitialQ] = useState("");
+  const [activeTab, setActiveTab] = useState<"bizdoc" | "systemise" | "skills" | "track" | null>(null);
   const [trackRef, setTrackRef] = useState("");
   const [trackLoading, setTrackLoading] = useState(false);
   const [trackNotFound, setTrackNotFound] = useState(false);
   const [trackResult, setTrackResult] = useState<null | { ref: string; clientName: string | null; businessName: string | null; service: string | null; status: string; progress: number }>(null);
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
-  const [dropdownQ, setDropdownQ] = useState("");
-  const dropdownInputRef = useRef<HTMLInputElement>(null);
   const [partnershipOpen, setPartnershipOpen] = useState(false);
 
   const trackQuery = trpc.tracking.lookup.useQuery(
@@ -185,26 +135,13 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
-  function openAskMe(q?: string) {
-    setAskMeInitialQ(q || "");
-    setAskMeOpen(true);
-  }
-
-  // Auto-focus dropdown search bar when Ask Me card opens
-  useEffect(() => {
-    if (activeTab === "ask") {
-      setDropdownQ("");
-      setTimeout(() => dropdownInputRef.current?.focus(), 450);
-    }
-  }, [activeTab]);
-
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: CREAM, fontFamily: "'Inter', sans-serif" }}>
       <PageMeta
         title="HAMZURY | Compliance, Systems & Skills for Businesses"
-        description="Register your business, build your systems, and grow your skills with Hamzury Innovation Hub. BizDoc Consult, Systemize, and Hamzury Skills. All under one roof."
+        description="Compliance, systems, and skills for Nigerian businesses. BizDoc, Systemize, and Hamzury Skills under one roof."
         ogImage="https://hamzury.com/og-image.jpg"
         canonical="https://hamzury.com/"
       />
@@ -283,7 +220,7 @@ export default function Home() {
                 { label: "Process",   action: () => { scrollTo("process"); setMobileMenuOpen(false); } },
                 { label: "Pricing",   action: () => { window.location.href = "/pricing"; } },
                 { label: "Founder",   action: () => { window.location.href = "/founder"; } },
-                { label: "My Update", action: () => { openTrackTab(); setMobileMenuOpen(false); } },
+                { label: "Track", action: () => { openTrackTab(); setMobileMenuOpen(false); } },
               ].map(item => (
                 <button key={item.label}
                   onClick={item.action}
@@ -347,7 +284,7 @@ export default function Home() {
             </h1>
 
             <p className="text-lg font-light leading-relaxed max-w-lg mb-14" style={{ color: DARK, opacity: 0.5 }}>
-              Three departments. One integrated system. Built for businesses that are serious about growth, compliance, and staying in business.
+              Compliance. Systems. Skills. One integrated platform for serious businesses.
             </p>
 
             <div className="flex flex-wrap gap-3 mt-8">
@@ -364,7 +301,7 @@ export default function Home() {
                 className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl font-semibold text-sm border transition-all hover:opacity-80"
                 style={{ borderColor: `${TEAL}50`, color: TEAL, backgroundColor: "transparent", opacity: 0.7 }}
               >
-                My Update
+                Track
               </button>
             </div>
 
@@ -388,7 +325,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── WHAT (5 cards: 3 Departments + Ask Me + My Update) ─── */}
+      {/* ─── WHAT (4 cards: 3 Departments + Track) ─── */}
       <section id="what" className="py-10 md:py-14 px-6 md:px-12" style={{ backgroundColor: WHITE }}>
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-3 mb-5">
@@ -478,100 +415,7 @@ export default function Home() {
               );
             })}
 
-            {/* ── Card 4: Ask Me ── */}
-            {(() => {
-              const isOpen = activeTab === "ask";
-              return (
-                <div
-                  className="rounded-2xl border overflow-hidden transition-all duration-300"
-                  style={{ borderColor: isOpen ? GOLD : GOLD + "30", backgroundColor: isOpen ? CREAM : WHITE }}
-                >
-                  <button className="w-full text-left p-6 md:p-7" onClick={() => setActiveTab(isOpen ? null : "ask")}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
-                          style={{ backgroundColor: GOLD + "15", color: GOLD }}>
-                          <MessageSquare size={24} />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-semibold tracking-tight" style={{ color: TEAL, letterSpacing: "-0.025em" }}>Ask Me Anything</h3>
-                          <p className="text-[11px] uppercase tracking-wider font-medium opacity-35 mt-0.5" style={{ color: DARK }}>Instant Answers · AI Powered</p>
-                        </div>
-                      </div>
-                      <ChevronDown size={18} style={{ color: GOLD, transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.3s ease", flexShrink: 0 }} />
-                    </div>
-                  </button>
-                  <div style={{ maxHeight: isOpen ? "700px" : "0px", overflow: "hidden", transition: "max-height 0.45s ease" }}>
-                    <div className="border-t" style={{ borderColor: GOLD + "20", backgroundColor: CREAM }}>
-                      {/* ── Google homepage layout ── */}
-                      <div className="px-6 md:px-8 pt-8 pb-6">
-                        {/* Brand / logo area */}
-                        <div className="text-center mb-6">
-                          <p className="text-[18px] font-semibold tracking-[0.22em] uppercase mb-1" style={{ color: GOLD }}>HAMZURY</p>
-                          <p className="text-[12px]" style={{ color: DARK, opacity: 0.38 }}>Ask anything. Get instant answers.</p>
-                        </div>
-
-                        {/* Big pill search bar */}
-                        <div className="max-w-sm mx-auto mb-4">
-                          <div
-                            className="flex items-center rounded-full px-4 py-3 transition-shadow focus-within:shadow-md"
-                            style={{ border: `1.5px solid ${DARK}15`, backgroundColor: WHITE, boxShadow: "0 2px 8px rgba(0,0,0,0.07)" }}
-                          >
-                            <Search size={17} style={{ color: DARK, opacity: 0.35, flexShrink: 0 }} />
-                            <input
-                              ref={dropdownInputRef}
-                              type="text"
-                              value={dropdownQ}
-                              onChange={e => setDropdownQ(e.target.value)}
-                              onKeyDown={e => { if (e.key === "Enter" && dropdownQ.trim()) openAskMe(dropdownQ); }}
-                              placeholder="Ask anything…"
-                              className="flex-1 mx-3 text-[15px] outline-none bg-transparent"
-                              style={{ color: DARK }}
-                            />
-                            {dropdownQ ? (
-                              <button onClick={() => { setDropdownQ(""); dropdownInputRef.current?.focus(); }}
-                                className="opacity-30 hover:opacity-70 transition-opacity shrink-0" style={{ color: DARK }}>
-                                <X size={15} />
-                              </button>
-                            ) : (
-                              <Sparkles size={15} style={{ color: GOLD, opacity: 0.5, flexShrink: 0 }} />
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Ask HAMZURY button */}
-                        <div className="flex justify-center mb-7">
-                          <button
-                            onClick={() => openAskMe(dropdownQ || "")}
-                            className="px-7 py-2.5 rounded-md text-[13px] font-medium transition-all hover:shadow-md"
-                            style={{ backgroundColor: "#f8f9fa", color: DARK, border: "1px solid rgba(0,0,0,0.08)" }}
-                          >
-                            Ask HAMZURY
-                          </button>
-                        </div>
-
-                        {/* Suggestions — Google vertical list */}
-                        <div>
-                          <p className="text-[11px] uppercase tracking-wider mb-2 ml-1" style={{ color: DARK, opacity: 0.28 }}>People also search for</p>
-                          <div className="rounded-xl overflow-hidden border" style={{ borderColor: DARK + "10" }}>
-                            {shuffle(BUBBLE_QUESTIONS).slice(0, 8).map(q => (
-                              <button key={q} onClick={() => openAskMe(q)}
-                                className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-white/70 border-b last:border-0 transition-colors"
-                                style={{ borderColor: DARK + "07" }}>
-                                <Search size={13} style={{ color: DARK, opacity: 0.22, flexShrink: 0 }} />
-                                <span className="text-[13px]" style={{ color: DARK, opacity: 0.68 }}>{q}</span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* ── Card 5: My Update (Client Portal) ── */}
+            {/* ── Card 4: Track (Client Portal) ── */}
             {(() => {
               const isOpen = activeTab === "track";
               return (
@@ -587,7 +431,8 @@ export default function Home() {
                           <TrendingUp size={24} />
                         </div>
                         <div>
-                          <h3 className="text-xl font-semibold tracking-tight" style={{ color: TEAL, letterSpacing: "-0.025em" }}>My Update</h3>
+                          <h3 className="text-xl font-semibold tracking-tight" style={{ color: TEAL, letterSpacing: "-0.025em" }}>Track</h3>
+                          <p className="text-sm opacity-70 mt-1">A dedicated dashboard for your business. Track all your needs and progress in one place.</p>
                           <p className="text-[11px] uppercase tracking-wider font-medium opacity-35 mt-0.5" style={{ color: DARK }}>Live Project Tracking</p>
                         </div>
                       </div>
@@ -596,8 +441,8 @@ export default function Home() {
                   </button>
                   <div style={{ maxHeight: isOpen ? "900px" : "0px", overflow: "hidden", transition: "max-height 0.45s ease" }}>
                     <div className="px-6 md:px-8 pb-8 pt-4 border-t" style={{ borderColor: `${TEAL}15`, backgroundColor: CREAM }}>
-                      {/* MY UPDATE label */}
-                      <p className="text-[11px] font-bold tracking-[0.25em] uppercase mb-3" style={{ color: GOLD }}>MY UPDATE</p>
+                      {/* TRACK label */}
+                      <p className="text-[11px] font-bold tracking-[0.25em] uppercase mb-3" style={{ color: GOLD }}>TRACK</p>
 
                       {/* Input row */}
                       <div className="flex gap-2 mb-3">
@@ -712,17 +557,17 @@ export default function Home() {
             {[
               {
                 dept: "BizDoc Consult",
-                why: "Too many businesses are shut down, fined, or blocked from contracts because their compliance is incomplete. BizDoc was built to eliminate that risk entirely.",
+                why: "Incomplete compliance shuts businesses down. BizDoc eliminates that risk.",
                 color: "#1B4D3E",
               },
               {
                 dept: "Systemize",
-                why: "A business without systems is just a job. We built Systemize to convert founder-dependent operations into structured, scalable companies.",
+                why: "A business without systems is just a job. We build the structure to scale.",
                 color: "#0A1F1C",
               },
               {
                 dept: "Hamzury Skills",
-                why: "Skills are the only asset the market can't take from you. We invest in people so they can build businesses that outlast any single trend.",
+                why: "The market can't take your skills. We invest in people who build lasting businesses.",
                 color: "#C9A97E",
               },
             ].map(item => (
@@ -746,11 +591,11 @@ export default function Home() {
 
           {(() => {
             const STEPS = [
-              { num: "01", title: "Brief",    short: "Tell us what you need",                detail: "Share what you need: service type, timeline, and any context. The more specific you are, the faster we can move." },
-              { num: "02", title: "Assigned", short: "CSO responds within 24 hours",         detail: "Your dedicated Client Success Officer reviews your brief and responds within 24 hours with a clear plan of action." },
-              { num: "03", title: "Execute",  short: "Specialists handle the work",          detail: "Our specialists take full ownership. You won't need to chase anyone or explain anything twice." },
-              { num: "04", title: "Verify",   short: "Quality checked before it reaches you",detail: "Every deliverable goes through an internal quality check before it leaves our team. No exceptions." },
-              { num: "05", title: "Deliver",  short: "Certified and actively maintained",   detail: "Your work is certified, filed, and set up for ongoing maintenance. We don't disappear after delivery." },
+              { num: "01", title: "Brief",    short: "Tell us what you need",                detail: "Service type, timeline, context. The more specific, the faster we move." },
+              { num: "02", title: "Assigned", short: "CSO responds within 24 hours",         detail: "Your Client Success Officer reviews and responds within 24 hours." },
+              { num: "03", title: "Execute",  short: "Specialists handle the work",          detail: "Full ownership. No chasing. No repeating yourself." },
+              { num: "04", title: "Verify",   short: "Quality checked before it reaches you",detail: "Every deliverable passes internal quality check. No exceptions." },
+              { num: "05", title: "Deliver",  short: "Certified and actively maintained",   detail: "Certified, filed, and set up for ongoing maintenance." },
             ];
 
             return (
@@ -820,8 +665,8 @@ export default function Home() {
             {[
               { name: "Barrister Abdullahi Musa", role: "Head of Compliance", dept: "BizDoc Consult", href: "/consultant", initials: "AM", color: "#1B4D3E" },
               { name: "Idris Ibrahim",             role: "Chief Executive Officer", dept: "HAMZURY",   href: "/team",       initials: "II", color: "#0A1F1C" },
-              { name: "Systems Lead",              role: "CTO & Architect",   dept: "Systemize",       href: "/systemise/cto", initials: "SL", color: "#1E3A5F" },
-              { name: "Skills Lead",               role: "CEO, Skills",       dept: "HAMZURY Skills",  href: "/skills/ceo", initials: "SK", color: "#C9A97E" },
+              { name: "Systems Lead",              role: "CTO & Architect",   dept: "Systemize",       href: "/systemise/cto", initials: "SL", color: "#0A1F1C" },
+              { name: "Skills Lead",               role: "CEO, Skills",       dept: "HAMZURY Skills",  href: "/skills/ceo", initials: "SK", color: "#1B2A4A" },
             ].map(member => (
               <Link key={member.href} href={member.href}>
                 {/* Mobile: compact row */}
@@ -894,529 +739,11 @@ export default function Home() {
         </div>
       </footer>
 
-      {/* Mobile bottom nav */}
-      <div className="fixed bottom-0 left-0 right-0 md:hidden z-50" style={{ backgroundColor: WHITE, borderTop: `1px solid ${GOLD}18`, paddingBottom: "env(safe-area-inset-bottom)" }}>
-        <div className="flex items-center justify-around px-2 py-2">
-          <MobileNavItem icon={<ShieldCheck size={20} />} label="Services" onClick={() => document.getElementById("what")?.scrollIntoView({ behavior: "smooth" })} />
-          <MobileNavItem icon={<Search size={20} />} label="Ask Me" onClick={() => { setActiveTab("ask"); document.getElementById("what")?.scrollIntoView({ behavior: "smooth" }); setTimeout(() => dropdownInputRef.current?.focus(), 450); }} highlight />
-          <MobileNavItem icon={<TrendingUp size={20} />} label="My Update" onClick={openTrackTab} />
-        </div>
-      </div>
-      <div className="md:hidden h-20" />
-
-      {/* Ask Me Search Engine */}
-      <AskMeSearch open={askMeOpen} onClose={() => setAskMeOpen(false)} initialQ={askMeInitialQ} />
+      <MotivationalQuoteBar color="#86868B" />
+      <div className="md:hidden h-10" />
 
       {/* Partnership Modal */}
       <PartnershipModal open={partnershipOpen} onClose={() => setPartnershipOpen(false)} />
-    </div>
-  );
-}
-
-
-// ─── Mobile Nav Item ──────────────────────────────────────────────────────────
-function MobileNavItem({ icon, label, href, onClick, highlight }: { icon: React.ReactNode; label: string; href?: string; onClick?: () => void; highlight?: boolean }) {
-  const [, setLocation] = useLocation();
-  return (
-    <button
-      onClick={() => { if (onClick) onClick(); else if (href) setLocation(href); }}
-      className="flex flex-col items-center justify-center gap-1 flex-1 py-2"
-      style={{ minWidth: 0 }}
-    >
-      <span
-        className={`flex items-center justify-center ${highlight ? "w-10 h-10 rounded-full" : "w-10 h-10"}`}
-        style={highlight ? { backgroundColor: TEAL, color: GOLD } : { color: TEAL, opacity: 0.45 }}
-      >
-        {icon}
-      </span>
-      <span
-        className="text-[10px] font-semibold uppercase tracking-wider leading-none"
-        style={{ color: TEAL, opacity: highlight ? 1 : 0.4 }}
-      >
-        {label}
-      </span>
-    </button>
-  );
-}
-
-// ─── Ask Me Inline Search Bar ─────────────────────────────────────────────────
-function AskMeInlineBar({ onSearch }: { onSearch: (q: string) => void }) {
-  const [val, setVal] = useState("");
-  return (
-    <div className="flex gap-2">
-      <input
-        type="text"
-        value={val}
-        onChange={e => setVal(e.target.value)}
-        placeholder="e.g. How do I register my business?"
-        className="flex-1 rounded-xl px-4 py-3 text-sm outline-none"
-        style={{
-          border: "1px solid rgba(10,31,28,0.12)",
-          backgroundColor: "#FAFAF8",
-          color: DARK,
-        }}
-        onKeyDown={e => {
-          if (e.key === "Enter" && val.trim()) onSearch(val.trim());
-        }}
-      />
-      <button
-        onClick={() => onSearch(val.trim())}
-        className="px-5 py-3 rounded-xl text-sm font-semibold whitespace-nowrap transition-opacity hover:opacity-90"
-        style={{ backgroundColor: TEAL, color: GOLD }}
-      >
-        Ask
-      </button>
-    </div>
-  );
-}
-
-// ─── Ask Me Search Engine Popup ───────────────────────────────────────────────
-function getSearchResult(input: string): { text: string; actions: { label: string; href: string }[] } {
-  const q = input.toLowerCase();
-  const match = (kw: string[]) => kw.some(k => q.includes(k));
-
-  if (match(["cac", "register", "registration", "compliance", "tax", "legal", "license", "trademark", "certificate", "nafdac", "filing", "incorporation", "contract", "bank account"])) {
-    return {
-      text: "BizDoc is HAMZURY's compliance department. We handle CAC registration, tax clearance, industry licenses, corporate contracts, trademarks, and business bank account setup. Everything your business needs to be legally sound and investor-ready.",
-      actions: [
-        { label: "Go to BizDoc →", href: "/bizdoc" },
-        { label: "Start an inquiry", href: "/bizdoc" },
-        { label: "See how it works", href: "/#process" },
-      ],
-    };
-  }
-  if (match(["price", "cost", "how much", "fee", "charge", "naira", "₦", "afford", "expensive"])) {
-    return {
-      text: "BizDoc services start from ₦50,000 (CAC registration). Systemize starts from ₦150,000 (brand + website). Skills programs range from ₦25,000 (short workshops) to ₦55,000 (10-week data analysis). All services require a 70% deposit upfront, with the remaining 30% on delivery.",
-      actions: [
-        { label: "BizDoc pricing →", href: "/bizdoc" },
-        { label: "Systemize pricing →", href: "/systemise" },
-        { label: "Skills programs →", href: "/skills" },
-      ],
-    };
-  }
-  if (match(["how long", "duration", "timeline", "days", "weeks", "when will", "how soon", "fast"])) {
-    return {
-      text: "CAC registration: 5–10 working days (business name: 3–5 days). Systemize projects: 2–6 weeks depending on scope. Skills programs: 2–10 weeks depending on the course. We provide a confirmed timeline after your inquiry is reviewed within 24 hours.",
-      actions: [
-        { label: "Start a BizDoc filing →", href: "/bizdoc" },
-        { label: "See Skills programs →", href: "/skills" },
-      ],
-    };
-  }
-  if (match(["ceo", "ceo of hamzury", "who is the ceo", "idris", "chief executive"])) {
-    return {
-      text: "The CEO of HAMZURY Innovation Hub is Idris Ibrahim. He leads day-to-day operations and also heads the Systemise department, overseeing brand, systems, and digital strategy for clients.",
-      actions: [
-        { label: "Explore Systemise →", href: "/systemise" },
-        { label: "Meet the Founder →", href: "/founder" },
-      ],
-    };
-  }
-  if (match(["founder", "muhammad", "hamzury who", "who started", "owner", "behind", "about hamzury"])) {
-    return {
-      text: "HAMZURY was founded by Muhammad Hamzury, who built the company from the ground up, from a typing shop in Jos to Nigeria's integrated business infrastructure hub. He also serves as Chairman of RIDI. The CEO is Idris Ibrahim.",
-      actions: [
-        { label: "Meet the Founder →", href: "/founder" },
-        { label: "Explore HAMZURY →", href: "/" },
-      ],
-    };
-  }
-  if (match(["address", "location", "office", "abuja", "where", "visit", "physical"])) {
-    return {
-      text: "HAMZURY services are handled fully remotely. No need to come in person. For in-person consultations, reach us via WhatsApp to schedule.",
-      actions: [
-        { label: "WhatsApp us →", href: "https://wa.me/2348034620520" },
-        { label: "Contact BizDoc →", href: "/bizdoc" },
-      ],
-    };
-  }
-  if (match(["brand", "website", "automat", "system", "crm", "social", "marketing", "design", "strategy", "digital", "grow", "scale", "process"])) {
-    return {
-      text: "Systemize is HAMZURY's strategy and systems department. We build premium brand identities, websites, business automation, CRM systems, and social media infrastructure. If you want to stop operating manually and start running like a premium business, Systemize is where you start.",
-      actions: [
-        { label: "Go to Systemize →", href: "/systemise" },
-        { label: "Book a consultation", href: "/systemise" },
-        { label: "See Systemize services", href: "/systemise" },
-      ],
-    };
-  }
-  if (match(["train", "course", "learn", "skill", "program", "cohort", "student", "education", "internship", "scholarship", "ridi", "talent", "team", "ceo"])) {
-    return {
-      text: "Skills is HAMZURY's talent and development department. We run business education programs, digital marketing training, IT internships, CEO development, and the RIDI scholarship for underserved communities. If your team needs leveling up, or you do, Skills is the right place.",
-      actions: [
-        { label: "Go to Skills →", href: "/skills" },
-        { label: "Apply for a program", href: "/skills" },
-        { label: "Learn about RIDI", href: "/skills" },
-      ],
-    };
-  }
-  if (match(["track", "file", "update", "status", "progress", "follow", "my file", "my update", "reference", "stage"])) {
-    return {
-      text: "You can check your file status under 'My Update'. Log in on the main page with your reference code to see the full timeline: current stage, next steps, and any actions required from you.",
-      actions: [
-        { label: "Go to My Update →", href: "/" },
-        { label: "Contact BizDoc", href: "/bizdoc" },
-      ],
-    };
-  }
-  if (match(["affiliate", "refer", "earn", "referral", "league"])) {
-    return {
-      text: "Join our affiliate program and earn 5–13% commission on every business you refer. Tiers: Bronze (5%), Silver (7%), Gold (10%), Platinum (13%). Min withdrawal: ₦20,000. Commissions are paid 30 days after client payment confirmation.",
-      actions: [
-        { label: "Join affiliate program →", href: "/affiliate" },
-        { label: "How affiliates earn", href: "/affiliate" },
-        { label: "View the leaderboard", href: "/affiliate" },
-      ],
-    };
-  }
-  if (match(["commission"])) {
-    return {
-      text: "HAMZURY affiliates earn commissions based on referral volume, from 5% (Bronze) to 13% (Platinum). Commissions are paid 30 days after client payment confirmation.",
-      actions: [
-        { label: "Join affiliate program →", href: "/affiliate" },
-        { label: "See commission tiers", href: "/affiliate" },
-      ],
-    };
-  }
-  if (match(["refund"])) {
-    return {
-      text: "We offer refunds only before work commences. Once filing begins, a credit note or revision cycle is offered. A 70% deposit is required upfront. The remaining 30% is due on delivery.",
-      actions: [
-        { label: "See full policy →", href: "/terms" },
-        { label: "Contact BizDoc", href: "/bizdoc" },
-      ],
-    };
-  }
-  if (match(["deposit", "70%", "70 percent", "upfront", "payment plan"])) {
-    return {
-      text: "All services require a 70% upfront deposit before work begins. The remaining 30% is due upon delivery of your documents or completed work. This ensures we can immediately begin your filing or project.",
-      actions: [
-        { label: "Start a filing →", href: "/bizdoc" },
-        { label: "See full policy", href: "/terms" },
-      ],
-    };
-  }
-  if (match(["whatsapp", "phone", "call", "reach", "number"])) {
-    return {
-      text: "You can reach us on WhatsApp at +234 803 462 0520. Click the green WhatsApp button on any page, or message us directly.",
-      actions: [
-        { label: "WhatsApp us →", href: "https://wa.me/2348034620520" },
-        { label: "Contact BizDoc", href: "/bizdoc" },
-      ],
-    };
-  }
-  if (match(["contact", "email", "cso", "reach us", "speak"])) {
-    return {
-      text: "Reach us via WhatsApp (+234 803 462 0520), the chat widget on any page, or email cso@hamzury.com. Response within 24 hours.",
-      actions: [
-        { label: "WhatsApp us →", href: "https://wa.me/2348034620520" },
-        { label: "Go to BizDoc →", href: "/bizdoc" },
-      ],
-    };
-  }
-  if (match(["foreign", "foreigner", "expatriate", "expat", "non-nigerian", "nationality"])) {
-    return {
-      text: "Yes, foreign nationals can register a business with additional documentation. Contact our BizDoc Consult team for a personalised checklist.",
-      actions: [
-        { label: "Contact BizDoc →", href: "/bizdoc" },
-        { label: "See services", href: "/bizdoc" },
-      ],
-    };
-  }
-  if (match(["innovation hub", "hamzury hub", "umbrella", "parent company", "full name"])) {
-    return {
-      text: "Hamzury Innovation Hub is our full brand name, the umbrella company housing BizDoc Consult, Systemize, and Hamzury Skills.",
-      actions: [
-        { label: "Learn about us →", href: "/founder" },
-        { label: "Explore departments", href: "/" },
-      ],
-    };
-  }
-  if (match(["how", "process", "work", "step", "start", "begin", "inquire", "contact"])) {
-    return {
-      text: "HAMZURY works in 5 steps: (1) Submit an inquiry through BizDoc, Systemize, or Skills. (2) Your CSO reviews within 24 hours and assigns a specialist. (3) The team executes and updates you. (4) We verify everything before delivery. (5) Certified work is delivered and maintained. Simple, structured, accountable.",
-      actions: [
-        { label: "Start with BizDoc →",     href: "/bizdoc"    },
-        { label: "Start with Systemize →",  href: "/systemise" },
-        { label: "Start with Skills →",     href: "/skills"    },
-      ],
-    };
-  }
-  // default
-  return {
-    text: "HAMZURY is a business infrastructure company with three departments: BizDoc for compliance and regulatory work, Systemize for brand and systems, and Skills for talent development. Together, we cover every critical gap in a growing business.",
-    actions: [
-      { label: "Explore BizDoc →",     href: "/bizdoc"    },
-      { label: "Explore Systemize →",  href: "/systemise" },
-      { label: "Explore Skills →",     href: "/skills"    },
-    ],
-  };
-}
-
-// ─── Clarification interpreter ────────────────────────────────────────────────
-function getClarification(input: string): string {
-  const q = input.toLowerCase();
-  const m = (kw: string[]) => kw.some(k => q.includes(k));
-  if (m(["cac", "register", "registration", "incorporate", "ltd", "limited"])) return "you want to register a business with CAC";
-  if (m(["annual return", "annual filing", "yearly filing"])) return "you need help filing CAC annual returns";
-  if (m(["tax", "firs", "vat", "tin", "paye", "tcc"])) return "you need help with tax or FIRS compliance";
-  if (m(["trademark", "brand protection", "intellectual property", "ip protection"])) return "you want to protect your brand or trademark";
-  if (m(["license", "permit", "nafdac", "son", "dpr", "approval"])) return "you need an industry license or operating permit";
-  if (m(["price", "cost", "how much", "fee", "charge", "naira", "₦"])) return "you want to know about pricing or fees";
-  if (m(["how long", "duration", "days", "weeks", "timeline", "when will", "how soon"])) return "you want to know how long a service will take";
-  if (m(["brand", "website", "web", "design"])) return "you want to build or upgrade your brand and website";
-  if (m(["automat", "crm", "system", "process", "workflow"])) return "you want to automate your business operations or set up systems";
-  if (m(["social media", "content", "instagram", "tiktok"])) return "you need help with social media or content strategy";
-  if (m(["grow", "scale", "strategy", "marketing", "positioning"])) return "you want to grow or scale your business";
-  if (m(["internship", "intern"])) return "you want to apply for the HAMZURY internship programme";
-  if (m(["scholarship", "ridi", "community", "underserved"])) return "you're asking about the RIDI scholarship programme";
-  if (m(["train", "course", "learn", "program", "cohort", "digital marketing training", "data analysis", "ai course"])) return "you're interested in a specific training or skills programme";
-  if (m(["ceo", "ceo program", "leadership", "executive"])) return "you're interested in CEO or executive development";
-  if (m(["track", "update", "status", "progress", "my file", "my project", "where is my"])) return "you want to check on an active project or file status";
-  if (m(["affiliate", "refer", "earn", "referral", "commission"])) return "you want to join the affiliate programme and earn commissions";
-  if (m(["refund", "cancel", "money back"])) return "you have a question about refunds or cancellation";
-  if (m(["deposit", "70%", "70 percent", "upfront", "payment plan", "installment"])) return "you want to understand the payment or deposit terms";
-  if (m(["whatsapp", "call", "reach", "contact", "speak", "email"])) return "you want to get in touch with the HAMZURY team";
-  if (m(["founder", "who", "owner", "behind", "about"])) return "you want to learn who founded HAMZURY and why";
-  if (m(["address", "location", "office", "abuja", "where", "visit"])) return "you want to know where HAMZURY is located";
-  if (m(["how", "process", "work", "step", "start", "begin"])) return "you want to understand how working with HAMZURY works step by step";
-  return `you're asking about "${input.trim().toLowerCase()}"`;
-}
-
-type ChatMessage = { role: "user" | "assistant"; text: string; actions?: { label: string; href: string }[] };
-
-function AskMeSearch({ open, onClose, initialQ }: { open: boolean; onClose: () => void; initialQ?: string }) {
-  const [, setLocation] = useLocation();
-  const [query, setQuery] = useState("");
-  const [confirmedQuery, setConfirmedQuery] = useState<string | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [visibleQ, setVisibleQ] = useState<string[]>([]);
-  const [placeholder, setPlaceholder] = useState(PLACEHOLDERS[0]);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const hasMessages = messages.length > 0;
-
-  // AI answer query — passes conversation history for context
-  const aiQuery = trpc.ask.answer.useQuery(
-    {
-      question: confirmedQuery || "",
-      history: messages.slice(-6).map(m => ({ role: m.role, text: m.text })),
-    },
-    { enabled: !!confirmedQuery, retry: false }
-  );
-
-  useEffect(() => {
-    if (!confirmedQuery) return;
-    if (aiQuery.data) {
-      const actionsFor = getSearchResult(confirmedQuery).actions;
-      setMessages(prev => [...prev, { role: "assistant", text: aiQuery.data!.answer, actions: actionsFor }]);
-      setLoading(false);
-      setConfirmedQuery(null);
-    } else if (aiQuery.isError) {
-      const fallback = getSearchResult(confirmedQuery);
-      setMessages(prev => [...prev, { role: "assistant", text: fallback.text, actions: fallback.actions }]);
-      setLoading(false);
-      setConfirmedQuery(null);
-    }
-  }, [aiQuery.data, aiQuery.isError, confirmedQuery]);
-
-  // Auto-scroll to latest message
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
-
-  useEffect(() => {
-    if (open) {
-      setMessages([]);
-      setConfirmedQuery(null);
-      setQuery(initialQ || "");
-      setVisibleQ(shuffle(BUBBLE_QUESTIONS).slice(0, 12));
-      setPlaceholder(PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)]);
-      setTimeout(() => inputRef.current?.focus(), 80);
-      if (initialQ) setTimeout(() => submitQuery(initialQ), 250);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, initialQ]);
-
-  function submitQuery(q: string) {
-    if (!q.trim() || loading) return;
-    setMessages(prev => [...prev, { role: "user", text: q.trim() }]);
-    setQuery("");
-    setLoading(true);
-    setConfirmedQuery(q.trim());
-  }
-
-  function handleAction(href: string) {
-    onClose();
-    if (href.startsWith("/#")) {
-      document.getElementById(href.replace("/#", ""))?.scrollIntoView({ behavior: "smooth" });
-    } else if (href.startsWith("http")) {
-      window.open(href, "_blank");
-    } else {
-      setLocation(href);
-    }
-  }
-
-  if (!open) return null;
-
-  return (
-    <div className="fixed inset-0 z-[60] flex flex-col" style={{ backgroundColor: WHITE }}>
-
-      {/* ── Top bar ── */}
-      <div className="flex items-center justify-between px-4 md:px-8 py-4 border-b shrink-0" style={{ borderColor: DARK + "10" }}>
-        <button
-          onClick={() => { if (hasMessages) { setMessages([]); setQuery(""); } else { onClose(); } }}
-          className="flex items-center gap-2 text-[13px] font-medium transition-opacity hover:opacity-60"
-          style={{ color: DARK, opacity: 0.5 }}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-          <span className="hidden sm:inline">Back</span>
-        </button>
-        <span className="text-[13px] font-semibold tracking-[0.15em] uppercase" style={{ color: GOLD }}>HAMZURY</span>
-        {hasMessages ? (
-          <button
-            onClick={() => { setMessages([]); setQuery(""); setTimeout(() => inputRef.current?.focus(), 50); }}
-            className="text-[12px] font-medium transition-opacity hover:opacity-80"
-            style={{ color: GREEN }}
-          >
-            New chat
-          </button>
-        ) : (
-          <div className="w-16" />
-        )}
-      </div>
-
-      {/* ── Content area ── */}
-      {!hasMessages ? (
-        // Empty state — Google-style hero
-        <div className="flex-1 overflow-y-auto flex flex-col items-center">
-          <div className="w-full max-w-2xl px-4 pt-16 md:pt-24 pb-8">
-            <div className="text-center mb-8">
-              <h1 className="font-light tracking-tight mb-1" style={{ color: TEAL, fontSize: "clamp(1.6rem, 5vw, 2.4rem)", letterSpacing: "-0.03em" }}>
-                Ask <em style={{ fontStyle: "normal", color: GREEN }}>anything.</em>
-              </h1>
-              <p className="text-[13px]" style={{ color: DARK, opacity: 0.35 }}>About registration, branding, training, or how we work.</p>
-            </div>
-          </div>
-
-          {/* Suggestions */}
-          <div className="flex-1 w-full max-w-2xl px-4 pb-10">
-            <p className="text-[12px] mb-4 text-center" style={{ color: DARK, opacity: 0.3 }}>People also search for</p>
-            <div className="grid grid-cols-1 gap-0 rounded-xl overflow-hidden border" style={{ borderColor: DARK + "10" }}>
-              {visibleQ.map(q => (
-                <button
-                  key={q}
-                  onClick={() => submitQuery(q)}
-                  className="flex items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-gray-50 border-b last:border-0"
-                  style={{ borderColor: DARK + "07" }}
-                >
-                  <Search size={14} style={{ color: DARK, opacity: 0.3, flexShrink: 0 }} />
-                  <span className="text-[14px]" style={{ color: DARK, opacity: 0.75 }}>{q}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      ) : (
-        // Chat state — conversation thread
-        <div className="flex-1 overflow-y-auto px-4 py-6">
-          <div className="max-w-2xl mx-auto space-y-4">
-            {messages.map((msg, i) => (
-              msg.role === "user" ? (
-                <div key={i} className="flex justify-end">
-                  <div className="max-w-[80%] px-4 py-3 rounded-2xl rounded-tr-sm" style={{ backgroundColor: TEAL }}>
-                    <p className="text-[15px] leading-relaxed" style={{ color: CREAM }}>{msg.text}</p>
-                  </div>
-                </div>
-              ) : (
-                <div key={i} className="flex justify-start">
-                  <div className="max-w-[85%]">
-                    <div className="px-4 py-3 rounded-2xl rounded-tl-sm" style={{ backgroundColor: CREAM, borderLeft: `4px solid ${GREEN}` }}>
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: GREEN }}>
-                          <Sparkles size={10} style={{ color: WHITE }} />
-                        </div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: GREEN }}>HAMZURY</span>
-                      </div>
-                      <p className="text-[15px] leading-relaxed" style={{ color: DARK }}>{msg.text}</p>
-                    </div>
-                    {msg.actions && msg.actions.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 ml-1">
-                        {msg.actions.map(a => (
-                          <button key={a.label} onClick={() => handleAction(a.href)}
-                            className="text-[13px] font-medium hover:underline transition-opacity hover:opacity-80"
-                            style={{ color: "#1558d6" }}>
-                            {a.label} →
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )
-            ))}
-
-            {/* Typing indicator */}
-            {loading && (
-              <div className="flex justify-start">
-                <div className="px-4 py-3 rounded-2xl rounded-tl-sm" style={{ backgroundColor: CREAM, borderLeft: `4px solid ${GREEN}` }}>
-                  <div className="flex gap-1.5 items-center h-5">
-                    {[0, 1, 2].map(i => (
-                      <div key={i} className="w-2 h-2 rounded-full animate-bounce"
-                        style={{ backgroundColor: TEAL, animationDelay: `${i * 0.15}s` }} />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-        </div>
-      )}
-
-      {/* ── Input bar — always pinned to bottom ── */}
-      <div className="shrink-0 border-t px-4 py-3" style={{ borderColor: DARK + "10", backgroundColor: WHITE }}>
-        <div className="max-w-2xl mx-auto">
-          <div
-            className="flex items-center rounded-full px-4 py-3 transition-shadow"
-            style={{ border: `1.5px solid ${DARK}18`, boxShadow: "0 2px 8px rgba(0,0,0,0.06)", backgroundColor: WHITE }}
-          >
-            <Search size={18} style={{ color: DARK, opacity: 0.3, flexShrink: 0 }} />
-            <input
-              ref={inputRef}
-              type="text"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === "Enter" && query.trim() && !loading) submitQuery(query);
-                if (e.key === "Escape" && !hasMessages) onClose();
-              }}
-              placeholder={hasMessages ? "Ask a follow-up…" : (placeholder || "Search anything…")}
-              className="flex-1 mx-3 text-[16px] outline-none bg-transparent"
-              style={{ color: DARK }}
-            />
-            {query.trim() && !loading ? (
-              <button
-                onClick={() => submitQuery(query)}
-                className="w-8 h-8 rounded-full flex items-center justify-center transition-opacity hover:opacity-80 shrink-0"
-                style={{ backgroundColor: TEAL }}
-              >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 19V5M5 12l7-7 7 7" />
-                </svg>
-              </button>
-            ) : (
-              <Sparkles size={18} style={{ color: GOLD, opacity: 0.5, flexShrink: 0 }} />
-            )}
-          </div>
-        </div>
-      </div>
-
     </div>
   );
 }

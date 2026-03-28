@@ -24,7 +24,6 @@ import FounderDashboard from "./pages/FounderDashboard";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import ConsultantPage from "./pages/ConsultantPage";
-import AskMePage from "./pages/AskMePage";
 import AffiliatePage from "./pages/AffiliatePage";
 import AffiliateDashboard from "./pages/AffiliateDashboard";
 import PricingPage from "./pages/PricingPage";
@@ -39,6 +38,7 @@ import RIDIDashboard from "./pages/RIDIDashboard";
 import MediaDashboard from "./pages/MediaDashboard";
 import TeamPage from "./pages/TeamPage";
 import CookieBanner from "./components/CookieBanner";
+import ChatWidget from "./components/ChatWidget";
 import { trpc } from "./lib/trpc";
 import { getLoginUrl } from "./const";
 
@@ -192,7 +192,6 @@ function Router() {
       <Route path={"/privacy"} component={PrivacyPolicy} />
       <Route path={"/terms"} component={TermsOfService} />
       <Route path={"/consultant"} component={ConsultantPage} />
-      <Route path={"/ask"} component={AskMePage} />
       <Route path={"/pricing"} component={PricingPage} />
       <Route path={"/login"} component={LoginPage} />
 
@@ -213,6 +212,23 @@ function ScrollToTop() {
   return null;
 }
 
+/** Detect department from current route for floating chat */
+function FloatingChat() {
+  const [location] = useLocation();
+
+  // Don't show on dashboards, login, admin, or affiliate pages
+  const hiddenPaths = ["/hub/", "/bizdoc/dashboard", "/skills/admin", "/founder/dashboard", "/ridi/dashboard", "/media/dashboard", "/affiliate/dashboard", "/login", "/dev-login", "/client/dashboard"];
+  if (hiddenPaths.some(p => location.startsWith(p))) return null;
+
+  // Detect department from route
+  let dept: "general" | "bizdoc" | "systemise" | "skills" = "general";
+  if (location.startsWith("/bizdoc") || location === "/bizdoc") dept = "bizdoc";
+  else if (location.startsWith("/systemise") || location === "/systemise") dept = "systemise";
+  else if (location.startsWith("/skills") || location === "/skills") dept = "skills";
+
+  return <ChatWidget department={dept} />;
+}
+
 function App() {
   return (
     <ErrorBoundary>
@@ -221,6 +237,7 @@ function App() {
           <Toaster />
           <ScrollToTop />
           <Router />
+          <FloatingChat />
           <CookieBanner />
         </TooltipProvider>
       </ThemeProvider>

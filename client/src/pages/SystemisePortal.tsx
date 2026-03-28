@@ -4,69 +4,67 @@ import PageMeta from "@/components/PageMeta";
 import { trpc } from "@/lib/trpc";
 import {
   ArrowRight, ArrowLeft, ChevronDown, ChevronRight, ChevronLeft,
-  Layers, Monitor, Search, Instagram, MessageCircle,
-  PieChart, Home, Star, TrendingUp, Loader2, Menu, X,
+  Layers, Monitor, Search, Instagram,
+  PieChart, Home, Loader2, Menu, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ClarityDesk } from "@/components/ClarityDesk";
-import { AskMeWidget } from "@/components/AskMeWidget";
-import { RateUsWidget } from "@/components/RateUsWidget";
+import MotivationalQuoteBar from "@/components/MotivationalQuoteBar";
 
 /* ═══════════════════════════════════════════════════════════════════════════
    SYSTEMIZE PORTAL. /systemise
    ═══════════════════════════════════════════════════════════════════════════ */
 
-const G  = "#1E3A5F";
-const Au = "#C9A97E";
-const Cr = "#F0F4FA";
+const G  = "#0A1F1C";   // Dark teal primary
+const Au = "#C9A97E";   // Gold accent (5% usage)
+const Cr = "#F8F5F0";   // Cream background
 const W  = "#FFFFFF";
 
 // ── WHAT YOU GET accordion ────────────────────────────────────────────────────
 const SERVICES = [
   {
     id: "brand", icon: Layers, badge: "BRANDING",
-    pain: "My brand looks cheap. Clients undervalue what I offer",
-    solution: "Brand Identity, full visual system built for premium positioning",
-    description: "We engineer how your business looks and feels across every touchpoint. Logo, colour system, typography, brand guide, tone of voice, aligned to attract the clients you want.",
+    pain: "Brand looks cheap. Clients undervalue what you offer",
+    solution: "Brand Identity. Full visual system for premium positioning",
+    description: "Logo, colour system, typography, brand guide, tone of voice. Engineered to attract the right clients.",
     outcomes: ["Logo + brand mark (primary + secondary variants)", "Full colour palette + typography system", "Brand style guide (PDF + editable)", "Business card, letterhead, and social templates", "Positioning statement and tone of voice document"],
   },
   {
     id: "website", icon: Monitor, badge: "WEBSITE",
-    pain: "I have no website. Or mine doesn't convert visitors to clients",
-    solution: "Website Design. A sales tool, not just a digital brochure",
-    description: "Your website should close enquiries while you're unavailable. Fast, mobile-optimised, designed around your buyer's journey. Not just to look good.",
+    pain: "No website. Or one that doesn't convert",
+    solution: "Website Design. A sales tool, not a brochure",
+    description: "Fast, mobile-first, designed around your buyer's journey. Closes enquiries while you sleep.",
     outcomes: ["Custom design (not a template)", "Mobile-first, fast-loading, SEO-ready", "Clear conversion path (CTA, enquiry, contact)", "Integrated contact forms and WhatsApp CTA", "Hosting setup + 30-day post-launch support"],
   },
   {
     id: "seo", icon: Search, badge: "VISIBILITY",
-    pain: "Nobody can find my business online. I rely on referrals only",
-    solution: "SEO & Digital Visibility, ideal clients find you first, organically",
-    description: "We optimise your online presence so high-intent buyers discover your business through search. Before they find your competitors. No ad budget required to show up.",
+    pain: "Nobody can find my business online",
+    solution: "SEO & Digital Visibility. Found first, organically",
+    description: "High-intent buyers discover you through search. Before your competitors. No ad budget required.",
     outcomes: ["Google Business Profile setup and optimisation", "On-page SEO audit and implementation", "Keyword targeting for your sector and location", "Directory listings (Google, Bing, Apple Maps, industry sites)", "Monthly visibility report"],
   },
   {
     id: "social", icon: Instagram, badge: "SOCIAL MEDIA",
-    pain: "Social media eats my time and still doesn't grow my business",
-    solution: "Social Media Management, consistent professional presence, hands-off",
-    description: "We create and manage your social content so your audience grows and brand stays visible. Without you spending hours on it.",
+    pain: "Social media eats time. Still no growth",
+    solution: "Social Media Management. Professional presence, hands-off",
+    description: "Content created, scheduled, managed. Your audience grows without your hours.",
     outcomes: ["Content calendar (monthly, planned in advance)", "12–16 branded posts per month (graphics + captions)", "Story content + highlight covers", "Community engagement management", "Monthly analytics and performance report"],
   },
   {
     id: "crm", icon: PieChart, badge: "CRM",
-    pain: "I lose track of leads. I never know where my next sale is coming from",
-    solution: "CRM & Sales Dashboard, full visibility on every lead, every deal",
-    description: "We build a CRM pipeline and sales dashboard so you always know where every prospect is and what to do next.",
+    pain: "Losing track of leads. No visibility on pipeline",
+    solution: "CRM & Sales Dashboard. Every lead, every deal, visible",
+    description: "CRM pipeline and sales dashboard. Always know where every prospect stands.",
     outcomes: ["CRM setup (Notion, HubSpot, or custom to your workflow)", "Lead stage pipeline (Awareness → Proposal → Closed)", "Sales dashboard with real-time conversion tracking", "Lead source attribution", "Team training + handover documentation"],
   },
 ];
 
 // ── HOW WE WORK ───────────────────────────────────────────────────────────────
 const STEPS = [
-  { num: "01", title: "Get Clarity", short: "Tell us where you are and where you want to go", detail: "Speak to a strategist or use the Get Clarity chat. We listen for what you actually need, not just what you asked for. Most founders discover gaps they hadn't considered." },
-  { num: "02", title: "We Audit You", short: "Brand, visibility, and systems, assessed", detail: "We review your brand, website, social presence, and sales process. Within 48 hours: a clear picture of your biggest growth blockers and where investment moves the needle." },
-  { num: "03", title: "You Approve", short: "Scoped plan. Tools, timeline, investment", detail: "Written scope of work: what we build, in what order, which tools, what it costs. You approve before work begins. No surprises." },
-  { num: "04", title: "We Build", short: "Brand, website, systems. Professionally executed", detail: "Designers, developers, and systems specialists execute. Regular progress updates. We handle every detail. You focus on your business." },
-  { num: "05", title: "We Hand Over", short: "Documented, trained, live. You own everything", detail: "Full documentation and training session. Every asset in your name, every system documented. We remain available 30 days post-delivery." },
+  { num: "01", title: "Get Clarity", short: "Tell us where you are and where you want to go", detail: "Speak to a strategist. We listen for what you actually need. Most founders discover gaps they hadn't considered." },
+  { num: "02", title: "We Audit You", short: "Brand, visibility, and systems assessed", detail: "Brand, website, social, sales process reviewed. Within 48 hours: your biggest growth blockers identified." },
+  { num: "03", title: "You Approve", short: "Scoped plan. Tools, timeline, investment", detail: "Written scope of work. What we build, in what order, what it costs. You approve before we start." },
+  { num: "04", title: "We Build", short: "Brand, website, systems. Professionally executed", detail: "Designers, developers, systems specialists execute. Regular updates. You focus on your business." },
+  { num: "05", title: "We Hand Over", short: "Documented, trained, live. You own everything", detail: "Every asset in your name. Every system documented. 30 days post-delivery support." },
 ];
 
 // ── BUSINESS BLUEPRINT ────────────────────────────────────────────────────────
@@ -859,10 +857,6 @@ const SYS_BLUEPRINTS: SysBlueprint[] = [
 // ── COMPONENT ─────────────────────────────────────────────────────────────────
 export default function SystemizePortal() {
   const [navMenuOpen, setNavMenuOpen] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
-  const [askMeOpen, setAskMeOpen] = useState(false);
-  const [rateUsOpen, setRateUsOpen] = useState(false);
-  const [preselectedService, setPreselectedService] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
 
   // What You Get accordion
@@ -907,11 +901,6 @@ export default function SystemizePortal() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  function openChat(service?: string) {
-    setPreselectedService(service ?? null);
-    setChatOpen(true);
-  }
 
   return (
     <div className="min-h-screen text-[#2C2C2C]" style={{ backgroundColor: Cr }}>
@@ -980,31 +969,31 @@ export default function SystemizePortal() {
           Systems that scale.
         </h1>
         <p className="text-[clamp(16px,2vw,20px)] leading-relaxed text-[#2C2C2C] font-light max-w-[600px] mb-12">
-          We give ambitious businesses the structure and visibility to grow without confusion.
+          Structure and visibility for ambitious businesses. Built to scale.
         </p>
         <div className="flex flex-wrap items-center gap-4">
           <Button
-            onClick={() => openChat()}
+            onClick={() => blueprintRef.current?.scrollIntoView({ behavior: "smooth" })}
             className="bg-[#0A1F1C] hover:bg-[#0d2e28] text-white px-10 py-6 rounded-lg text-sm font-medium uppercase tracking-[1px] shadow-lg shadow-[#0A1F1C]/20 hover:-translate-y-1 transition-all gap-3"
           >
-            Ask Me <ArrowRight className="w-5 h-5" />
+            Business Blueprint <ArrowRight className="w-5 h-5" />
           </Button>
           <button
-            onClick={() => blueprintRef.current?.scrollIntoView({ behavior: "smooth" })}
+            onClick={() => document.getElementById("services")?.scrollIntoView({ behavior: "smooth" })}
             className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl text-[14px] font-semibold transition-opacity hover:opacity-80 border"
             style={{ borderColor: `${G}30`, color: G, backgroundColor: "transparent" }}
           >
-            Business Blueprint <ArrowRight size={16} />
+            Our Services <ArrowRight size={16} />
           </button>
         </div>
       </section>
 
       {/* ── WHAT YOU GET ── */}
-      <section className="py-20 md:py-28" style={{ backgroundColor: Cr }}>
+      <section id="services" className="py-20 md:py-28" style={{ backgroundColor: Cr }}>
         <div className="max-w-3xl mx-auto px-5">
           <p className="text-[11px] font-bold tracking-[0.25em] uppercase mb-3" style={{ color: Au }}>WHAT YOU GET</p>
           <h2 className="text-[clamp(28px,4vw,40px)] font-bold mb-3" style={{ color: G }}>Five systems. One studio.</h2>
-          <p className="text-[15px] opacity-60 mb-12" style={{ color: G }}>Every growing business has at least one of these gaps. We identify yours and build the solution.</p>
+          <p className="text-[15px] opacity-60 mb-12" style={{ color: G }}>Every growing business has at least one gap. We find it and fix it.</p>
 
           <div className="flex flex-col gap-3">
             {SERVICES.map((svc) => {
@@ -1042,10 +1031,10 @@ export default function SystemizePortal() {
                             </li>
                           ))}
                         </ul>
-                        <button onClick={() => openChat(svc.solution.split(". ")[0])}
+                        <button onClick={() => blueprintRef.current?.scrollIntoView({ behavior: "smooth" })}
                           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-semibold transition-all hover:-translate-y-0.5"
                           style={{ backgroundColor: Au, color: G }}>
-                          Ask Me <ArrowRight className="w-3.5 h-3.5" />
+                          Get Started <ArrowRight className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>
@@ -1108,8 +1097,8 @@ export default function SystemizePortal() {
       <section ref={blueprintRef} id="blueprint" className="py-20 md:py-28" style={{ backgroundColor: Cr }}>
         <div className="max-w-5xl mx-auto px-5">
           <p className="text-[11px] font-bold tracking-[0.25em] uppercase mb-3" style={{ color: Au }}>BUSINESS BLUEPRINT</p>
-          <h2 className="text-[clamp(28px,4vw,40px)] font-bold mb-3" style={{ color: G }}>Every stage of building a visible, scalable business.</h2>
-          <p className="text-[15px] opacity-60 mb-12" style={{ color: G }}>Pick your industry. We walk you through every critical growth stage. Brand, Website, Visibility, Social, CRM, and Automation. With exactly what Systemize delivers at each step.</p>
+          <h2 className="text-[clamp(28px,4vw,40px)] font-bold mb-3" style={{ color: G }}>Your industry. Every growth stage mapped.</h2>
+          <p className="text-[15px] opacity-60 mb-12" style={{ color: G }}>Brand. Website. Visibility. Social. CRM. Automation. Pick your industry to see exactly what we build.</p>
 
           {!selectedBiz && (
             <>
@@ -1226,10 +1215,10 @@ export default function SystemizePortal() {
                           </ul>
                         </div>
 
-                        <button onClick={() => openChat(activeBpStage.label)}
+                        <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                           className="mt-2 w-full py-3 rounded-xl text-[13px] font-semibold transition-opacity hover:opacity-90"
                           style={{ backgroundColor: G, color: Au }}>
-                          Ask Me →
+                          Get Started →
                         </button>
                       </div>
                     </div>
@@ -1274,11 +1263,11 @@ export default function SystemizePortal() {
         </div>
       </section>
 
-      {/* ── MY UPDATE ── */}
+      {/* ── TRACK ── */}
       <section ref={myUpdateRef} className="py-16 px-6 border-t" style={{ borderColor: `${G}10`, backgroundColor: W }}>
         <div className="max-w-lg mx-auto">
-          <p className="text-[11px] font-bold tracking-[0.25em] uppercase mb-2" style={{ color: Au }}>MY UPDATE</p>
-          <h2 className="text-[clamp(22px,3vw,30px)] font-light tracking-tight mb-2" style={{ color: G }}>Check your project status</h2>
+          <p className="text-[11px] font-bold tracking-[0.25em] uppercase mb-2" style={{ color: Au }}>TRACK</p>
+          <h2 className="text-[clamp(22px,3vw,30px)] font-light tracking-tight mb-2" style={{ color: G }}>Track Your Project</h2>
           <p className="text-[13px] mb-8 opacity-50" style={{ color: G }}>Enter the reference code from your confirmation message.</p>
           <div className="flex gap-3 mb-6">
             <input
@@ -1376,44 +1365,9 @@ export default function SystemizePortal() {
         </div>
       </footer>
 
-      {/* ─── CLARITY DESK ─── */}
-      <ClarityDesk
-        open={chatOpen}
-        onClose={() => { setChatOpen(false); setPreselectedService(null); }}
-        preselectedService={preselectedService}
-      />
-
-      {/* ─── ASK ME WIDGET ─── */}
-      <AskMeWidget open={askMeOpen} onClose={() => setAskMeOpen(false)} />
-
-      {/* ─── RATE US WIDGET ─── */}
-      <RateUsWidget open={rateUsOpen} onClose={() => setRateUsOpen(false)} />
-
-      {/* ─── MOBILE BOTTOM NAV ─── */}
-      <nav className="fixed bottom-0 inset-x-0 md:hidden z-50 border-t"
-        style={{ backgroundColor: W, borderColor: `${G}15`, paddingBottom: "env(safe-area-inset-bottom)" }}>
-        <div className="flex items-stretch h-16">
-          <button onClick={() => setRateUsOpen(true)}
-            className="flex flex-col items-center justify-center gap-1 flex-1 text-[10px] font-semibold uppercase tracking-wider"
-            style={{ color: G, opacity: 0.45 }}>
-            <Star size={18} />
-            Rate Us
-          </button>
-          <button
-            onClick={() => myUpdateRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
-            className="flex flex-col items-center justify-center gap-1 flex-1 text-[10px] font-semibold uppercase tracking-wider border-x"
-            style={{ color: G, borderColor: `${G}12` }}>
-            <TrendingUp size={18} />
-            My Update
-          </button>
-          <button onClick={() => openChat()}
-            className="flex flex-col items-center justify-center gap-1 flex-1 text-[10px] font-semibold uppercase tracking-wider"
-            style={{ backgroundColor: G, color: Au }}>
-            <MessageCircle size={18} />
-            Ask Me
-          </button>
-        </div>
-      </nav>
+      {/* ─── MOBILE BOTTOM BAR ─── */}
+      <MotivationalQuoteBar color="#0A1F1C" />
+      <div className="md:hidden h-10" />
     </div>
   );
 }
