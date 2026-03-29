@@ -421,12 +421,12 @@ export default function ChatWidget({ department = "general", open: externalOpen,
   }, [isOpen]);
 
   /** Menu labels per language */
-  const MENU_LABELS: Record<string, { request: string; track: string; choose: string; guide: string; cant: string }> = {
-    english:  { request: "Start a request", track: "Track my work", choose: "Help me choose", guide: "Positioning Guide", cant: "I can't explain my problem" },
-    hausa:    { request: "Fara bukata", track: "Duba aikina", choose: "Taimaka min in zaba", guide: "Jagorar Kasuwanci", cant: "Ba zan iya bayyanawa ba" },
-    pidgin:   { request: "Start request", track: "Check my work", choose: "Help me choose", guide: "Business Guide", cant: "I no fit explain my problem" },
-    arabic:   { request: "ابدأ طلب", track: "تتبع عملي", choose: "ساعدني في الاختيار", guide: "دليل الأعمال", cant: "لا أستطيع شرح مشكلتي" },
-    french:   { request: "Faire une demande", track: "Suivre mon travail", choose: "Aidez-moi à choisir", guide: "Guide de positionnement", cant: "Je ne peux pas expliquer mon problème" },
+  const MENU_LABELS: Record<string, { know: string; need: string; wrong: string; track: string; talk: string }> = {
+    english:  { know: "I know what I need", need: "What does my business need?", wrong: "Something feels wrong", track: "Track my file", talk: "Talk to someone" },
+    hausa:    { know: "Na san abin da nake bukata", need: "Me kasuwancina ke bukata?", wrong: "Wani abu bai dace ba", track: "Duba fayilina", talk: "Yi magana da mutum" },
+    pidgin:   { know: "I know wetin I need", need: "Wetin my business need?", wrong: "Something no dey right", track: "Check my file", talk: "Talk to person" },
+    arabic:   { know: "أعرف ما أحتاج", need: "ماذا يحتاج عملي؟", wrong: "شيء ما ليس صحيحاً", track: "تتبع ملفي", talk: "تحدث مع شخص" },
+    french:   { know: "Je sais ce qu'il me faut", need: "De quoi mon entreprise a-t-elle besoin?", wrong: "Quelque chose ne va pas", track: "Suivre mon dossier", talk: "Parler à quelqu'un" },
   };
 
   /** Show main menu in the user's selected language */
@@ -434,21 +434,55 @@ export default function ChatWidget({ department = "general", open: externalOpen,
     const lang = (langOverride || userLang).toLowerCase();
     const labels = MENU_LABELS[lang] || MENU_LABELS.english;
     addBotOptions([
-      { label: labels.request, value: "SELF_SERVICE" },
+      { label: labels.know, value: "SELF_SERVICE" },
+      { label: labels.need, value: "POSITIONING_GUIDE" },
+      { label: labels.wrong, value: "CANT_EXPLAIN" },
       { label: labels.track, value: "TRACK" },
-      { label: labels.choose, value: "GUIDANCE" },
-      { label: labels.guide, value: "POSITIONING_GUIDE" },
-      { label: labels.cant, value: "CANT_EXPLAIN" },
+      { label: labels.talk, value: "TALK_HUMAN" },
     ]);
     setChatState("PATHS");
+  };
+
+  /** Check for returning client in localStorage */
+  const getReturningClient = (): { name?: string; ref?: string; service?: string } | null => {
+    try {
+      const session = localStorage.getItem("hamzury-client-session");
+      if (session) {
+        const data = JSON.parse(session);
+        if (data.expiresAt && data.expiresAt > Date.now()) return data;
+      }
+      // Also check lead data from previous chat
+      const chatHistory = localStorage.getItem("hamzury-chat-client");
+      if (chatHistory) return JSON.parse(chatHistory);
+    } catch {}
+    return null;
+  };
+
+  /** Save client info for next visit */
+  const saveClientForReturn = (name: string, ref?: string, service?: string) => {
+    try {
+      localStorage.setItem("hamzury-chat-client", JSON.stringify({ name, ref, service }));
+    } catch {}
   };
 
   const showInitialPaths = () => {
     setShowInitTyping(true);
     setTimeout(() => {
       setShowInitTyping(false);
-      addBotMsg(persona.greeting);
-      setChatState("LANG_INPUT");
+      // Check for returning client
+      const returning = getReturningClient();
+      if (returning?.name) {
+        addBotMsg(`Welcome back, ${returning.name}. ${returning.service ? `Last time you were working on ${returning.service}.` : ""}\n\nWhat would you like to do?`);
+        addBotOptions([
+          { label: "Continue where I left off", value: "TRACK" },
+          { label: "Start something new", value: "NEW_CLIENT" },
+          { label: "Track my file", value: "TRACK" },
+        ]);
+        setChatState("PATHS");
+      } else {
+        addBotMsg(persona.greeting);
+        setChatState("LANG_INPUT");
+      }
     }, 1200);
   };
 
@@ -645,25 +679,25 @@ export default function ChatWidget({ department = "general", open: externalOpen,
 
     // From initial paths
     if (chatState === "PATHS") {
-      // Language selection — switch AI language context and re-show menu
-      if (val === "LANG_EN") {
-        setTimeout(() => { addBotMsg("How can I help you today?"); showMainButtons(); }, 300);
+      if (val === "NEW_CLIENT") {
+        // Returning client wants something new — go to language then menu
+        addBotMsg("Which language do you prefer?");
+        setChatState("LANG_INPUT");
         return;
       }
-      if (val === "LANG_PID") {
-        setTimeout(() => { addBotMsg("How I fit help you today?"); showMainButtons(); }, 300);
+      if (val === "TALK_HUMAN") {
+        setTimeout(() => {
+          addBotMsg("I can connect you with our team. How would you prefer?");
+          addBotOptions([
+            { label: "WhatsApp now", value: "WHATSAPP_NOW" },
+            { label: "Book a call", value: "SCHEDULE" },
+          ]);
+        }, 400);
         return;
       }
-      if (val === "LANG_AR") {
-        setTimeout(() => { addBotMsg("How can I help you today?"); showMainButtons(); }, 300);
-        return;
-      }
-      if (val === "LANG_FR") {
-        setTimeout(() => { addBotMsg("Comment puis-je vous aider?"); showMainButtons(); }, 300);
-        return;
-      }
-      if (val === "LANG_HA") {
-        setTimeout(() => { addBotMsg("Yaya zan taimake ka yau?"); showMainButtons(); }, 300);
+      if (val === "WHATSAPP_NOW") {
+        const wa = department === "bizdoc" ? "2348067149356" : "2349130700056";
+        window.open(`https://wa.me/${wa}`, "_blank");
         return;
       }
       if (val === "TRACK") {
@@ -726,6 +760,12 @@ export default function ChatWidget({ department = "general", open: externalOpen,
       if (val === "CONTACT_TEAM") {
         const wa = department === "bizdoc" ? "2348067149356" : "2349130700056";
         window.open(`https://wa.me/${wa}`, "_blank");
+        return;
+      }
+      // Golden rule: any free text in PATHS goes to AI
+      if (!["SELF_SERVICE", "TRACK", "GUIDANCE", "POSITIONING_GUIDE", "CANT_EXPLAIN", "TALK_HUMAN", "WHATSAPP_NOW", "NEW_CLIENT", "SCHEDULE", "DIRECT"].includes(val)) {
+        setChatState("AI_CHAT");
+        handleAIChat(val);
         return;
       }
     }
@@ -1052,6 +1092,8 @@ export default function ChatWidget({ department = "general", open: externalOpen,
         {
           onSuccess: (result) => {
             addBotMsg(`Your file is created. Reference: **${result.ref}**\n\nWe have sent your reference and a guide on how to track your file on our website to your WhatsApp.\n\nTo track anytime, visit our site and click Track.`);
+            // Save client for returning recognition
+            saveClientForReturn(finalData.name, result.ref, allServices);
             addBotOptions([
               { label: "Ask another question", value: "RESTART" },
               { label: "Schedule a call", value: "SCHEDULE" },
