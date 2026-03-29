@@ -479,7 +479,9 @@ async function main() {
   process.exit(0);
 }
 
-if (require.main === module) {
+// ESM-compatible standalone execution check
+const isMain = process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/\\/g, "/"));
+if (isMain) {
   main().catch((err) => {
     console.error("[seed] Fatal error:", err);
     process.exit(1);
