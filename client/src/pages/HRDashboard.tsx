@@ -80,14 +80,14 @@ const MOCK_PLANS = [
 ];
 
 const DEPT_DIST = [
-  { dept: "BizDoc",    count: 5, color: "#1B4D3E" },
-  { dept: "Systemise", count: 6, color: "#0A1F1C" },
-  { dept: "CSO",       count: 4, color: "#0A1F1C" },
-  { dept: "Skills",    count: 4, color: "#8B6914" },
-  { dept: "BizDev",    count: 3, color: "#34A853" },
-  { dept: "RIDI",      count: 2, color: "#C9A97E" },
-  { dept: "Finance",   count: 2, color: "#7B4F00" },
-  { dept: "HR",        count: 2, color: "#2D5A27" },
+  { dept: "BizDoc",    count: 0, color: "#1B4D3E" },
+  { dept: "Systemise", count: 0, color: "#0A1F1C" },
+  { dept: "CSO",       count: 0, color: "#0A1F1C" },
+  { dept: "Skills",    count: 0, color: "#8B6914" },
+  { dept: "BizDev",    count: 0, color: "#34A853" },
+  { dept: "RIDI",      count: 0, color: "#C9A97E" },
+  { dept: "Finance",   count: 0, color: "#7B4F00" },
+  { dept: "HR",        count: 0, color: "#2D5A27" },
 ];
 
 const RECENT_ACTIVITY = [
