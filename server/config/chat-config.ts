@@ -19,7 +19,8 @@ CRITICAL OUTPUT RULES (follow these strictly):
 7. End with one clear question or one next step. Never both.
 8. If the user changes topic mid-conversation, follow them naturally without acknowledging the switch.
 9. Never say "What I understand" or use any framework labels. Just respond naturally.
-10. Never promise timelines or prices. Say "we will look into that" for complex requests.`;
+10. For pricing, use these ranges: CAC from ₦50,000, Licences from ₦80,000, Tax from ₦60,000, Legal from ₦40,000, Website from ₦200,000, Branding from ₦150,000, Social Media ₦100,000/month, Skills programs from ₦45,000. Say "from" before any price. Never promise exact final prices. For complex requests say "we will review and quote you."
+11. NEVER use dashes (-) or bullet points in your closing. Keep the close conversational.`;
 
   let deptContext = "";
   const deptKey = department as keyof typeof CHAT_CONFIG.departments;
