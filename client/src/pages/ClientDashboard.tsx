@@ -4,6 +4,8 @@ import {
   Send, MessageSquare, Calendar,
   Phone, CreditCard, Copy,
   Unlock, ArrowRight, Quote,
+  Shield, FileCheck, Globe, Zap, TrendingUp, Target, Award, BookOpen, Sparkles, Lock,
+  BarChart3, Users, Briefcase, GraduationCap, Bot, Palette, Clock, MapPin,
 } from "lucide-react";
 import PageMeta from "../components/PageMeta";
 import ChatWidget from "../components/ChatWidget";
@@ -24,6 +26,40 @@ const DEPT_COLORS: Record<string, string> = {
   skills: "#1E3A5F",
   general: "#2D2D2D",
 };
+
+/* ── Department icons mapping ── */
+const DEPT_ICONS: Record<string, typeof Shield> = {
+  bizdoc: Shield,
+  systemise: Globe,
+  skills: GraduationCap,
+  general: Briefcase,
+};
+
+/* ── Service type icon ── */
+function getServiceIcon(service: string) {
+  const s = (service || "").toLowerCase();
+  if (s.includes("cac") || s.includes("registration") || s.includes("compliance")) return Shield;
+  if (s.includes("tax") || s.includes("tin") || s.includes("tcc")) return FileCheck;
+  if (s.includes("licence") || s.includes("nafdac") || s.includes("permit")) return Award;
+  if (s.includes("website") || s.includes("brand")) return Globe;
+  if (s.includes("automation") || s.includes("crm")) return Bot;
+  if (s.includes("training") || s.includes("skill") || s.includes("cohort")) return GraduationCap;
+  if (s.includes("social") || s.includes("media")) return Palette;
+  if (s.includes("foreign") || s.includes("cerpac")) return MapPin;
+  if (s.includes("scuml")) return Shield;
+  return Briefcase;
+}
+
+/* ── Importance icon ── */
+function getImportanceIcon(service: string) {
+  const s = (service || "").toLowerCase();
+  if (s.includes("cac") || s.includes("compliance") || s.includes("licence") || s.includes("scuml")) return Shield;
+  if (s.includes("tax") || s.includes("tin")) return Lock;
+  if (s.includes("website") || s.includes("brand") || s.includes("social")) return Globe;
+  if (s.includes("automation") || s.includes("crm")) return TrendingUp;
+  if (s.includes("training") || s.includes("skill")) return Target;
+  return TrendingUp;
+}
 
 /* ── Founder quotes ── */
 const FOUNDER_QUOTES = [
@@ -70,66 +106,73 @@ function getNextUnlock(service: string, department: string, _status: string) {
   if (s.includes("cac") || s.includes("registration")) {
     return {
       title: "Tax Compliance (TIN + VAT)",
-      why: "Without tax compliance, you cannot bid for government contracts or get a Tax Clearance Certificate. This is what separates serious businesses from informal ones.",
+      why: "Without tax compliance, you cannot bid for government contracts or get a Tax Clearance Certificate.",
       dept: "bizdoc",
+      icon: FileCheck,
     };
   }
   if (s.includes("tax") || s.includes("tin") || s.includes("tcc")) {
     return {
       title: "Industry Licence for Your Sector",
-      why: "Every sector has specific regulatory requirements. Operating without the right licence puts your business at risk of shutdown or penalties.",
+      why: "Every sector has specific regulatory requirements. Operating without the right licence puts your business at risk.",
       dept: "bizdoc",
+      icon: Award,
     };
   }
   if (s.includes("licence") || s.includes("permit") || s.includes("nafdac")) {
     return {
       title: "Brand Identity & Website",
-      why: "Your compliance is sorted. Now premium clients need to trust you instantly when they find you online. A strong brand and website make that happen.",
+      why: "Your compliance is sorted. Now premium clients need to trust you instantly online.",
       dept: "systemise",
+      icon: Globe,
     };
   }
   if (s.includes("website") || s.includes("brand")) {
     return {
       title: "Business Automation & CRM",
-      why: "Your brand is live. Now automate the parts of your business that repeat every week -- follow-ups, invoicing, lead management. Stop doing it manually.",
+      why: "Your brand is live. Now automate the parts of your business that repeat every week.",
       dept: "systemise",
+      icon: Bot,
     };
   }
   if (s.includes("automation") || s.includes("crm") || s.includes("dashboard")) {
     return {
       title: "Team Training & Enablement",
-      why: "Systems are only as good as the people using them. Train your team to operate the tools and processes you have built.",
+      why: "Systems are only as good as the people using them. Train your team.",
       dept: "skills",
+      icon: GraduationCap,
     };
   }
   if (s.includes("training") || s.includes("skill") || s.includes("cohort")) {
     return {
       title: "Full Business Documentation",
-      why: "You have the skills and systems. Make sure your business structure, contracts, and compliance are fully documented and protected.",
+      why: "Make sure your business structure, contracts, and compliance are fully documented.",
       dept: "bizdoc",
+      icon: FileCheck,
     };
   }
   return {
     title: "Business Positioning Guide",
-    why: "Not sure what your business needs next? Our advisor can map your full business requirements based on your sector and goals.",
+    why: "Not sure what your business needs next? Our advisor can map your full requirements.",
     dept: "general",
+    icon: Target,
   };
 }
 
 /* ── Service importance descriptions ── */
 function getServiceImportance(service: string): string {
   const s = (service || "").toLowerCase();
-  if (s.includes("cac")) return "Your business is now legally recognized. This unlocks banking, contracts, tax filing, and tender eligibility.";
-  if (s.includes("tin") || s.includes("tax")) return "Tax compliance protects you from penalties and enables you to get a Tax Clearance Certificate.";
-  if (s.includes("licence") || s.includes("nafdac")) return "Your sector licence means you can legally operate and avoid regulatory shutdown.";
-  if (s.includes("website")) return "Your online presence makes clients trust you before they even call.";
-  if (s.includes("brand")) return "A strong brand identity makes premium clients choose you over competitors.";
-  if (s.includes("automation")) return "Automated workflows save your team hours every week on repetitive tasks.";
-  if (s.includes("training") || s.includes("skill")) return "Real capability means your team delivers better, faster, and with less supervision.";
-  if (s.includes("social") || s.includes("media")) return "Consistent social media presence builds authority and attracts clients who already trust you.";
-  if (s.includes("foreign") || s.includes("cerpac")) return "Your foreign business registration enables you to operate legally in Nigeria with full compliance.";
-  if (s.includes("scuml")) return "SCUML registration is a mandatory anti-money laundering requirement for designated non-financial businesses.";
-  return "This service strengthens your business structure and reduces risk.";
+  if (s.includes("cac")) return "Legally recognized. Unlocks banking, contracts, tax filing.";
+  if (s.includes("tin") || s.includes("tax")) return "Protects from penalties. Enables Tax Clearance Certificate.";
+  if (s.includes("licence") || s.includes("nafdac")) return "Legally operate and avoid regulatory shutdown.";
+  if (s.includes("website")) return "Clients trust you before they even call.";
+  if (s.includes("brand")) return "Premium clients choose you over competitors.";
+  if (s.includes("automation")) return "Save hours every week on repetitive tasks.";
+  if (s.includes("training") || s.includes("skill")) return "Team delivers better, faster, less supervision.";
+  if (s.includes("social") || s.includes("media")) return "Build authority and attract clients who already trust you.";
+  if (s.includes("foreign") || s.includes("cerpac")) return "Operate legally in Nigeria with full compliance.";
+  if (s.includes("scuml")) return "Mandatory anti-money laundering compliance.";
+  return "Strengthens your business structure and reduces risk.";
 }
 
 /** Context-aware upsell -- changes based on client's current service */
@@ -188,6 +231,7 @@ function loadClientSession(): ClientSession | null {
 }
 
 const STATUS_STEPS = ["Not Started", "In Progress", "Waiting on Client", "Submitted", "Completed"];
+const STATUS_STEP_ICONS = [Circle, Clock, Users, FileCheck, CheckCircle];
 
 const ACTIVITY_LABELS: Record<string, string> = {
   task_created: "File created",
@@ -201,6 +245,46 @@ const ACTIVITY_LABELS: Record<string, string> = {
   commission_created: "Commission recorded",
   kpi_approved: "Quality approved",
 };
+
+/* ── Growth roadmap steps ── */
+function getGrowthRoadmap(currentService: string, currentStatus: string) {
+  const s = (currentService || "").toLowerCase();
+  const isCompleted = currentStatus === "Completed";
+
+  const steps = [
+    { icon: Shield, title: "CAC Registration", desc: "Legal recognition", dept: "bizdoc" },
+    { icon: FileCheck, title: "Tax Compliance", desc: "TIN + VAT filings", dept: "bizdoc" },
+    { icon: Award, title: "Industry Licence", desc: "Sector permits", dept: "bizdoc" },
+    { icon: Globe, title: "Brand & Website", desc: "Online presence", dept: "systemise" },
+    { icon: Bot, title: "Automation & CRM", desc: "Smart systems", dept: "systemise" },
+    { icon: GraduationCap, title: "Team Training", desc: "Capability building", dept: "skills" },
+  ];
+
+  // Determine which step is current
+  let currentIdx = 0;
+  if (s.includes("cac") || s.includes("registration")) currentIdx = 0;
+  else if (s.includes("tax") || s.includes("tin") || s.includes("tcc")) currentIdx = 1;
+  else if (s.includes("licence") || s.includes("permit") || s.includes("nafdac")) currentIdx = 2;
+  else if (s.includes("website") || s.includes("brand")) currentIdx = 3;
+  else if (s.includes("automation") || s.includes("crm")) currentIdx = 4;
+  else if (s.includes("training") || s.includes("skill")) currentIdx = 5;
+
+  return steps.map((step, i) => ({
+    ...step,
+    state: i < currentIdx ? "delivered" as const
+      : i === currentIdx ? (isCompleted ? "delivered" as const : "active" as const)
+      : i === currentIdx + 1 ? "next" as const
+      : "locked" as const,
+  }));
+}
+
+/* ── Pulse animation style ── */
+const pulseKeyframes = `
+@keyframes subtlePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(180, 140, 76, 0.3); }
+  50% { box-shadow: 0 0 0 6px rgba(180, 140, 76, 0); }
+}
+`;
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /*  BUSINESS GROWTH GUIDE                                                    */
@@ -336,24 +420,21 @@ export default function ClientDashboard() {
       key: "bizdoc",
       name: "BIZDOC",
       color: DEPT_COLORS.bizdoc,
-      desc: "Compliance, licences, templates, contracts",
-      pitch: "Is your business fully documented?",
+      shortDesc: "Compliance & Docs",
       url: "/bizdoc",
     },
     {
       key: "systemise",
       name: "SYSTEMISE",
       color: DEPT_COLORS.systemise,
-      desc: "Brand, website, automation, AI agents",
-      pitch: "Does your brand make premium clients trust you instantly?",
+      shortDesc: "Systems & Brand",
       url: "/systemise",
     },
     {
       key: "skills",
       name: "SKILLS",
       color: DEPT_COLORS.skills,
-      desc: "Founder programs, team training, AI skills",
-      pitch: "Learn what actually works.",
+      shortDesc: "Training & AI",
       url: "/skills",
     },
   ];
@@ -362,8 +443,15 @@ export default function ClientDashboard() {
   /* ── Invoices ── */
   const hasInvoices = invoiceSummary && invoiceSummary.invoices.length > 0;
 
+  /* ── Visual helpers ── */
+  const ServiceIcon = getServiceIcon(task.service);
+  const ImportanceIcon = getImportanceIcon(task.service);
+  const currentStepIdx = STATUS_STEPS.indexOf(task.status);
+  const roadmap = getGrowthRoadmap(task.service, task.status);
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: CREAM }}>
+      <style>{pulseKeyframes}</style>
       <PageMeta
         title={`${task.businessName || task.clientName} - Business Growth Guide | HAMZURY`}
         description="Your personal business growth guide. Track services, unlock next steps, and talk to your advisor."
@@ -424,89 +512,154 @@ export default function ClientDashboard() {
 
 
         {/* ════════════════════════════════════════════════════════════════ */}
-        {/*  SECTION 1: YOUR GROWTH JOURNEY                                */}
+        {/*  SECTION 1: STATUS CARD — Infographic style                    */}
         {/* ════════════════════════════════════════════════════════════════ */}
         <div className="mb-8">
           <p
             className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-4"
             style={{ color: MUTED }}
           >
-            Your Growth Journey
+            Current Service
           </p>
 
-          {/* Active/Delivered service card */}
           <div
             className="rounded-2xl p-6 mb-4"
             style={{
               backgroundColor: WHITE,
               border: `1px solid ${BORDER}`,
-              borderLeft: `3px solid ${isCompleted ? GREEN : GOLD}`,
             }}
           >
-            <div className="flex items-center gap-2 mb-3">
-              <span
-                className="text-[10px] font-bold uppercase tracking-[0.12em] px-2.5 py-1 rounded-full"
+            {/* Top row: Big icon + service name + status badge */}
+            <div className="flex items-start gap-4 mb-5">
+              <div
+                className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0"
                 style={{
-                  backgroundColor: isCompleted ? `${GREEN}12` : `${GOLD}12`,
-                  color: isCompleted ? GREEN : GOLD,
+                  backgroundColor: isCompleted ? `${GREEN}10` : `${GOLD}10`,
                 }}
               >
-                {isCompleted ? "Delivered" : task.status === "Not Started" ? "Queued" : "Active"}
-              </span>
-              <span
-                className="text-[11px] font-light"
-                style={{ color: MUTED }}
-              >
-                {task.department || "HAMZURY"}
-              </span>
+                <ServiceIcon size={28} style={{ color: isCompleted ? GREEN : GOLD }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3
+                  className="text-[18px] font-medium leading-snug mb-1.5"
+                  style={{ color: DARK }}
+                >
+                  {task.service}
+                </h3>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span
+                    className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em] px-2.5 py-1 rounded-full"
+                    style={{
+                      backgroundColor: isCompleted ? `${GREEN}12` : `${GOLD}12`,
+                      color: isCompleted ? GREEN : GOLD,
+                    }}
+                  >
+                    {isCompleted ? <CheckCircle size={10} /> : <Clock size={10} />}
+                    {isCompleted ? "Delivered" : task.status === "Not Started" ? "Queued" : "Active"}
+                  </span>
+                  <span
+                    className="inline-flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-full"
+                    style={{
+                      backgroundColor: `${DEPT_COLORS[(task.department || "").toLowerCase()] || DARK}10`,
+                      color: DEPT_COLORS[(task.department || "").toLowerCase()] || DARK,
+                    }}
+                  >
+                    {(() => {
+                      const DeptIcon = DEPT_ICONS[(task.department || "").toLowerCase()] || Briefcase;
+                      return <DeptIcon size={9} />;
+                    })()}
+                    {task.department || "HAMZURY"}
+                  </span>
+                </div>
+              </div>
             </div>
 
-            <h3
-              className="text-[18px] font-medium leading-snug mb-2"
-              style={{ color: DARK }}
-            >
-              {task.service}
-            </h3>
-
-            {/* Progress bar (only if not completed) */}
+            {/* Visual stepper progress */}
             {!isCompleted && (
-              <div className="mb-3">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[11px] font-light" style={{ color: MUTED }}>
-                    {task.status}
-                  </span>
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  {STATUS_STEPS.map((step, i) => {
+                    const StepIcon = STATUS_STEP_ICONS[i];
+                    const isCurrentStep = i === currentStepIdx;
+                    const isPast = i < currentStepIdx;
+                    const isFuture = i > currentStepIdx;
+                    return (
+                      <div key={step} className="flex items-center flex-1 last:flex-none">
+                        <div className="flex flex-col items-center">
+                          <div
+                            className="w-8 h-8 rounded-full flex items-center justify-center relative"
+                            style={{
+                              backgroundColor: isPast ? `${GREEN}15` : isCurrentStep ? `${GOLD}15` : `${DARK}06`,
+                              animation: isCurrentStep ? "subtlePulse 2s ease-in-out infinite" : undefined,
+                            }}
+                          >
+                            <StepIcon
+                              size={14}
+                              style={{
+                                color: isPast ? GREEN : isCurrentStep ? GOLD : `${DARK}25`,
+                              }}
+                            />
+                          </div>
+                          <span
+                            className="text-[8px] font-medium mt-1 text-center leading-tight max-w-[56px]"
+                            style={{
+                              color: isPast ? GREEN : isCurrentStep ? GOLD : `${DARK}30`,
+                            }}
+                          >
+                            {step === "Waiting on Client" ? "Waiting" : step === "Not Started" ? "Queued" : step}
+                          </span>
+                        </div>
+                        {i < STATUS_STEPS.length - 1 && (
+                          <div
+                            className="flex-1 h-0.5 mx-1 rounded-full mt-[-12px]"
+                            style={{
+                              backgroundColor: isPast ? `${GREEN}40` : `${DARK}08`,
+                            }}
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="flex items-center justify-end mt-1">
                   <span className="text-[11px] font-medium tabular-nums" style={{ color: GOLD }}>
                     {task.progress}%
                   </span>
-                </div>
-                <div className="w-full h-1.5 rounded-full" style={{ backgroundColor: `${DARK}08` }}>
-                  <div
-                    className="h-1.5 rounded-full transition-all duration-700 ease-out"
-                    style={{ width: `${task.progress}%`, backgroundColor: GOLD }}
-                  />
                 </div>
               </div>
             )}
 
             {/* Delivered date or deadline */}
             {isCompleted && task.updatedAt && (
-              <p className="text-[12px] font-light mb-3" style={{ color: MUTED }}>
-                Delivered: {formatDate(task.updatedAt)}
-              </p>
+              <div className="flex items-center gap-2 mb-3">
+                <CheckCircle size={14} style={{ color: GREEN }} />
+                <p className="text-[12px] font-light" style={{ color: MUTED }}>
+                  Delivered {formatDate(task.updatedAt)}
+                </p>
+              </div>
             )}
             {!isCompleted && task.deadline && (
-              <p className="text-[12px] font-light mb-3" style={{ color: MUTED }}>
-                Expected: {formatDate(task.deadline)}
-              </p>
+              <div className="flex items-center gap-2 mb-3">
+                <Clock size={14} style={{ color: GOLD }} />
+                <p className="text-[12px] font-light" style={{ color: MUTED }}>
+                  Expected {formatDate(task.deadline)}
+                </p>
+              </div>
             )}
 
-            {/* Why this matters */}
-            <p
-              className="text-[13px] font-light leading-relaxed italic"
-              style={{ color: `${DARK}80` }}
+            {/* Why this matters — with icon */}
+            <div
+              className="flex items-start gap-2.5 rounded-xl px-4 py-3"
+              style={{ backgroundColor: CREAM }}
             >
-              "{getServiceImportance(task.service)}"
-            </p>
+              <ImportanceIcon size={16} className="shrink-0 mt-0.5" style={{ color: GOLD }} />
+              <p
+                className="text-[12px] font-light leading-relaxed"
+                style={{ color: `${DARK}80` }}
+              >
+                {getServiceImportance(task.service)}
+              </p>
+            </div>
 
             {/* Checklist mini-summary if exists */}
             {checklist.length > 0 && (
@@ -514,17 +667,18 @@ export default function ClientDashboard() {
                 className="flex items-center gap-3 mt-4 pt-3"
                 style={{ borderTop: `1px solid ${DARK}06` }}
               >
-                <div className="flex-1 h-1 rounded-full" style={{ backgroundColor: `${DARK}08` }}>
+                <FileCheck size={14} style={{ color: completedChecklist.length === checklist.length ? GREEN : GOLD }} />
+                <div className="flex-1 h-1.5 rounded-full" style={{ backgroundColor: `${DARK}08` }}>
                   <div
-                    className="h-1 rounded-full transition-all duration-500"
+                    className="h-1.5 rounded-full transition-all duration-500"
                     style={{
                       width: `${Math.round((completedChecklist.length / checklist.length) * 100)}%`,
                       backgroundColor: completedChecklist.length === checklist.length ? GREEN : GOLD,
                     }}
                   />
                 </div>
-                <span className="text-[11px] font-light" style={{ color: MUTED }}>
-                  {completedChecklist.length}/{checklist.length} steps
+                <span className="text-[11px] font-medium tabular-nums" style={{ color: MUTED }}>
+                  {completedChecklist.length}/{checklist.length}
                 </span>
               </div>
             )}
@@ -536,9 +690,12 @@ export default function ClientDashboard() {
               className="rounded-2xl p-6 mb-4"
               style={{ backgroundColor: WHITE, border: `1px solid ${BORDER}` }}
             >
-              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] mb-3" style={{ color: MUTED }}>
-                Monthly Service: {subHistory.service}
-              </p>
+              <div className="flex items-center gap-2 mb-3">
+                <Calendar size={14} style={{ color: GOLD }} />
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: MUTED }}>
+                  Monthly: {subHistory.service}
+                </p>
+              </div>
               <div className="space-y-2">
                 {subHistory.monthlyTasks.map((t: { month: string | null; status: string; kpiApproved: boolean }) => (
                   <div
@@ -570,145 +727,250 @@ export default function ClientDashboard() {
               </div>
             </div>
           )}
+        </div>
 
-          {/* NEXT UNLOCK card */}
+
+        {/* ════════════════════════════════════════════════════════════════ */}
+        {/*  SECTION 2: GROWTH JOURNEY — Visual Roadmap                    */}
+        {/* ════════════════════════════════════════════════════════════════ */}
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingUp size={14} style={{ color: GOLD }} />
+            <p
+              className="text-[11px] font-semibold uppercase tracking-[0.15em]"
+              style={{ color: MUTED }}
+            >
+              Growth Roadmap
+            </p>
+          </div>
+
           <div
             className="rounded-2xl p-6"
-            style={{
-              backgroundColor: WHITE,
-              border: `1px solid ${GOLD}25`,
-              borderLeft: `3px solid ${GOLD}`,
-            }}
+            style={{ backgroundColor: WHITE, border: `1px solid ${BORDER}` }}
           >
-            <div className="flex items-center gap-2 mb-3">
-              <Unlock size={14} style={{ color: GOLD }} />
-              <span
-                className="text-[10px] font-bold uppercase tracking-[0.12em]"
-                style={{ color: GOLD }}
-              >
-                Next Unlock
-              </span>
+            <div className="space-y-0">
+              {roadmap.map((step, i) => {
+                const StepIcon = step.icon;
+                const isDelivered = step.state === "delivered";
+                const isActiveStep = step.state === "active";
+                const isNext = step.state === "next";
+                const isLocked = step.state === "locked";
+                const stepColor = isDelivered ? GREEN : isActiveStep ? GOLD : isNext ? GOLD : `${DARK}25`;
+
+                return (
+                  <div key={step.title}>
+                    <div className="flex items-start gap-4">
+                      {/* Icon with status indicator */}
+                      <div className="flex flex-col items-center">
+                        <div
+                          className="w-10 h-10 rounded-xl flex items-center justify-center relative"
+                          style={{
+                            backgroundColor: isDelivered ? `${GREEN}12`
+                              : isActiveStep ? `${GOLD}12`
+                              : isNext ? `${GOLD}08`
+                              : `${DARK}04`,
+                            animation: isActiveStep ? "subtlePulse 2s ease-in-out infinite" : undefined,
+                          }}
+                        >
+                          {isDelivered ? (
+                            <CheckCircle size={20} style={{ color: GREEN }} />
+                          ) : isLocked ? (
+                            <Lock size={18} style={{ color: `${DARK}20` }} />
+                          ) : isNext ? (
+                            <Unlock size={18} style={{ color: GOLD }} />
+                          ) : (
+                            <StepIcon size={20} style={{ color: GOLD }} />
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 pb-1">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <h4
+                            className="text-[14px] font-medium"
+                            style={{
+                              color: isLocked ? `${DARK}35` : DARK,
+                            }}
+                          >
+                            {step.title}
+                          </h4>
+                          {isDelivered && (
+                            <span
+                              className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
+                              style={{ backgroundColor: `${GREEN}12`, color: GREEN }}
+                            >
+                              Done
+                            </span>
+                          )}
+                          {isActiveStep && (
+                            <span
+                              className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
+                              style={{ backgroundColor: `${GOLD}12`, color: GOLD }}
+                            >
+                              Now
+                            </span>
+                          )}
+                        </div>
+                        <p
+                          className="text-[11px] font-light"
+                          style={{ color: isLocked ? `${DARK}25` : MUTED }}
+                        >
+                          {step.desc}
+                        </p>
+                        {isNext && (
+                          <button
+                            onClick={() => setChatOpen(true)}
+                            className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all hover:opacity-90"
+                            style={{ backgroundColor: nextUnlockColor, color: WHITE }}
+                          >
+                            <Sparkles size={11} />
+                            Activate
+                            <ArrowRight size={11} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Connector line */}
+                    {i < roadmap.length - 1 && (
+                      <div className="flex items-center ml-[19px]">
+                        <div
+                          className="w-0.5 h-5"
+                          style={{
+                            backgroundColor: isDelivered ? `${GREEN}30` : `${DARK}08`,
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-            <h3
-              className="text-[16px] font-medium leading-snug mb-2"
-              style={{ color: DARK }}
-            >
-              {nextUnlock.title}
-            </h3>
-            <p
-              className="text-[13px] font-light leading-relaxed mb-5"
-              style={{ color: `${DARK}80` }}
-            >
-              "{nextUnlock.why}"
-            </p>
-            <button
-              onClick={() => setChatOpen(true)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-[12px] font-medium transition-all hover:opacity-90"
-              style={{ backgroundColor: nextUnlockColor, color: WHITE }}
-            >
-              Activate this
-              <ArrowRight size={14} />
-            </button>
           </div>
         </div>
 
 
         {/* ════════════════════════════════════════════════════════════════ */}
-        {/*  SECTION 2: SIMPLE ANALYTICS                                   */}
+        {/*  SECTION 3: ANALYTICS — Icon stat cards                        */}
         {/* ════════════════════════════════════════════════════════════════ */}
         <div className="grid grid-cols-3 gap-3 mb-8">
           {[
-            { label: "Active services", value: activeCount, color: isActive ? GREEN : MUTED },
-            { label: "Delivered", value: deliveredCount, color: deliveredCount > 0 ? GREEN : MUTED },
-            { label: "Next unlock", value: 1, color: GOLD },
-          ].map((stat) => (
-            <div
-              key={stat.label}
-              className="rounded-2xl p-5 text-center"
-              style={{ backgroundColor: WHITE, border: `1px solid ${BORDER}` }}
-            >
-              <p
-                className="text-[28px] font-light tabular-nums mb-1"
-                style={{ color: stat.color }}
+            { label: "Active", value: activeCount, color: isActive ? GREEN : MUTED, icon: Zap, iconColor: isActive ? GREEN : MUTED },
+            { label: "Delivered", value: deliveredCount, color: deliveredCount > 0 ? GREEN : MUTED, icon: FileCheck, iconColor: deliveredCount > 0 ? GREEN : MUTED },
+            { label: "Next", value: 1, color: GOLD, icon: Unlock, iconColor: GOLD },
+          ].map((stat) => {
+            const StatIcon = stat.icon;
+            return (
+              <div
+                key={stat.label}
+                className="rounded-2xl p-5 flex flex-col items-center gap-2"
+                style={{ backgroundColor: WHITE, border: `1px solid ${BORDER}` }}
               >
-                {stat.value}
-              </p>
-              <p className="text-[11px] font-light" style={{ color: MUTED }}>
-                {stat.label}
-              </p>
-            </div>
-          ))}
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: `${stat.iconColor}10` }}
+                >
+                  <StatIcon size={20} style={{ color: stat.iconColor }} />
+                </div>
+                <p
+                  className="text-[28px] font-light tabular-nums"
+                  style={{ color: stat.color }}
+                >
+                  {stat.value}
+                </p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: MUTED }}>
+                  {stat.label}
+                </p>
+              </div>
+            );
+          })}
         </div>
 
 
         {/* ════════════════════════════════════════════════════════════════ */}
-        {/*  SECTION 3: DEPARTMENTS NOT YET ACTIVATED                      */}
+        {/*  SECTION 4: DEPARTMENTS NOT YET ACTIVATED — Icon cards          */}
         {/* ════════════════════════════════════════════════════════════════ */}
         {unusedDepts.length > 0 && (
           <div className="mb-8">
-            <p
-              className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-4"
-              style={{ color: MUTED }}
-            >
-              Departments Not Yet Activated
-            </p>
+            <div className="flex items-center gap-2 mb-4">
+              <BarChart3 size={14} style={{ color: MUTED }} />
+              <p
+                className="text-[11px] font-semibold uppercase tracking-[0.15em]"
+                style={{ color: MUTED }}
+              >
+                Not Yet Activated
+              </p>
+            </div>
             <div className="space-y-3">
-              {unusedDepts.map((dept) => (
-                <button
-                  key={dept.key}
-                  onClick={() => setChatOpen(true)}
-                  className="w-full text-left rounded-2xl p-5 transition-all hover:shadow-sm group"
-                  style={{
-                    backgroundColor: WHITE,
-                    border: `1px solid ${BORDER}`,
-                    borderLeft: `3px solid ${dept.color}`,
-                  }}
-                >
-                  <p
-                    className="text-[14px] font-medium mb-1"
-                    style={{ color: dept.color }}
+              {unusedDepts.map((dept) => {
+                const DeptIcon = DEPT_ICONS[dept.key] || Briefcase;
+                return (
+                  <button
+                    key={dept.key}
+                    onClick={() => setChatOpen(true)}
+                    className="w-full text-left rounded-2xl p-5 transition-all hover:shadow-sm group"
+                    style={{
+                      backgroundColor: WHITE,
+                      border: `1px solid ${BORDER}`,
+                    }}
                   >
-                    {dept.name}
-                  </p>
-                  <p className="text-[12px] font-light mb-1" style={{ color: MUTED }}>
-                    {dept.desc}
-                  </p>
-                  <p
-                    className="text-[13px] font-light italic mb-3"
-                    style={{ color: `${DARK}70` }}
-                  >
-                    "{dept.pitch}"
-                  </p>
-                  <span
-                    className="inline-flex items-center gap-1 text-[11px] font-medium transition-all group-hover:gap-2"
-                    style={{ color: dept.color }}
-                  >
-                    Explore
-                    <ChevronRight size={12} />
-                  </span>
-                </button>
-              ))}
+                    <div className="flex items-center gap-4">
+                      <div
+                        className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+                        style={{ backgroundColor: `${dept.color}10` }}
+                      >
+                        <DeptIcon size={24} style={{ color: dept.color }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className="text-[14px] font-medium mb-0.5"
+                          style={{ color: dept.color }}
+                        >
+                          {dept.name}
+                        </p>
+                        <p className="text-[12px] font-light" style={{ color: MUTED }}>
+                          {dept.shortDesc}
+                        </p>
+                      </div>
+                      <div
+                        className="flex items-center gap-1 transition-all group-hover:gap-2"
+                        style={{ color: dept.color }}
+                      >
+                        <span className="text-[11px] font-medium">Explore</span>
+                        <ArrowRight size={14} />
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
 
 
         {/* ════════════════════════════════════════════════════════════════ */}
-        {/*  SECTION 4: FOUNDER QUOTE                                      */}
+        {/*  SECTION 5: FOUNDER QUOTE — with decorative icon               */}
         {/* ════════════════════════════════════════════════════════════════ */}
         <div
-          className="rounded-2xl p-6 md:p-8 mb-8"
+          className="rounded-2xl p-6 md:p-8 mb-8 relative overflow-hidden"
           style={{
             backgroundColor: WHITE,
             border: `1px solid ${GOLD}15`,
           }}
         >
-          <div className="flex items-start gap-3">
+          {/* Large decorative quote icon */}
+          <Quote
+            size={80}
+            className="absolute top-3 right-4"
+            style={{ color: GOLD, opacity: 0.06 }}
+          />
+          <div className="relative flex items-start gap-3">
             <div
-              className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+              className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-0.5"
               style={{ backgroundColor: `${GOLD}10` }}
             >
-              <Quote size={14} style={{ color: GOLD }} />
+              <Quote size={18} style={{ color: GOLD }} />
             </div>
             <div>
               <p
@@ -726,17 +988,22 @@ export default function ClientDashboard() {
 
 
         {/* ════════════════════════════════════════════════════════════════ */}
-        {/*  SECTION 5: ACTIONS                                            */}
+        {/*  SECTION 6: ACTIONS — Icon-first app-style buttons             */}
         {/* ════════════════════════════════════════════════════════════════ */}
         <div className="grid grid-cols-3 gap-3 mb-8">
           <button
             onClick={() => setChatOpen(true)}
-            className="flex flex-col items-center gap-2 py-5 rounded-2xl transition-all hover:shadow-sm"
+            className="flex flex-col items-center gap-3 py-6 rounded-2xl transition-all hover:shadow-sm"
             style={{ backgroundColor: WHITE, border: `1px solid ${BORDER}` }}
           >
-            <MessageSquare size={18} style={{ color: DARK }} />
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center"
+              style={{ backgroundColor: `${DARK}06` }}
+            >
+              <MessageSquare size={22} style={{ color: DARK }} />
+            </div>
             <span className="text-[11px] font-medium text-center leading-tight" style={{ color: DARK }}>
-              Talk to my advisor
+              Advisor
             </span>
           </button>
           <button
@@ -746,12 +1013,17 @@ export default function ClientDashboard() {
                 "_blank"
               )
             }
-            className="flex flex-col items-center gap-2 py-5 rounded-2xl transition-all hover:shadow-sm"
+            className="flex flex-col items-center gap-3 py-6 rounded-2xl transition-all hover:shadow-sm"
             style={{ backgroundColor: WHITE, border: `1px solid ${BORDER}` }}
           >
-            <Calendar size={18} style={{ color: DARK }} />
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center"
+              style={{ backgroundColor: `${DARK}06` }}
+            >
+              <Calendar size={22} style={{ color: DARK }} />
+            </div>
             <span className="text-[11px] font-medium text-center leading-tight" style={{ color: DARK }}>
-              Schedule a call
+              Book Call
             </span>
           </button>
           <button
@@ -759,12 +1031,17 @@ export default function ClientDashboard() {
               const el = document.getElementById("message-section");
               if (el) el.scrollIntoView({ behavior: "smooth" });
             }}
-            className="flex flex-col items-center gap-2 py-5 rounded-2xl transition-all hover:shadow-sm"
+            className="flex flex-col items-center gap-3 py-6 rounded-2xl transition-all hover:shadow-sm"
             style={{ backgroundColor: WHITE, border: `1px solid ${BORDER}` }}
           >
-            <Send size={18} style={{ color: DARK }} />
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center"
+              style={{ backgroundColor: `${DARK}06` }}
+            >
+              <Send size={22} style={{ color: DARK }} />
+            </div>
             <span className="text-[11px] font-medium text-center leading-tight" style={{ color: DARK }}>
-              Send a message
+              Message
             </span>
           </button>
         </div>
@@ -775,38 +1052,41 @@ export default function ClientDashboard() {
         {/* ════════════════════════════════════════════════════════════════ */}
         {hasInvoices && (
           <div className="mb-8">
-            <p
-              className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-4"
-              style={{ color: MUTED }}
-            >
-              Invoices
-            </p>
+            <div className="flex items-center gap-2 mb-4">
+              <CreditCard size={14} style={{ color: MUTED }} />
+              <p
+                className="text-[11px] font-semibold uppercase tracking-[0.15em]"
+                style={{ color: MUTED }}
+              >
+                Invoices
+              </p>
+            </div>
 
             {/* Summary strip */}
             <div
               className="grid grid-cols-3 gap-4 rounded-2xl p-5 mb-4"
               style={{ backgroundColor: WHITE, border: `1px solid ${BORDER}` }}
             >
-              <div>
-                <p className="text-[10px] font-medium uppercase tracking-wider mb-1" style={{ color: MUTED }}>
-                  Total
-                </p>
+              <div className="text-center">
+                <BarChart3 size={16} className="mx-auto mb-1.5" style={{ color: DARK }} />
                 <p className="text-[16px] font-semibold" style={{ color: DARK }}>
                   {formatNaira(invoiceSummary!.total)}
                 </p>
-              </div>
-              <div>
-                <p className="text-[10px] font-medium uppercase tracking-wider mb-1" style={{ color: MUTED }}>
-                  Paid
+                <p className="text-[9px] font-medium uppercase tracking-wider mt-0.5" style={{ color: MUTED }}>
+                  Total
                 </p>
+              </div>
+              <div className="text-center">
+                <CheckCircle size={16} className="mx-auto mb-1.5" style={{ color: GREEN }} />
                 <p className="text-[16px] font-semibold" style={{ color: GREEN }}>
                   {formatNaira(invoiceSummary!.paid)}
                 </p>
-              </div>
-              <div>
-                <p className="text-[10px] font-medium uppercase tracking-wider mb-1" style={{ color: MUTED }}>
-                  Balance
+                <p className="text-[9px] font-medium uppercase tracking-wider mt-0.5" style={{ color: MUTED }}>
+                  Paid
                 </p>
+              </div>
+              <div className="text-center">
+                <AlertCircle size={16} className="mx-auto mb-1.5" style={{ color: invoiceSummary!.total - invoiceSummary!.paid > 0 ? "#DC2626" : GREEN }} />
                 <p
                   className="text-[16px] font-semibold"
                   style={{
@@ -814,6 +1094,9 @@ export default function ClientDashboard() {
                   }}
                 >
                   {formatNaira(invoiceSummary!.total - invoiceSummary!.paid)}
+                </p>
+                <p className="text-[9px] font-medium uppercase tracking-wider mt-0.5" style={{ color: MUTED }}>
+                  Balance
                 </p>
               </div>
             </div>
@@ -859,9 +1142,12 @@ export default function ClientDashboard() {
                         )}
                       </div>
                       {inv.dueDate && (
-                        <p className="text-[10px] mt-1" style={{ color: `${DARK}30` }}>
-                          Due: {formatDate(inv.dueDate)}
-                        </p>
+                        <div className="flex items-center gap-1 mt-1">
+                          <Clock size={9} style={{ color: `${DARK}30` }} />
+                          <p className="text-[10px]" style={{ color: `${DARK}30` }}>
+                            Due: {formatDate(inv.dueDate)}
+                          </p>
+                        </div>
                       )}
                     </div>
 
@@ -958,15 +1244,18 @@ export default function ClientDashboard() {
 
 
         {/* ════════════════════════════════════════════════════════════════ */}
-        {/*  SECTION 6: MESSAGE                                            */}
+        {/*  SECTION 7: MESSAGE                                            */}
         {/* ════════════════════════════════════════════════════════════════ */}
         <div id="message-section" className="mb-8">
-          <p
-            className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-4"
-            style={{ color: MUTED }}
-          >
-            Send a message to your team
-          </p>
+          <div className="flex items-center gap-2 mb-4">
+            <Send size={14} style={{ color: MUTED }} />
+            <p
+              className="text-[11px] font-semibold uppercase tracking-[0.15em]"
+              style={{ color: MUTED }}
+            >
+              Send a message
+            </p>
+          </div>
 
           <div
             className="rounded-2xl overflow-hidden"
@@ -1028,12 +1317,15 @@ export default function ClientDashboard() {
           {/* Previous messages */}
           {clientMessages.length > 0 && (
             <div className="mt-4">
-              <p
-                className="text-[11px] font-medium uppercase tracking-wider mb-3"
-                style={{ color: `${DARK}35` }}
-              >
-                Previous Messages
-              </p>
+              <div className="flex items-center gap-1.5 mb-3">
+                <MessageSquare size={11} style={{ color: `${DARK}35` }} />
+                <p
+                  className="text-[11px] font-medium uppercase tracking-wider"
+                  style={{ color: `${DARK}35` }}
+                >
+                  Previous Messages
+                </p>
+              </div>
               <div className="space-y-2">
                 {clientMessages.map((a) => (
                   <div
@@ -1056,12 +1348,15 @@ export default function ClientDashboard() {
           {/* Recent activity log */}
           {activity.length > 0 && (
             <div className="mt-4">
-              <p
-                className="text-[11px] font-medium uppercase tracking-wider mb-3"
-                style={{ color: `${DARK}35` }}
-              >
-                Recent Activity
-              </p>
+              <div className="flex items-center gap-1.5 mb-3">
+                <Clock size={11} style={{ color: `${DARK}35` }} />
+                <p
+                  className="text-[11px] font-medium uppercase tracking-wider"
+                  style={{ color: `${DARK}35` }}
+                >
+                  Recent Activity
+                </p>
+              </div>
               <div className="space-y-1">
                 {activity.filter(a => a.action !== "client_note").slice(0, 5).map((a) => (
                   <div
