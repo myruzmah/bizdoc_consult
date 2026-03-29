@@ -14,6 +14,7 @@ import {
   UserCog, LogOut, ArrowLeft, Loader2, TrendingUp,
   CheckCircle2, Clock, Briefcase, AlertTriangle,
   ChevronRight, Search, Download, FileText, Monitor, Send, Plus,
+  ShieldCheck, BookOpen,
 } from "lucide-react";
 
 // ─── Brand (HR = general → Apple grey) ───────────────────────────────────────
@@ -21,7 +22,7 @@ const GREEN = "#86868B";   // Apple grey — general departments
 const GOLD  = "#C9A97E";
 const MILK  = "#FAFAF8";   // Milk white
 
-type Section = "overview" | "staff" | "attendance" | "performance" | "hiring" | "itstudents" | "training" | "commissions" | "reports";
+type Section = "overview" | "staff" | "attendance" | "performance" | "hiring" | "itstudents" | "training" | "commissions" | "policy" | "reports";
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 const MOCK_STAFF = [
@@ -161,6 +162,7 @@ export default function HRDashboard() {
     { key: "hiring",       icon: UserPlus,        label: "Hiring Pipeline" },
     { key: "itstudents",   icon: Monitor,         label: "IT Students"     },
     { key: "training",     icon: GraduationCap,   label: "Training Log"    },
+    { key: "policy",       icon: BookOpen,        label: "HR Policy"       },
     { key: "commissions",  icon: DollarSign,      label: "Commissions"     },
     { key: "reports",      icon: BarChart2,       label: "Reports"         },
   ];
@@ -234,6 +236,7 @@ export default function HRDashboard() {
             {activeSection === "hiring"      && <HiringSection joinApps={joinApps} />}
             {activeSection === "itstudents"  && <ITStudentsSection />}
             {activeSection === "training"    && <TrainingSection />}
+            {activeSection === "policy"      && <HRPolicySection />}
             {activeSection === "commissions" && <CommissionsSection />}
             {activeSection === "reports"     && <ReportsSection />}
           </div>
@@ -1013,6 +1016,179 @@ function ITStudentsSection() {
           ))}
         </div>
         <p className="text-[11px] opacity-30 mt-3" style={{ color: TEAL }}>Add more students using the intake form above.</p>
+      </div>
+    </div>
+  );
+}
+
+// ─── HR Policy Section ────────────────────────────────────────────────────────
+const POLICY_ITEMS = [
+  {
+    icon: "💰", title: "Salary & Commission",
+    rules: [
+      "Flat base salary: ₦20,000/month for ALL staff",
+      "Commission paid per completed task (set by Finance & CEO per service)",
+      "When monthly commission hits ₦30,000 → base salary STOPS. Commission only.",
+      "Staff have 2 months to reach ₦30,000/month commission. If not reached → substitution.",
+      "Everyone is a marketer. Leads, referrals, conversions count toward KPI.",
+    ]
+  },
+  {
+    icon: "⏰", title: "Working Hours",
+    rules: [
+      "Official hours: 8:30 AM – 3:00 PM, Monday – Friday",
+      "Punctuality is a KPI metric — tracked and reported at Hub Meeting",
+      "Any absence or late arrival must be notified by 8:30 AM",
+    ]
+  },
+  {
+    icon: "📅", title: "Leave Policy",
+    rules: [
+      "Entitlement: 3 working days per quarter (not cumulative — use it or lose it)",
+      "Replacement cover must be confirmed and briefed BEFORE leave is approved",
+      "Leave without replacement = disciplinary action",
+      "Emergency leave considered case-by-case by CEO",
+    ]
+  },
+  {
+    icon: "⚖️", title: "Discipline",
+    rules: [
+      "Level 1: Query — written, signed by staff, filed in HR record",
+      "Level 2: Suspension — duration set by CEO",
+      "No informal warnings — every issue is documented formally",
+      "3 queries in one quarter → automatic review for substitution",
+    ]
+  },
+  {
+    icon: "📱", title: "Content Engagement",
+    rules: [
+      "All staff MUST engage with HAMZURY content weekly (like, comment, share, save)",
+      "Content engagement is a KPI metric — checked at every Hub Meeting",
+      "Staff who consistently skip engagement will receive a query",
+      "Each department has its own content calendar — staff must follow it",
+    ]
+  },
+  {
+    icon: "🔐", title: "Security & Credentials",
+    rules: [
+      "CEO holds master record of all software login details",
+      "Client personal credentials (tax dashboard, CAC portal, govt portals) → ONLY with Dept Lead or CEO",
+      "No other staff may hold, screenshot, or share client login credentials",
+      "Staff credentials are issued by CEO — not self-managed",
+      "Weekly device roll call: staff report which company devices they hold",
+    ]
+  },
+  {
+    icon: "🏆", title: "Recognition & Awards",
+    rules: [
+      "Staff of the Week: Best sale of the week — announced at Hub Meeting",
+      "Best Staff Award: Monthly — chosen by KPI performance. Real recognition.",
+      "Student milestone celebrations: every quarter, internally — Skills & NITDA cohorts",
+      "Department milestones celebrated in department meeting",
+    ]
+  },
+  {
+    icon: "📋", title: "Hub Meeting (Weekly)",
+    rules: [
+      "Every week — full staff. This is non-negotiable.",
+      "Opens with 10 minutes of silence. No gadgets. Full presence.",
+      "Research presentation: one staff presents a topic. If adopted → they become Project Lead.",
+      "To-do lists reviewed: last week, this week, next week preview.",
+      "Bi-weekly: 30-minute training on sales or software (every other meeting).",
+    ]
+  },
+];
+
+const HR_DEVICE_STAFF = [
+  "Idris Ibrahim", "Abdullahi Musa", "Yusuf Haruna", "Khadija Saad", "Farida Munir",
+  "Tabitha John", "Maryam Ashir", "Abubakar Sadiq", "Sulaiman Hikma", "Salis",
+  "Abdulmalik Musa", "Dajot", "Lalo", "Rabilu Musa", "Habeeba", "Pius Emmanuel", "Abdulwafeed Tanko",
+];
+
+function HRPolicySection() {
+  const TEAL = "#86868B";
+  const GOLD = "#C9A97E";
+  const [expanded, setExpanded] = useState<number | null>(null);
+  const [rollCallDate, setRollCallDate] = useState(new Date().toISOString().split("T")[0]);
+  const [rollCall, setRollCall] = useState<Record<string, { device: string; health: string }>>({});
+
+  function updateRollCall(name: string, field: "device" | "health", val: string) {
+    setRollCall(p => ({ ...p, [name]: { ...p[name], device: p[name]?.device || "", health: p[name]?.health || "", [field]: val } }));
+  }
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-[18px] font-semibold" style={{ color: TEAL }}>HR Policy & Operations</h2>
+        <p className="text-[12px] opacity-50 mt-0.5" style={{ color: TEAL }}>HAMZURY internal rules — all staff are bound by these policies from Day 1</p>
+      </div>
+
+      {/* Policy Cards */}
+      <div className="space-y-2">
+        {POLICY_ITEMS.map((item, i) => (
+          <div key={i} className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: `${TEAL}10` }}>
+            <button className="w-full flex items-center gap-3 p-4 text-left" onClick={() => setExpanded(expanded === i ? null : i)}>
+              <span className="text-[20px] shrink-0">{item.icon}</span>
+              <p className="flex-1 text-[14px] font-medium" style={{ color: TEAL }}>{item.title}</p>
+              <span className="text-[10px] opacity-30 mr-2" style={{ color: TEAL }}>{item.rules.length} rules</span>
+              {expanded === i
+                ? <ChevronRight size={14} className="opacity-30 rotate-90 transition-transform" />
+                : <ChevronRight size={14} className="opacity-30 transition-transform" />}
+            </button>
+            {expanded === i && (
+              <div className="px-5 pb-4 pt-0 space-y-1.5 border-t" style={{ borderColor: `${TEAL}06` }}>
+                {item.rules.map((rule, j) => (
+                  <div key={j} className="flex gap-2 text-[12px]">
+                    <span className="opacity-30 shrink-0 mt-0.5" style={{ color: TEAL }}>•</span>
+                    <span className="opacity-60" style={{ color: TEAL }}>{rule}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Weekly Device & Health Roll Call */}
+      <div className="bg-white rounded-2xl border p-5 space-y-4" style={{ borderColor: `${TEAL}10` }}>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-[14px] font-semibold" style={{ color: TEAL }}>Weekly Device & Health Roll Call</p>
+            <p className="text-[11px] opacity-40 mt-0.5" style={{ color: TEAL }}>CEO records which devices each staff holds + health status</p>
+          </div>
+          <input type="date" value={rollCallDate} onChange={e => setRollCallDate(e.target.value)}
+            className="px-3 py-1.5 rounded-xl border text-[12px] outline-none"
+            style={{ borderColor: `${TEAL}20` }} />
+        </div>
+        <div className="space-y-2">
+          {HR_DEVICE_STAFF.map(name => (
+            <div key={name} className="grid grid-cols-3 gap-2 items-center">
+              <p className="text-[12px] font-medium" style={{ color: TEAL }}>{name}</p>
+              <input
+                placeholder="Devices held (phone, laptop…)"
+                value={rollCall[name]?.device || ""}
+                onChange={e => updateRollCall(name, "device", e.target.value)}
+                className="px-2.5 py-1.5 rounded-lg border text-[11px] outline-none"
+                style={{ borderColor: `${TEAL}15` }} />
+              <select
+                value={rollCall[name]?.health || ""}
+                onChange={e => updateRollCall(name, "health", e.target.value)}
+                className="px-2.5 py-1.5 rounded-lg border text-[11px] outline-none bg-white"
+                style={{ borderColor: `${TEAL}15`, color: TEAL }}>
+                <option value="">Health status…</option>
+                <option value="Fit">Fit ✓</option>
+                <option value="Unwell — needs cover">Unwell — needs cover</option>
+                <option value="On leave">On approved leave</option>
+                <option value="Absent (no notice)">Absent (no notice)</option>
+              </select>
+            </div>
+          ))}
+        </div>
+        <button onClick={() => toast.success("Roll call saved")}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-medium"
+          style={{ backgroundColor: TEAL, color: GOLD }}>
+          <ShieldCheck size={14} />Save Roll Call for {rollCallDate}
+        </button>
       </div>
     </div>
   );

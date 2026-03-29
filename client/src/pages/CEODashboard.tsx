@@ -19,6 +19,7 @@ import {
   CalendarDays, ClipboardCheck, FolderOpen, AlertTriangle,
   TrendingUp, Users, CheckCircle2, Clock, FileText, BookOpen,
   GraduationCap, Shield, Lock, Calculator, Loader2,
+  Coffee, Mic, Star, ChevronDown, ChevronUp, Plus, Trash2, Send,
 } from "lucide-react";
 
 // ─── Brand (CEO = general → Apple grey) ──────────────────────────────────────
@@ -26,7 +27,7 @@ const GREEN = "#86868B";   // Apple grey
 const GOLD = "#C9A97E";
 const MILK = "#FAFAF8";    // Milk white
 
-type Section = "overview" | "command" | "analytics" | "calendar" | "assign" | "files";
+type Section = "overview" | "hubmeeting" | "command" | "analytics" | "calendar" | "assign" | "files";
 
 // ─── Mock Seed Data (replace with real data at launch) ──────────────────────
 const MOCK_REVENUE = [
@@ -90,8 +91,9 @@ export default function CEODashboard() {
   const deptStats = deptStatsQuery.data || [];
 
   const sidebarItems: { key: Section; icon: React.ElementType; label: string }[] = [
-    { key: "overview", icon: LayoutDashboard, label: "Overview" },
-    { key: "command", icon: Zap, label: "Command Center" },
+    { key: "overview",   icon: LayoutDashboard, label: "Overview" },
+    { key: "hubmeeting", icon: Coffee,          label: "Hub Meeting" },
+    { key: "command",    icon: Zap,             label: "Command Center" },
     { key: "analytics", icon: BarChart2, label: "Analytics" },
     { key: "calendar", icon: CalendarDays, label: "Calendar" },
     { key: "assign", icon: ClipboardCheck, label: "Assign Tasks" },
@@ -167,6 +169,7 @@ export default function CEODashboard() {
               <CommandSection escalations={escalations} resolvedRefs={resolvedRefs} setResolvedRefs={setResolvedRefs} pendingComms={pendingComms} onSwitchToAssign={() => setActiveSection("assign")} />
             )}
             {activeSection === "analytics" && <AnalyticsSection revenueStats={revenueStats} deptStats={deptStats} leads={leads} />}
+            {activeSection === "hubmeeting" && <HubMeetingSection />}
             {activeSection === "calendar" && <CalendarSection />}
             {activeSection === "assign" && <AssignSection />}
             {activeSection === "files" && <FilesSection />}
@@ -673,6 +676,271 @@ function AssignSection() {
               </div>
               <p className="text-sm font-normal" style={{ color: GREEN }}>{t.title}</p>
               <p className="text-xs opacity-40 mt-1" style={{ color: GREEN }}>{t.assignee} · Due {t.due}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Hub Meeting Section ──────────────────────────────────────────────────────
+const STANDING_AGENDA = [
+  { time: "0:00–10:00",  icon: "🤫", title: "Solitude",              detail: "10 minutes of silence. All gadgets down. No phones, no laptops. Mental reset before business." },
+  { time: "10:00–20:00", icon: "📋", title: "Last Week Review",       detail: "Go through last week's to-do list. What was done? What wasn't? Why? No blame — solutions only." },
+  { time: "20:00–35:00", icon: "✅", title: "This Week's To-Do List", detail: "Set and confirm every department's deliverables for the week. Clear ownership, clear deadline." },
+  { time: "35:00–45:00", icon: "🔭", title: "Next Week Preview",      detail: "Brief preview of what's coming next week so departments can prepare in advance." },
+  { time: "45:00–55:00", icon: "🎙️", title: "Research Presentation",  detail: "Assigned staff presents their weekly topic: what it is, how it benefits HAMZURY, time/cost savings, implementation plan + budget. If adopted → presenter becomes project lead." },
+  { time: "55:00–60:00", icon: "📣", title: "Dept Updates + Closes",  detail: "Each dept head: 1-minute update. Staff of the Week announced. Content engagement check. Any queries/discipline if needed." },
+];
+
+const RESEARCH_STAFF = [
+  "Idris Ibrahim (CEO)", "Abdullahi Musa (BizDoc)", "Yusuf Haruna (Compliance)",
+  "Khadija Saad (BizDev)", "Farida Munir (BizDev)", "Tabitha John (CSO)",
+  "Maryam Ashir (Media)", "Abubakar Sadiq (Finance)", "Sulaiman Hikma (Media)",
+  "Abdulmalik Musa (Skills)", "Dajot (Tech)", "Lalo (Design)", "Rabilu Musa (Security)",
+  "Habeeba", "Pius Emmanuel",
+];
+
+function HubMeetingSection() {
+  const today = new Date();
+  // Get this week's Monday
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+  const weekLabel = monday.toLocaleDateString("en-NG", { day: "numeric", month: "long", year: "numeric" });
+
+  const [thisWeekTodos, setThisWeekTodos] = useState<string[]>([""]);
+  const [nextWeekTodos, setNextWeekTodos] = useState<string[]>([""]);
+  const [researchTopic, setResearchTopic] = useState("");
+  const [researchStaff, setResearchStaff] = useState(RESEARCH_STAFF[0]);
+  const [staffOfWeek, setStaffOfWeek] = useState("");
+  const [biWeeklyTopic, setBiWeeklyTopic] = useState("");
+  const [expanded, setExpanded] = useState<number | null>(null);
+
+  function addTodo(which: "this" | "next") {
+    if (which === "this") setThisWeekTodos(p => [...p, ""]);
+    else setNextWeekTodos(p => [...p, ""]);
+  }
+  function updateTodo(which: "this" | "next", i: number, val: string) {
+    if (which === "this") setThisWeekTodos(p => p.map((t, idx) => idx === i ? val : t));
+    else setNextWeekTodos(p => p.map((t, idx) => idx === i ? val : t));
+  }
+  function removeTodo(which: "this" | "next", i: number) {
+    if (which === "this") setThisWeekTodos(p => p.filter((_, idx) => idx !== i));
+    else setNextWeekTodos(p => p.filter((_, idx) => idx !== i));
+  }
+
+  return (
+    <div className="space-y-8 max-w-3xl">
+      {/* Header */}
+      <div>
+        <h2 className="text-[18px] font-semibold" style={{ color: GREEN }}>Weekly Hub Meeting</h2>
+        <p className="text-[12px] opacity-50 mt-0.5" style={{ color: GREEN }}>Week of {weekLabel} · Standing agenda — every week, same structure</p>
+      </div>
+
+      {/* Standing Agenda */}
+      <div>
+        <p className="text-[11px] uppercase tracking-widest opacity-40 mb-3" style={{ color: GREEN }}>Standing Agenda (60 minutes)</p>
+        <div className="space-y-2">
+          {STANDING_AGENDA.map((item, i) => (
+            <div key={i} className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: `${GREEN}10` }}>
+              <button className="w-full flex items-center gap-3 p-4 text-left" onClick={() => setExpanded(expanded === i ? null : i)}>
+                <span className="text-[18px] shrink-0">{item.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-medium" style={{ color: GREEN }}>{item.title}</p>
+                  <p className="text-[10px] opacity-40 font-mono" style={{ color: GREEN }}>{item.time}</p>
+                </div>
+                {expanded === i ? <ChevronUp size={14} className="opacity-30 shrink-0" /> : <ChevronDown size={14} className="opacity-30 shrink-0" />}
+              </button>
+              {expanded === i && (
+                <div className="px-4 pb-4 pt-0 text-[12px] opacity-60 border-t" style={{ borderColor: `${GREEN}06`, color: GREEN }}>
+                  {item.detail}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Research Topic This Week */}
+      <div className="bg-white rounded-2xl border p-5 space-y-4" style={{ borderColor: `${GREEN}10` }}>
+        <div className="flex items-center gap-2 mb-1">
+          <Mic size={15} style={{ color: GOLD }} />
+          <p className="text-[13px] font-semibold" style={{ color: GREEN }}>This Week's Research Assignment</p>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="col-span-2">
+            <label className="text-[10px] uppercase tracking-wider opacity-40 block mb-1" style={{ color: GREEN }}>Topic</label>
+            <input value={researchTopic} onChange={e => setResearchTopic(e.target.value)}
+              placeholder="e.g. Notion AI for project management, Canva AI features, WhatsApp Business API…"
+              className="w-full px-3 py-2 rounded-xl border text-[13px] outline-none"
+              style={{ borderColor: `${GREEN}20` }} />
+          </div>
+          <div>
+            <label className="text-[10px] uppercase tracking-wider opacity-40 block mb-1" style={{ color: GREEN }}>Assigned To</label>
+            <select value={researchStaff} onChange={e => setResearchStaff(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border text-[13px] outline-none bg-white"
+              style={{ borderColor: `${GREEN}20` }}>
+              {RESEARCH_STAFF.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-[10px] uppercase tracking-wider opacity-40 block mb-1" style={{ color: GREEN }}>Format</label>
+            <select className="w-full px-3 py-2 rounded-xl border text-[13px] outline-none bg-white"
+              style={{ borderColor: `${GREEN}20` }}>
+              <option>Video + Presentation</option>
+              <option>Live Demo</option>
+              <option>Slide Deck</option>
+              <option>Discussion-led</option>
+            </select>
+          </div>
+        </div>
+        <div className="text-[11px] px-3 py-2 rounded-xl" style={{ backgroundColor: `${GOLD}12`, color: GREEN }}>
+          If adopted: <strong>{researchStaff.split(" (")[0]}</strong> becomes Project Lead — presents implementation plan + budget at next week's meeting.
+        </div>
+      </div>
+
+      {/* Bi-weekly Training */}
+      <div className="bg-white rounded-2xl border p-5 space-y-3" style={{ borderColor: `${GREEN}10` }}>
+        <div className="flex items-center gap-2 mb-1">
+          <GraduationCap size={15} style={{ color: GOLD }} />
+          <p className="text-[13px] font-semibold" style={{ color: GREEN }}>Bi-Weekly Training (30 min — every 2 weeks)</p>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="col-span-2">
+            <label className="text-[10px] uppercase tracking-wider opacity-40 block mb-1" style={{ color: GREEN }}>Training Topic</label>
+            <input value={biWeeklyTopic} onChange={e => setBiWeeklyTopic(e.target.value)}
+              placeholder="e.g. Cold outreach script, Using tRPC dashboard, LinkedIn prospecting…"
+              className="w-full px-3 py-2 rounded-xl border text-[13px] outline-none"
+              style={{ borderColor: `${GREEN}20` }} />
+          </div>
+          <div>
+            <label className="text-[10px] uppercase tracking-wider opacity-40 block mb-1" style={{ color: GREEN }}>Category</label>
+            <select className="w-full px-3 py-2 rounded-xl border text-[13px] outline-none bg-white"
+              style={{ borderColor: `${GREEN}20` }}>
+              <option>Sales Techniques</option>
+              <option>Software / Tool Training</option>
+              <option>Client Management</option>
+              <option>Brand Ambassador</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-[10px] uppercase tracking-wider opacity-40 block mb-1" style={{ color: GREEN }}>Trainer</label>
+            <select className="w-full px-3 py-2 rounded-xl border text-[13px] outline-none bg-white"
+              style={{ borderColor: `${GREEN}20` }}>
+              {["CEO (Idris Ibrahim)", "Muhammad Hamzury (Founder)", ...RESEARCH_STAFF.slice(0, 5)].map(s => (
+                <option key={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Staff of the Week */}
+      <div className="bg-white rounded-2xl border p-5 space-y-3" style={{ borderColor: `${GREEN}10` }}>
+        <div className="flex items-center gap-2 mb-1">
+          <Star size={15} style={{ color: GOLD }} />
+          <p className="text-[13px] font-semibold" style={{ color: GREEN }}>Staff of the Week — Best Sale</p>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-[10px] uppercase tracking-wider opacity-40 block mb-1" style={{ color: GREEN }}>Staff Member</label>
+            <select value={staffOfWeek} onChange={e => setStaffOfWeek(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border text-[13px] outline-none bg-white"
+              style={{ borderColor: `${GREEN}20` }}>
+              <option value="">— Select —</option>
+              {RESEARCH_STAFF.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-[10px] uppercase tracking-wider opacity-40 block mb-1" style={{ color: GREEN }}>Sale / Achievement</label>
+            <input placeholder="e.g. Closed Tilz Spa ₦500k, 3 new leads converted…"
+              className="w-full px-3 py-2 rounded-xl border text-[13px] outline-none"
+              style={{ borderColor: `${GREEN}20` }} />
+          </div>
+        </div>
+        {staffOfWeek && (
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{ backgroundColor: `${GOLD}12` }}>
+            <Star size={16} style={{ color: GOLD }} />
+            <p className="text-[13px] font-semibold" style={{ color: GREEN }}>🏆 Staff of the Week: {staffOfWeek.split(" (")[0]}</p>
+          </div>
+        )}
+      </div>
+
+      {/* This Week's To-Do List */}
+      <div className="bg-white rounded-2xl border p-5 space-y-3" style={{ borderColor: `${GREEN}10` }}>
+        <div className="flex items-center justify-between">
+          <p className="text-[13px] font-semibold" style={{ color: GREEN }}>✅ This Week's To-Do List</p>
+          <button onClick={() => addTodo("this")} className="text-[11px] px-3 py-1.5 rounded-xl"
+            style={{ backgroundColor: `${GREEN}12`, color: GREEN }}>
+            <Plus size={11} className="inline mr-1" />Add
+          </button>
+        </div>
+        <div className="space-y-2">
+          {thisWeekTodos.map((todo, i) => (
+            <div key={i} className="flex gap-2 items-center">
+              <span className="text-[11px] opacity-30 font-mono w-5 text-right shrink-0" style={{ color: GREEN }}>{i + 1}.</span>
+              <input value={todo} onChange={e => updateTodo("this", i, e.target.value)}
+                placeholder={`To-do item ${i + 1}…`}
+                className="flex-1 px-3 py-2 rounded-xl border text-[13px] outline-none"
+                style={{ borderColor: `${GREEN}15` }} />
+              {thisWeekTodos.length > 1 && (
+                <button onClick={() => removeTodo("this", i)} className="opacity-30 hover:opacity-60">
+                  <Trash2 size={13} style={{ color: GREEN }} />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Next Week's To-Do List */}
+      <div className="bg-white rounded-2xl border p-5 space-y-3" style={{ borderColor: `${GREEN}10` }}>
+        <div className="flex items-center justify-between">
+          <p className="text-[13px] font-semibold" style={{ color: GREEN }}>🔭 Next Week Preview</p>
+          <button onClick={() => addTodo("next")} className="text-[11px] px-3 py-1.5 rounded-xl"
+            style={{ backgroundColor: `${GREEN}12`, color: GREEN }}>
+            <Plus size={11} className="inline mr-1" />Add
+          </button>
+        </div>
+        <div className="space-y-2">
+          {nextWeekTodos.map((todo, i) => (
+            <div key={i} className="flex gap-2 items-center">
+              <span className="text-[11px] opacity-30 font-mono w-5 text-right shrink-0" style={{ color: GREEN }}>{i + 1}.</span>
+              <input value={todo} onChange={e => updateTodo("next", i, e.target.value)}
+                placeholder={`Next week item ${i + 1}…`}
+                className="flex-1 px-3 py-2 rounded-xl border text-[13px] outline-none"
+                style={{ borderColor: `${GREEN}15` }} />
+              {nextWeekTodos.length > 1 && (
+                <button onClick={() => removeTodo("next", i)} className="opacity-30 hover:opacity-60">
+                  <Trash2 size={13} style={{ color: GREEN }} />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+        <button onClick={() => toast.success("Meeting plan saved locally")}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-medium"
+          style={{ backgroundColor: GREEN, color: GOLD }}>
+          <Send size={13} />Save This Week's Plan
+        </button>
+      </div>
+
+      {/* Policy Reminders */}
+      <div className="rounded-2xl border p-5 space-y-3" style={{ borderColor: `${GREEN}08`, backgroundColor: `${GREEN}04` }}>
+        <p className="text-[12px] font-semibold" style={{ color: GREEN }}>Standing Reminders (check at every meeting)</p>
+        <div className="space-y-1.5">
+          {[
+            "📱 Content engagement check — did all staff like/comment on this week's posts?",
+            "🔐 Security check — any credentials shared outside of dept lead / CEO?",
+            "📋 Device roll call — all devices accounted for? Any issues?",
+            "⏰ Attendance — working hours 8:30am–3:00pm being respected?",
+            "📅 Leave requests — any upcoming leave? Replacement confirmed?",
+            "💰 Commission check — any staff approaching ₦30k threshold or 2-month deadline?",
+          ].map((r, i) => (
+            <div key={i} className="flex gap-2 text-[12px]">
+              <span className="shrink-0">{r.split(" ")[0]}</span>
+              <span className="opacity-50" style={{ color: GREEN }}>{r.split(" ").slice(1).join(" ")}</span>
             </div>
           ))}
         </div>
