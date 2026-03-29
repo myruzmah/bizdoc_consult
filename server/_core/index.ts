@@ -11,6 +11,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./cookies";
 import * as db from "../db";
 import { seedStaffUsers } from "../seed-staff";
+import { runMigrations } from "../db";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -507,11 +508,14 @@ Sitemap: ${base}/sitemap.xml
     console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
 
-  server.listen(port, () => {
+  server.listen(port, async () => {
     console.log(`Server running on http://localhost:${port}/`);
-    // Auto-seed staff logins if DB is empty (safe — skips if already seeded)
-    if (db.getDb) {
-      seedStaffUsers().catch(err => console.error("[seed] Staff seed error:", err));
+    // Run migrations then seed staff — both are safe to re-run
+    try {
+      await runMigrations();
+      await seedStaffUsers();
+    } catch (err) {
+      console.log("[startup] DB init error:", String(err));
     }
   });
 }

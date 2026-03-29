@@ -1,7 +1,10 @@
 import { eq, desc, sql, and, gte, lte, ne, like } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+import { migrate } from "drizzle-orm/mysql2/migrator";
 import { createHash, randomBytes, timingSafeEqual, scrypt } from "crypto";
 import { promisify } from "util";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
 const scryptAsync = promisify(scrypt);
 import {
   InsertUser, users, User,
@@ -68,6 +71,22 @@ export async function getDb() {
     }
   }
   return _db;
+}
+
+export async function runMigrations(): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    console.log("[migrate] Database not available — skipping migrations");
+    return;
+  }
+  try {
+    // In production: dist/index.js lives in dist/, migrations are in drizzle/ at root
+    const migrationsFolder = join(dirname(fileURLToPath(import.meta.url)), "../drizzle");
+    await migrate(db, { migrationsFolder });
+    console.log("[migrate] All migrations applied successfully");
+  } catch (err) {
+    console.log("[migrate] Migration error (tables may already exist):", String(err));
+  }
 }
 
 // ─── Users ───────────────────────────────────────────────────────────────────
