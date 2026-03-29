@@ -2195,13 +2195,21 @@ NEVER: hype words, urgency pressure, [READY] or [SHOW_PAYMENT] before client sig
         return invoice;
       }),
 
-    /** Public — returns the HAMZURY bank account details for transfer payment */
+    /** Public — returns bank account details for transfer payment (general + bizdoc) */
     bankDetails: publicProcedure.query(() => {
       return {
-        bankName: ENV.bankName,
-        accountNumber: ENV.bankAccountNumber,
-        accountName: ENV.bankAccountName,
-        configured: !!(ENV.bankName && ENV.bankAccountNumber && ENV.bankAccountName),
+        general: {
+          bankName: ENV.bankName,
+          accountNumber: ENV.bankAccountNumber,
+          accountName: ENV.bankAccountName,
+          configured: !!(ENV.bankAccountNumber && ENV.bankAccountName),
+        },
+        bizdoc: {
+          bankName: ENV.bizdocBankName,
+          accountNumber: ENV.bizdocBankAccountNumber,
+          accountName: ENV.bizdocBankAccountName,
+          configured: !!(ENV.bizdocBankAccountNumber && ENV.bizdocBankAccountName),
+        },
       };
     }),
 

@@ -210,6 +210,12 @@ export default function ClientDashboard() {
   const statusIndex = task.statusIndex;
   const progress = task.progress;
 
+  // Pick correct bank account: BizDoc clients use BIZDOC LTD account
+  const isBizdoc = (task.department || "").toLowerCase() === "bizdoc";
+  const activeBankDetails = bankDetails
+    ? (isBizdoc && bankDetails.bizdoc.configured ? bankDetails.bizdoc : bankDetails.general)
+    : null;
+
   const tabs: { id: TabId; label: string; icon: React.ReactElement }[] = [
     { id: "overview", label: "Overview", icon: <FileText size={14} /> },
     { id: "activity", label: "Activity", icon: <Activity size={14} /> },
@@ -647,7 +653,7 @@ export default function ClientDashboard() {
                           </div>
 
                           {/* Bank transfer section — only for unpaid/partial invoices */}
-                          {!isPaid && balance > 0 && bankDetails?.configured && (
+                          {!isPaid && balance > 0 && activeBankDetails?.configured && (
                             <div className="px-4 pb-4">
                               <div className="rounded-xl p-3 mb-3" style={{ backgroundColor: `${PRIMARY}06`, border: `1px solid ${PRIMARY}12` }}>
                                 <p className="text-[9px] font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5" style={{ color: PRIMARY }}>
@@ -656,11 +662,11 @@ export default function ClientDashboard() {
                                 <div className="space-y-1">
                                   <div className="flex justify-between items-center">
                                     <span className="text-[11px] opacity-50" style={{ color: DARK }}>Bank</span>
-                                    <span className="text-[11px] font-medium" style={{ color: DARK }}>{bankDetails.bankName}</span>
+                                    <span className="text-[11px] font-medium" style={{ color: DARK }}>{activeBankDetails!.bankName}</span>
                                   </div>
                                   <div className="flex justify-between items-center">
                                     <span className="text-[11px] opacity-50" style={{ color: DARK }}>Account Name</span>
-                                    <span className="text-[11px] font-medium" style={{ color: DARK }}>{bankDetails.accountName}</span>
+                                    <span className="text-[11px] font-medium" style={{ color: DARK }}>{activeBankDetails!.accountName}</span>
                                   </div>
                                   <div className="flex justify-between items-center">
                                     <span className="text-[11px] opacity-50" style={{ color: DARK }}>Account No.</span>
@@ -668,12 +674,12 @@ export default function ClientDashboard() {
                                       className="flex items-center gap-1 text-[11px] font-mono font-bold transition-opacity hover:opacity-70"
                                       style={{ color: PRIMARY }}
                                       onClick={() => {
-                                        navigator.clipboard.writeText(bankDetails.accountNumber);
+                                        navigator.clipboard.writeText(activeBankDetails!.accountNumber);
                                         setCopiedAcct(true);
                                         setTimeout(() => setCopiedAcct(false), 2000);
                                       }}
                                     >
-                                      {bankDetails.accountNumber}
+                                      {activeBankDetails!.accountNumber}
                                       <Copy size={10} />
                                     </button>
                                   </div>

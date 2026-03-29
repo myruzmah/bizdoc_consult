@@ -14,8 +14,12 @@ export const ENV = {
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
   anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? "",
   qwenApiKey: process.env.QWEN_API_KEY ?? "",
-  // Bank transfer details (displayed to clients on invoices)
-  bankName: process.env.BANK_NAME ?? "",
+  // Bank transfer details — general (HAMZURY LTD)
+  bankName: process.env.BANK_NAME ?? "MONIEPOINT",
   bankAccountNumber: process.env.BANK_ACCOUNT_NUMBER ?? "",
   bankAccountName: process.env.BANK_ACCOUNT_NAME ?? "",
+  // BizDoc-specific account (BIZDOC LTD)
+  bizdocBankName: process.env.BIZDOC_BANK_NAME ?? "MONIEPOINT",
+  bizdocBankAccountNumber: process.env.BIZDOC_BANK_ACCOUNT_NUMBER ?? "",
+  bizdocBankAccountName: process.env.BIZDOC_BANK_ACCOUNT_NAME ?? "",
 };
