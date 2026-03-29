@@ -108,6 +108,7 @@ export default function ClientDashboard() {
   const [messageSent, setMessageSent] = useState(false);
   const [claimedInvoices, setClaimedInvoices] = useState<Set<string>>(new Set());
   const [copiedAcct, setCopiedAcct] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const msgRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -396,8 +397,7 @@ export default function ClientDashboard() {
                     className="mt-3 text-[12px] font-medium px-3 py-1.5 rounded-full"
                     style={{ backgroundColor: `${PRIMARY}10`, color: PRIMARY }}
                     onClick={() => {
-                      const chatInput = document.querySelector('input[placeholder*="question"]') as HTMLInputElement;
-                      if (chatInput) { chatInput.value = "What else does my business need?"; chatInput.focus(); }
+                      setChatOpen(true)
                     }}
                   >
                     Ask my advisor
@@ -418,10 +418,7 @@ export default function ClientDashboard() {
               {/* Quick Actions */}
               <div className="flex flex-wrap gap-2 mb-6">
                 {[
-                  { label: "Talk to my advisor", action: () => {
-                    const chatInput = document.querySelector('input[placeholder*="question"]') as HTMLInputElement;
-                    if (chatInput) { chatInput.focus(); }
-                  }},
+                  { label: "Talk to my advisor", action: () => setChatOpen(true) },
                   { label: "Upload a document", action: () => toast("Document upload coming soon. Send via WhatsApp: +234 806 714 9356") },
                   { label: "Book a call", action: () => window.open("https://wa.me/2348067149356?text=I'd like to book a call. My ref: " + task.ref, "_blank") },
                 ].map(btn => (
@@ -927,8 +924,8 @@ export default function ClientDashboard() {
           </p>
         </div>
       </main>
-      {/* Embedded AI Advisor Chat */}
-      <ChatWidget department="general" />
+      {/* AI Advisor Chat — controlled, opens when client clicks upsell */}
+      <ChatWidget department="general" open={chatOpen} onClose={() => setChatOpen(false)} />
     </div>
   );
 }
