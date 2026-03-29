@@ -892,6 +892,31 @@ export default function ClientDashboard() {
           ))}
         </div>
 
+        {/* ── More from HAMZURY — contextual upsell ── */}
+        <div className="mt-8 pt-6" style={{ borderTop: `1px solid ${PRIMARY}08` }}>
+          <p className="text-[11px] font-bold uppercase tracking-wider mb-4" style={{ color: "#B48C4C" }}>More from HAMZURY</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="rounded-xl p-4 cursor-pointer hover:shadow-sm transition-shadow"
+              style={{ backgroundColor: WHITE, border: `1px solid #1B4D3E20` }}
+              onClick={() => window.location.href = "/bizdoc"}>
+              <p className="text-[13px] font-semibold mb-1" style={{ color: "#1B4D3E" }}>BizDoc Consult</p>
+              <p className="text-[12px]" style={{ color: DARK, opacity: 0.6 }}>Registration, licences, compliance, templates, and ongoing management.</p>
+            </div>
+            <div className="rounded-xl p-4 cursor-pointer hover:shadow-sm transition-shadow"
+              style={{ backgroundColor: WHITE, border: `1px solid #0A1F1C20` }}
+              onClick={() => window.location.href = "/systemise"}>
+              <p className="text-[13px] font-semibold mb-1" style={{ color: "#0A1F1C" }}>Systemise</p>
+              <p className="text-[12px]" style={{ color: DARK, opacity: 0.6 }}>Website, branding, social media, automation, AI agents, and dashboards.</p>
+            </div>
+            <div className="rounded-xl p-4 cursor-pointer hover:shadow-sm transition-shadow"
+              style={{ backgroundColor: WHITE, border: `1px solid #1B2A4A20` }}
+              onClick={() => window.location.href = "/skills"}>
+              <p className="text-[13px] font-semibold mb-1" style={{ color: "#1B2A4A" }}>HAMZURY Skills</p>
+              <p className="text-[12px]" style={{ color: DARK, opacity: 0.6 }}>AI training, founder programs, team enablement, and practical cohorts.</p>
+            </div>
+          </div>
+        </div>
+
         {/* ── Footer ── */}
         <div className="text-center pt-8 pb-4 space-y-2">
           <p className="text-[11px] opacity-25" style={{ color: DARK }}>
