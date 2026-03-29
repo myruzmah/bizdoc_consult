@@ -8,6 +8,7 @@ import {
   Loader2, LogOut, ChevronDown, ChevronUp,
   ClipboardList, CheckCircle2, BarChart3,
   Play, Send, RotateCcw, Flag,
+  Users, Eye, EyeOff, Plus, BadgeCheck, TrendingDown,
 } from "lucide-react";
 
 // ─── Palette ──────────────────────────────────────────────────────────────────
@@ -24,12 +25,13 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   "Completed":         { bg: "rgba(34,197,94,0.10)",   text: "#16A34A" },
 };
 
-type Tab = "queue" | "review" | "stats";
+type Tab = "queue" | "review" | "stats" | "clients";
 
 const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
-  { id: "queue",  label: "Task Queue",  icon: <ClipboardList size={16} /> },
-  { id: "review", label: "QA Review",   icon: <CheckCircle2 size={16} /> },
-  { id: "stats",  label: "Stats",       icon: <BarChart3 size={16} /> },
+  { id: "queue",   label: "Task Queue",   icon: <ClipboardList size={16} /> },
+  { id: "review",  label: "QA Review",    icon: <CheckCircle2 size={16} /> },
+  { id: "stats",   label: "Stats",        icon: <BarChart3 size={16} /> },
+  { id: "clients", label: "Tax Clients",  icon: <Users size={16} /> },
 ];
 
 // ─── Status Badge ─────────────────────────────────────────────────────────────
@@ -76,6 +78,7 @@ export default function BizDocLeadDashboard() {
   );
   const pendingQuery = trpc.tasks.pending.useQuery(undefined, { refetchInterval: 15000 });
   const checklistQueries = (trpc.tasks as any).checklist?.useQuery as any; // checklist per task loaded inline
+  const subsQuery = trpc.subscriptions.list.useQuery(undefined, { refetchInterval: 30000 });
 
   // ─── Mutations ────────────────────────────────────────────────────────────
   const updateStatus = trpc.tasks.updateStatus.useMutation({
@@ -220,6 +223,9 @@ export default function BizDocLeadDashboard() {
             avgDays={avgDays}
             breakdown={statusBreakdown}
           />
+        )}
+        {activeTab === "clients" && (
+          <TaxClientsTab subs={subsQuery.data ?? []} />
         )}
       </main>
     </div>
@@ -575,6 +581,359 @@ function StatsTab({
           })}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Tax Clients Tab ──────────────────────────────────────────────────────────
+function TaxClientsTab({ subs }: { subs: any[] }) {
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const fmtNaira = (v: number | string | null | undefined) => {
+    if (!v) return "₦0";
+    return `₦${Number(v).toLocaleString("en-NG")}`;
+  };
+
+  if (subs.length === 0) {
+    return (
+      <div style={{ textAlign: "center", padding: "60px 20px", color: "#9CA3AF" }}>
+        <Users size={36} style={{ margin: "0 auto 12px", opacity: 0.3 }} />
+        <p style={{ fontSize: 14 }}>No tax clients yet.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: GREEN, margin: 0 }}>
+          Tax Management Clients
+        </h2>
+        <span style={{ fontSize: 12, color: "#9CA3AF" }}>{subs.length} active client{subs.length !== 1 ? "s" : ""}</span>
+      </div>
+
+      {subs.map(sub => (
+        <ClientCard
+          key={sub.id}
+          sub={sub}
+          expanded={expandedId === sub.id}
+          onToggle={() => setExpandedId(expandedId === sub.id ? null : sub.id)}
+          fmtNaira={fmtNaira}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ClientCard({ sub, expanded, onToggle, fmtNaira }: {
+  sub: any; expanded: boolean; onToggle: () => void; fmtNaira: (v: any) => string;
+}) {
+  const currentYear = new Date().getFullYear().toString();
+  const detailQuery = trpc.subscriptions.getById.useQuery(
+    { id: sub.id },
+    { enabled: expanded, refetchInterval: false },
+  );
+  const savingsQuery = trpc.taxSavings.getBySubscription.useQuery(
+    { subscriptionId: sub.id },
+    { enabled: expanded },
+  );
+  const credsQuery = trpc.credentials.listBySubscription.useQuery(
+    { subscriptionId: sub.id },
+    { enabled: expanded },
+  );
+
+  const [showSavingsForm, setShowSavingsForm] = useState(false);
+  const [grossTax, setGrossTax] = useState("");
+  const [savedAmt, setSavedAmt] = useState("");
+  const [savingsNotes, setSavingsNotes] = useState("");
+  const [tccDelivered, setTccDelivered] = useState(false);
+  const [showCredForm, setShowCredForm] = useState(false);
+  const [credPlatform, setCredPlatform] = useState("Tax Pro Max");
+  const [credUrl, setCredUrl] = useState("");
+  const [credUser, setCredUser] = useState("");
+  const [credPass, setCredPass] = useState("");
+  const [showPass, setShowPass] = useState(false);
+
+  const recordSavings = trpc.taxSavings.record.useMutation({
+    onSuccess: () => {
+      toast.success("Tax savings recorded");
+      setShowSavingsForm(false);
+      savingsQuery.refetch();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  const addCred = trpc.credentials.add.useMutation({
+    onSuccess: () => {
+      toast.success("Credentials saved");
+      setShowCredForm(false);
+      setCredPass("");
+      credsQuery.refetch();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const detail = detailQuery.data;
+  const savings = savingsQuery.data ?? [];
+  const creds = credsQuery.data ?? [];
+  const annualPayment = detail?.payments?.[0];
+  const hamzuryFee = savedAmt ? Number(savedAmt) * 0.1 : 0;
+
+  const STATUS_COLOR = sub.status === "active"
+    ? { bg: "rgba(34,197,94,0.10)", text: "#16A34A" }
+    : { bg: "rgba(239,68,68,0.10)", text: "#EF4444" };
+
+  return (
+    <div style={{
+      background: WHITE, borderRadius: 16,
+      border: `1px solid ${expanded ? GREEN : "rgba(27,77,62,0.12)"}`,
+      overflow: "hidden", transition: "border 0.2s",
+    }}>
+      {/* Card header */}
+      <button
+        onClick={onToggle}
+        style={{
+          width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "18px 20px", background: "none", border: "none", cursor: "pointer", textAlign: "left",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <div style={{
+            width: 40, height: 40, borderRadius: 12,
+            background: GREEN_LIGHT, display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <Users size={18} style={{ color: GREEN }} />
+          </div>
+          <div>
+            <p style={{ margin: 0, fontSize: 15, fontWeight: 600, color: GREEN }}>{sub.businessName || sub.clientName}</p>
+            <p style={{ margin: "2px 0 0", fontSize: 12, color: "#9CA3AF" }}>{sub.email} · {sub.service}</p>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <span style={{
+            fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 999,
+            background: STATUS_COLOR.bg, color: STATUS_COLOR.text, textTransform: "capitalize",
+          }}>
+            {sub.status}
+          </span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: GREEN }}>{fmtNaira(sub.monthlyFee)}/yr</span>
+          {expanded ? <ChevronUp size={16} style={{ color: GREEN }} /> : <ChevronDown size={16} style={{ color: "#9CA3AF" }} />}
+        </div>
+      </button>
+
+      {/* Expanded content */}
+      {expanded && (
+        <div style={{ borderTop: `1px solid rgba(27,77,62,0.08)`, padding: "20px" }}>
+          {detailQuery.isLoading ? (
+            <div style={{ textAlign: "center", padding: "20px" }}>
+              <Loader2 size={20} style={{ animation: "spin 1s linear infinite", color: GREEN }} />
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+
+              {/* Annual Payment Status */}
+              <section>
+                <p style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: 1, color: "#9CA3AF", marginBottom: 10, fontWeight: 600 }}>Annual Fee</p>
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 12,
+                  background: annualPayment?.status === "paid" ? "rgba(34,197,94,0.07)" : "rgba(234,179,8,0.08)",
+                  border: `1px solid ${annualPayment?.status === "paid" ? "rgba(34,197,94,0.2)" : "rgba(234,179,8,0.3)"}`,
+                  borderRadius: 12, padding: "14px 18px",
+                }}>
+                  <BadgeCheck size={20} style={{ color: annualPayment?.status === "paid" ? "#16A34A" : "#B45309", flexShrink: 0 }} />
+                  <div style={{ flex: 1 }}>
+                    <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: annualPayment?.status === "paid" ? "#16A34A" : "#B45309" }}>
+                      {fmtNaira(annualPayment?.amountPaid || annualPayment?.amountDue)} — {annualPayment?.status === "paid" ? "Paid" : "Pending"}
+                    </p>
+                    {annualPayment?.paidAt && (
+                      <p style={{ margin: "2px 0 0", fontSize: 12, color: "#9CA3AF" }}>
+                        Received {new Date(annualPayment.paidAt).toLocaleDateString("en-NG", { day: "numeric", month: "long", year: "numeric" })}
+                      </p>
+                    )}
+                  </div>
+                  <p style={{ margin: 0, fontSize: 12, color: "#9CA3AF" }}>Started {sub.startDate}</p>
+                </div>
+              </section>
+
+              {/* Portal Credentials */}
+              <section>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                  <p style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: 1, color: "#9CA3AF", margin: 0, fontWeight: 600 }}>Portal Credentials</p>
+                  <button
+                    onClick={() => setShowCredForm(v => !v)}
+                    style={{ fontSize: 12, color: GREEN, background: GREEN_LIGHT, border: "none", borderRadius: 8, padding: "4px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
+                  >
+                    <Plus size={12} /> Add
+                  </button>
+                </div>
+                {showCredForm && (
+                  <div style={{ background: GREEN_LIGHT, borderRadius: 12, padding: "14px", marginBottom: 10, display: "flex", flexDirection: "column", gap: 8 }}>
+                    <input
+                      placeholder="Platform (e.g. Tax Pro Max)"
+                      value={credPlatform}
+                      onChange={e => setCredPlatform(e.target.value)}
+                      style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(27,77,62,0.2)", fontSize: 13 }}
+                    />
+                    <input
+                      placeholder="Login URL (optional)"
+                      value={credUrl}
+                      onChange={e => setCredUrl(e.target.value)}
+                      style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(27,77,62,0.2)", fontSize: 13 }}
+                    />
+                    <input
+                      placeholder="Username / TIN"
+                      value={credUser}
+                      onChange={e => setCredUser(e.target.value)}
+                      style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(27,77,62,0.2)", fontSize: 13 }}
+                    />
+                    <div style={{ position: "relative" }}>
+                      <input
+                        type={showPass ? "text" : "password"}
+                        placeholder="Password"
+                        value={credPass}
+                        onChange={e => setCredPass(e.target.value)}
+                        style={{ padding: "8px 40px 8px 12px", borderRadius: 8, border: "1px solid rgba(27,77,62,0.2)", fontSize: 13, width: "100%", boxSizing: "border-box" }}
+                      />
+                      <button onClick={() => setShowPass(v => !v)} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#9CA3AF" }}>
+                        {showPass ? <EyeOff size={14} /> : <Eye size={14} />}
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (!credUser || !credPass) { toast.error("Username and password required"); return; }
+                        addCred.mutate({ subscriptionId: sub.id, platform: credPlatform, loginUrl: credUrl || undefined, username: credUser, password: credPass });
+                      }}
+                      style={{ background: GREEN, color: WHITE, border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+                    >
+                      {addCred.isPending ? "Saving…" : "Save Credentials"}
+                    </button>
+                  </div>
+                )}
+                {creds.length === 0 ? (
+                  <p style={{ fontSize: 13, color: "#9CA3AF", margin: 0 }}>No credentials stored yet.</p>
+                ) : creds.map((c: any) => (
+                  <div key={c.id} style={{
+                    display: "flex", alignItems: "center", gap: 12,
+                    background: "rgba(27,77,62,0.04)", borderRadius: 10, padding: "10px 14px", marginBottom: 6,
+                  }}>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: GREEN }}>{c.platform}</p>
+                      <p style={{ margin: "2px 0 0", fontSize: 12, color: "#6B7280" }}>
+                        User: <span style={{ fontFamily: "monospace" }}>{c.username}</span>
+                        {c.loginUrl && <> · <a href={c.loginUrl} target="_blank" rel="noopener noreferrer" style={{ color: GREEN }}>Open Portal</a></>}
+                      </p>
+                    </div>
+                    <span style={{ fontSize: 11, color: "#9CA3AF" }}>Added by {c.addedBy?.split("@")[0] || "staff"}</span>
+                  </div>
+                ))}
+              </section>
+
+              {/* Tax Savings & TCC */}
+              <section>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                  <p style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: 1, color: "#9CA3AF", margin: 0, fontWeight: 600 }}>
+                    Tax Savings — {currentYear}
+                  </p>
+                  <button
+                    onClick={() => setShowSavingsForm(v => !v)}
+                    style={{ fontSize: 12, color: GREEN, background: GREEN_LIGHT, border: "none", borderRadius: 8, padding: "4px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
+                  >
+                    <Plus size={12} /> Record
+                  </button>
+                </div>
+
+                {showSavingsForm && (
+                  <div style={{ background: GREEN_LIGHT, borderRadius: 12, padding: "14px", marginBottom: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+                    <label style={{ fontSize: 12, color: GREEN, fontWeight: 600 }}>Gross Tax Liability (what they would have paid without us)</label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 2000000"
+                      value={grossTax}
+                      onChange={e => setGrossTax(e.target.value)}
+                      style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(27,77,62,0.2)", fontSize: 13 }}
+                    />
+                    <label style={{ fontSize: 12, color: GREEN, fontWeight: 600 }}>Amount Saved for Client</label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 800000"
+                      value={savedAmt}
+                      onChange={e => setSavedAmt(e.target.value)}
+                      style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(27,77,62,0.2)", fontSize: 13 }}
+                    />
+                    {savedAmt && (
+                      <div style={{ background: "rgba(27,77,62,0.12)", borderRadius: 8, padding: "8px 12px" }}>
+                        <p style={{ margin: 0, fontSize: 13, color: GREEN }}>
+                          HAMZURY 10% Fee: <strong>{fmtNaira(hamzuryFee)}</strong>
+                        </p>
+                      </div>
+                    )}
+                    <textarea
+                      placeholder="Notes (optional)"
+                      value={savingsNotes}
+                      onChange={e => setSavingsNotes(e.target.value)}
+                      rows={2}
+                      style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(27,77,62,0.2)", fontSize: 13, resize: "vertical" }}
+                    />
+                    <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: GREEN, cursor: "pointer" }}>
+                      <input type="checkbox" checked={tccDelivered} onChange={e => setTccDelivered(e.target.checked)} />
+                      TCC delivered to client
+                    </label>
+                    <button
+                      onClick={() => {
+                        if (!savedAmt) { toast.error("Enter amount saved"); return; }
+                        recordSavings.mutate({
+                          subscriptionId: sub.id,
+                          year: currentYear,
+                          grossTaxLiability: grossTax ? Number(grossTax) : undefined,
+                          savedAmount: Number(savedAmt),
+                          tccDelivered,
+                          notes: savingsNotes || undefined,
+                        });
+                      }}
+                      style={{ background: GREEN, color: WHITE, border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+                    >
+                      {recordSavings.isPending ? "Saving…" : "Save Record"}
+                    </button>
+                  </div>
+                )}
+
+                {savings.length === 0 ? (
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "rgba(27,77,62,0.04)", borderRadius: 10 }}>
+                    <TrendingDown size={16} style={{ color: "#9CA3AF" }} />
+                    <p style={{ margin: 0, fontSize: 13, color: "#9CA3AF" }}>No tax savings recorded yet for {currentYear}.</p>
+                  </div>
+                ) : savings.map((s: any) => (
+                  <div key={s.id} style={{
+                    background: "rgba(27,77,62,0.05)", borderRadius: 12, padding: "14px 16px", marginBottom: 8,
+                    border: "1px solid rgba(27,77,62,0.1)",
+                  }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                      <div>
+                        <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: GREEN }}>{s.year} Tax Summary</p>
+                        {s.grossTaxLiability && (
+                          <p style={{ margin: "4px 0 0", fontSize: 12, color: "#6B7280" }}>Gross liability: {fmtNaira(s.grossTaxLiability)}</p>
+                        )}
+                        <p style={{ margin: "4px 0 0", fontSize: 12, color: "#6B7280" }}>Amount saved: <strong style={{ color: "#16A34A" }}>{fmtNaira(s.savedAmount)}</strong></p>
+                        <p style={{ margin: "4px 0 0", fontSize: 12, color: "#6B7280" }}>HAMZURY fee (10%): <strong style={{ color: GREEN }}>{fmtNaira(s.hamzuryFee)}</strong></p>
+                        {s.notes && <p style={{ margin: "6px 0 0", fontSize: 12, color: "#9CA3AF", fontStyle: "italic" }}>{s.notes}</p>}
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <span style={{
+                          fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 999,
+                          background: s.tccDelivered ? "rgba(34,197,94,0.10)" : "rgba(234,179,8,0.10)",
+                          color: s.tccDelivered ? "#16A34A" : "#B45309",
+                        }}>
+                          {s.tccDelivered ? "TCC Delivered" : "TCC Pending"}
+                        </span>
+                        <p style={{ margin: "6px 0 0", fontSize: 11, color: "#9CA3AF" }}>by {s.recordedBy?.split("@")[0] || "staff"}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </section>
+
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

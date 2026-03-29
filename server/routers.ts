@@ -32,6 +32,7 @@ import {
   updateSubscriptionPayment, getOrCreateMonthlyPayment,
   createClientCredential, getCredentialsByTaskId, getCredentialsBySubscriptionId,
   deleteClientCredential, getTasksBySubscriptionId, getSubscriptionByLeadRef,
+  upsertTaxSavingsRecord, getTaxSavingsBySubscription,
   getDb,
   // Pricing
   getServicePricing, getServicePricingById, createServicePricing, updateServicePricing, seedDefaultPricing,
@@ -1967,6 +1968,43 @@ NEVER: hype words, urgency pressure, [READY] or [SHOW_PAYMENT] before client sig
           })),
         };
       }),
+  }),
+
+  // ─── Tax Savings Records ──────────────────────────────────────────────────
+  taxSavings: router({
+    record: protectedProcedure
+      .input(z.object({
+        subscriptionId: z.number(),
+        year: z.string().length(4),
+        grossTaxLiability: z.number().optional(),
+        savedAmount: z.number().optional(),
+        tccDelivered: z.boolean().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const hamzuryFee = input.savedAmount ? input.savedAmount * 0.1 : undefined;
+        const record = await upsertTaxSavingsRecord({
+          subscriptionId: input.subscriptionId,
+          year: input.year,
+          grossTaxLiability: input.grossTaxLiability?.toString(),
+          savedAmount: input.savedAmount?.toString(),
+          hamzuryFee: hamzuryFee?.toString(),
+          tccDelivered: input.tccDelivered,
+          tccDeliveredAt: input.tccDelivered ? new Date() : undefined,
+          notes: input.notes,
+          recordedBy: ctx.user.name || ctx.user.email || ctx.user.openId,
+        });
+        await createActivityLog({
+          action: "tax_savings_recorded",
+          details: `Tax savings for ${input.year}: saved ₦${input.savedAmount?.toLocaleString() ?? 0}, HAMZURY fee ₦${hamzuryFee?.toLocaleString() ?? 0}`,
+          userId: ctx.user.id,
+        });
+        return record;
+      }),
+
+    getBySubscription: protectedProcedure
+      .input(z.object({ subscriptionId: z.number() }))
+      .query(async ({ input }) => getTaxSavingsBySubscription(input.subscriptionId)),
   }),
 
   // ─── Client Credentials (BizDoc staff) ───────────────────────────────────

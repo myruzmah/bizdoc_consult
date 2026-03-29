@@ -619,6 +619,27 @@ export const clientCredentials = mysqlTable("client_credentials", {
 export type ClientCredential = typeof clientCredentials.$inferSelect;
 export type InsertClientCredential = typeof clientCredentials.$inferInsert;
 
+/**
+ * Year-end tax savings record per subscription client.
+ * Records how much tax was saved and HAMZURY's 10% success fee.
+ */
+export const taxSavingsRecords = mysqlTable("tax_savings_records", {
+  id: int("id").autoincrement().primaryKey(),
+  subscriptionId: int("subscriptionId").notNull(),
+  year: varchar("year", { length: 4 }).notNull(),             // "2026"
+  grossTaxLiability: decimal("grossTaxLiability", { precision: 15, scale: 2 }), // what they would have paid
+  savedAmount: decimal("savedAmount", { precision: 15, scale: 2 }),             // how much was saved
+  hamzuryFee: decimal("hamzuryFee", { precision: 15, scale: 2 }),               // 10% of savedAmount
+  tccDelivered: boolean("tccDelivered").default(false).notNull(),
+  tccDeliveredAt: timestamp("tccDeliveredAt"),
+  notes: text("notes"),
+  recordedBy: varchar("recordedBy", { length: 255 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type TaxSavingsRecord = typeof taxSavingsRecords.$inferSelect;
+export type InsertTaxSavingsRecord = typeof taxSavingsRecords.$inferInsert;
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // SERVICE PRICING, INVOICING, NOTIFICATIONS, PROPOSALS & CERTIFICATES
 // ═══════════════════════════════════════════════════════════════════════════════

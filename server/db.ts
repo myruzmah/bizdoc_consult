@@ -33,6 +33,7 @@ import {
   subscriptions, InsertSubscription, Subscription,
   subscriptionPayments, InsertSubscriptionPayment, SubscriptionPayment,
   clientCredentials, InsertClientCredential, ClientCredential,
+  taxSavingsRecords, InsertTaxSavingsRecord, TaxSavingsRecord,
   servicePricing, InsertServicePricing, ServicePricing,
   invoices, InsertInvoice, Invoice,
   notifications, InsertNotification, Notification,
@@ -1008,6 +1009,100 @@ export async function getSubscriptionByLeadRef(ref: string): Promise<Subscriptio
   if (!leadRow[0]) return undefined;
   const subRow = await db.select().from(subscriptions).where(eq(subscriptions.leadId, leadRow[0].id)).limit(1);
   return subRow[0];
+}
+
+// ─── Tax Savings Records ──────────────────────────────────────────────────────
+
+export async function upsertTaxSavingsRecord(data: {
+  subscriptionId: number;
+  year: string;
+  grossTaxLiability?: string;
+  savedAmount?: string;
+  hamzuryFee?: string;
+  tccDelivered?: boolean;
+  tccDeliveredAt?: Date;
+  notes?: string;
+  recordedBy?: string;
+}): Promise<TaxSavingsRecord> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  const existing = await db.select().from(taxSavingsRecords)
+    .where(and(eq(taxSavingsRecords.subscriptionId, data.subscriptionId), eq(taxSavingsRecords.year, data.year)))
+    .limit(1);
+  if (existing[0]) {
+    await db.update(taxSavingsRecords).set({ ...data }).where(eq(taxSavingsRecords.id, existing[0].id));
+    const updated = await db.select().from(taxSavingsRecords).where(eq(taxSavingsRecords.id, existing[0].id)).limit(1);
+    return updated[0];
+  }
+  const result = await db.insert(taxSavingsRecords).values(data);
+  const row = await db.select().from(taxSavingsRecords).where(eq(taxSavingsRecords.id, result[0].insertId)).limit(1);
+  return row[0];
+}
+
+export async function getTaxSavingsBySubscription(subscriptionId: number): Promise<TaxSavingsRecord[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(taxSavingsRecords)
+    .where(eq(taxSavingsRecords.subscriptionId, subscriptionId))
+    .orderBy(desc(taxSavingsRecords.year));
+}
+
+// ─── Seed Tax Management Clients ──────────────────────────────────────────────
+
+export async function seedTaxClients(): Promise<void> {
+  const db = await getDb();
+  if (!db) { console.log("[seed-clients] DB not available — skipping"); return; }
+
+  const clients = [
+    {
+      clientName: "Kano Baba",
+      businessName: "Kano Ltd",
+      email: "kanobaba@gmail.com",
+      service: "Tax Pro Max Annual",
+      department: "bizdoc",
+      monthlyFee: "150000",
+      billingDay: 1,
+      startDate: "2026-01-01",
+      status: "active" as const,
+      createdBy: "system-seed",
+    },
+    {
+      clientName: "Aljazira Data",
+      businessName: "Aljazira Data",
+      email: "aljaziradata@gmail.com",
+      service: "Tax Pro Max Annual",
+      department: "bizdoc",
+      monthlyFee: "150000",
+      billingDay: 1,
+      startDate: "2026-01-01",
+      status: "active" as const,
+      createdBy: "system-seed",
+    },
+  ];
+
+  for (const client of clients) {
+    const existing = await db.select({ id: subscriptions.id })
+      .from(subscriptions)
+      .where(eq(subscriptions.email, client.email))
+      .limit(1);
+    if (existing.length > 0) {
+      console.log(`[seed-clients] ${client.businessName} already exists — skipping`);
+      continue;
+    }
+    const result = await db.insert(subscriptions).values(client);
+    const sub = await db.select().from(subscriptions).where(eq(subscriptions.id, result[0].insertId)).limit(1);
+    // Create the annual payment record for 2026
+    await db.insert(subscriptionPayments).values({
+      subscriptionId: sub[0].id,
+      month: "2026-01",
+      amountDue: "150000",
+      status: "paid",
+      paidAt: new Date("2026-01-01"),
+      recordedBy: "system-seed",
+      notes: "Annual subscription fee — paid January 2026",
+    });
+    console.log(`[seed-clients] Created: ${client.businessName}`);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

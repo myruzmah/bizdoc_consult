@@ -11,7 +11,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./cookies";
 import * as db from "../db";
 import { seedStaffUsers } from "../seed-staff";
-import { runMigrations } from "../db";
+import { runMigrations, seedTaxClients } from "../db";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -514,6 +514,7 @@ Sitemap: ${base}/sitemap.xml
     try {
       await runMigrations();
       await seedStaffUsers();
+      await seedTaxClients();
     } catch (err) {
       console.log("[startup] DB init error:", String(err));
     }
