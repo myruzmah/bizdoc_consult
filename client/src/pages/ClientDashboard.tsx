@@ -59,23 +59,39 @@ function timeAgo(date: string | Date) {
   return d.toLocaleDateString("en-NG", { day: "numeric", month: "short" });
 }
 
-const PROMPTS = [
-  {
-    q: "Is your business fully protected? Most businesses miss at least 2 compliance requirements. Let us check yours.",
-    cta: "Get a compliance check",
-    href: "/bizdoc",
-  },
-  {
-    q: "Does your brand make clients trust you instantly? If not, Systemise can fix that in weeks.",
-    cta: "Explore Systemise",
-    href: "/systemise",
-  },
-  {
-    q: "Learn what actually works. AI-powered programs for founders, operators, and teams.",
-    cta: "See Skills programs",
-    href: "/skills",
-  },
-];
+/** Context-aware upsell — changes based on client's current service */
+function getSmartPrompts(service: string, status: string, dept: string) {
+  const s = (service || "").toLowerCase();
+  const done = status === "Completed";
+
+  if (s.includes("cac") || s.includes("registration") || dept === "bizdoc") {
+    return [
+      { q: done ? "Registration done. But does your business have TIN, tax compliance, and proper contracts? Most don't." : "While we handle your registration, consider this: are your tax filings and contracts also sorted?", cta: "Check what I'm missing", chat: true },
+      { q: "73% of registered businesses also need a proper website and brand identity to win premium clients.", cta: "Talk to my advisor about this", chat: true },
+      { q: done ? "Your team will need to use these new documents properly. Want us to train them?" : "Want your staff trained on compliance processes while we handle the paperwork?", cta: "Ask about training", chat: true },
+    ];
+  }
+  if (s.includes("website") || s.includes("brand") || s.includes("system") || dept === "systemise") {
+    return [
+      { q: "A great system is useless if your business documents are not in order. Is your compliance fully sorted?", cta: "Check my compliance", chat: true },
+      { q: done ? "Your system is ready. Now your team needs to know how to use it properly." : "Once your system is live, will your team actually use it without training?", cta: "Ask about team training", chat: true },
+      { q: "Are you also managing your social media? We can handle that while you focus on your business.", cta: "Talk about social media", chat: true },
+    ];
+  }
+  if (s.includes("training") || s.includes("skill") || dept === "skills") {
+    return [
+      { q: "Skills are powerful when your business structure supports them. Is your compliance and documentation solid?", cta: "Check my business structure", chat: true },
+      { q: "Ready to apply what you learned? We can build the systems and dashboards your business needs.", cta: "Talk about systems", chat: true },
+      { q: "Want your whole team trained, not just you? Corporate training packages start from custom pricing.", cta: "Ask about team training", chat: true },
+    ];
+  }
+  // Default
+  return [
+    { q: "Every serious business needs proper documentation, strong systems, and capable people. Which is your weakest link?", cta: "Find out what I need", chat: true },
+    { q: "Is your brand making premium clients trust you? If not, that's fixable.", cta: "Talk to my advisor", chat: true },
+    { q: "Want to build real skills that lead to earning? Our programs are built for action, not theory.", cta: "See what fits me", chat: true },
+  ];
+}
 
 interface ClientSession {
   ref: string;
@@ -383,35 +399,30 @@ export default function ClientDashboard() {
                   <p className="text-[13px] font-medium" style={{ color: DARK }}>{STATUS_MESSAGES[task.status] || "Your file is being processed."}</p>
                 </div>
 
-                {/* Card 2: What you might need next */}
-                <div className="rounded-xl p-4" style={{ backgroundColor: WHITE, border: `1px solid ${PRIMARY}08` }}>
-                  <p className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: "#B48C4C" }}>Recommended Next</p>
-                  <p className="text-[13px] font-medium" style={{ color: DARK }}>
-                    {task.department === "bizdoc" || task.service?.toLowerCase().includes("cac")
-                      ? "Most businesses also need TIN and tax compliance after registration. Want us to handle that too?"
-                      : task.department === "systemise" || task.service?.toLowerCase().includes("website") || task.service?.toLowerCase().includes("brand")
-                      ? "Your system is being built. Want your team trained to use it properly? Skills can help."
-                      : "Your file is active. Need branding, a website, or automation? Systemise can help you grow faster."}
-                  </p>
-                  <button
-                    className="mt-3 text-[12px] font-medium px-3 py-1.5 rounded-full"
-                    style={{ backgroundColor: `${PRIMARY}10`, color: PRIMARY }}
-                    onClick={() => {
-                      setChatOpen(true)
-                    }}
-                  >
-                    Ask my advisor
-                  </button>
-                </div>
-
-                {/* Card 3: Business reality question */}
-                <div className="rounded-xl p-4" style={{ backgroundColor: WHITE, border: `1px solid ${PRIMARY}08` }}>
-                  <p className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: PRIMARY, opacity: 0.4 }}>Business Check</p>
+                {/* Card 2: Smart upsell — opens AI chat */}
+                <div className="rounded-xl p-4 cursor-pointer hover:shadow-sm transition-shadow" style={{ backgroundColor: WHITE, border: `1px solid #B48C4C20` }} onClick={() => setChatOpen(true)}>
+                  <p className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: "#B48C4C" }}>Your Next Move</p>
                   <p className="text-[13px] font-medium" style={{ color: DARK }}>
                     {task.status === "Completed"
-                      ? "Your file is done. Is your business also protected with the right contracts and agreements?"
-                      : "While we handle your file, ask yourself: if a premium client checks your website today, will they trust you?"}
+                      ? "This file is done. What else does your business need to operate safely and grow faster?"
+                      : "While we work on this, there may be other gaps in your business. Want to find out?"}
                   </p>
+                  <span className="inline-block mt-3 text-[12px] font-medium px-3 py-1.5 rounded-full" style={{ backgroundColor: `#B48C4C15`, color: "#B48C4C" }}>
+                    Talk to my advisor
+                  </span>
+                </div>
+
+                {/* Card 3: Business reality — opens AI chat */}
+                <div className="rounded-xl p-4 cursor-pointer hover:shadow-sm transition-shadow" style={{ backgroundColor: WHITE, border: `1px solid ${PRIMARY}08` }} onClick={() => setChatOpen(true)}>
+                  <p className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: PRIMARY, opacity: 0.4 }}>Business Check</p>
+                  <p className="text-[13px] font-medium" style={{ color: DARK }}>
+                    {task.department === "bizdoc" ? "If a premium client checks your online presence today, will they trust you enough to pay?"
+                      : task.department === "systemise" ? "Are your business documents and compliance fully sorted, or are you still exposed?"
+                      : "Can your business run properly without you being there every day?"}
+                  </p>
+                  <span className="inline-block mt-3 text-[12px] font-medium px-3 py-1.5 rounded-full" style={{ backgroundColor: `${PRIMARY}08`, color: PRIMARY }}>
+                    Find out
+                  </span>
                 </div>
               </div>
 
@@ -865,11 +876,11 @@ export default function ClientDashboard() {
 
         {/* ── Cross-sell prompts ── */}
         <div className="space-y-3">
-          {PROMPTS.map((p) => (
-            <a
+          {getSmartPrompts(task.service, task.status, task.department).map((p) => (
+            <button
               key={p.q}
-              href={p.href}
-              className="flex items-center justify-between rounded-2xl px-5 py-4 group transition-all hover:-translate-y-0.5 hover:shadow-sm"
+              onClick={() => setChatOpen(true)}
+              className="w-full text-left flex items-center justify-between rounded-2xl px-5 py-4 group transition-all hover:-translate-y-0.5 hover:shadow-sm"
               style={{ backgroundColor: WHITE, border: `1px solid ${PRIMARY}08` }}
             >
               <div>
@@ -885,7 +896,7 @@ export default function ClientDashboard() {
                 className="shrink-0 ml-3 transition-transform group-hover:translate-x-1 opacity-30"
                 style={{ color: PRIMARY }}
               />
-            </a>
+            </button>
           ))}
         </div>
 
