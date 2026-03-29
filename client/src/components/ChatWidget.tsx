@@ -732,14 +732,9 @@ export default function ChatWidget({ department = "general", open: externalOpen,
       }
       if (val === "GUIDANCE" || val === "QUESTION") {
         setTimeout(() => {
-          addBotMsg("Were you referred to HAMZURY?");
-          addBotOptions([
-            { label: "Yes", value: "REFERRAL_YES" },
-            { label: "No", value: "REFERRAL_SKIP" },
-          ]);
+          addBotMsg("Tell me about your business and what you need help with.");
         }, 400);
-        setLeadData(prev => ({ ...prev, postReferralState: "AI_CHAT" as ChatState }));
-        setChatState("REFERRAL_ASK");
+        setChatState("AI_CHAT");
         return;
       }
       if (val === "POSITIONING_GUIDE") {
@@ -853,69 +848,8 @@ export default function ChatWidget({ department = "general", open: externalOpen,
       }
     }
 
-    // Referral flow
-    if (chatState === "REFERRAL_ASK") {
-      if (val === "REFERRAL_YES") {
-        setTimeout(() => {
-          addBotMsg("Enter your referral code or the referrer's name.");
-        }, 400);
-        setChatState("REFERRAL_CODE");
-        return;
-      }
-      if (val === "REFERRAL_SKIP") {
-        const nextState = leadData.postReferralState || "AI_CHAT";
-        if (nextState === "AI_CHAT") {
-          setTimeout(() => {
-            addBotMsg("Tell me about your business and what challenge you are facing right now.");
-          }, 400);
-        } else {
-          setTimeout(() => {
-            addBotMsg("Tell me what you need. Be as specific as you like.");
-          }, 400);
-        }
-        setChatState(nextState);
-        return;
-      }
-    }
-
-    if (chatState === "REFERRAL_CODE") {
-      setLeadData(prev => ({ ...prev, referralCode: val, referrerName: val }));
-      setTimeout(() => {
-        addBotMsg("How did this referral come to you?");
-        addBotOptions([
-          { label: "CSO", value: "CSO" },
-          { label: "Team member", value: "Team member" },
-          { label: "Client referral", value: "Client referral" },
-          { label: "Partner", value: "Partner" },
-        ]);
-      }, 400);
-      setChatState("REFERRAL_SOURCE");
-      return;
-    }
-
-    if (chatState === "REFERRAL_SOURCE") {
-      const isCso = val === "CSO";
-      setLeadData(prev => ({
-        ...prev,
-        referralSourceType: val,
-        notifyCso: isCso,
-      }));
-      if (isCso) {
-        setTimeout(() => addBotMsg("Thanks. I've noted that this request came through our CSO.\nWe'll keep that referral attached to your request as we continue."), 400);
-      } else {
-        setTimeout(() => addBotMsg("Thanks, referral noted. Let's continue."), 400);
-      }
-      const nextState = leadData.postReferralState || "AI_CHAT";
-      setTimeout(() => {
-        if (nextState === "AI_CHAT") {
-          addBotMsg("Tell me about your business and what challenge you are facing right now.");
-        } else {
-          addBotMsg("Tell me what you need. Be as specific as you like.");
-        }
-        setChatState(nextState);
-      }, 800);
-      return;
-    }
+    // Referral is now auto-captured via URL ?ref= parameter only
+    // No manual referral flow needed in chat
 
     // Track by reference or phone
     if (chatState === "TRACK_REF") {
