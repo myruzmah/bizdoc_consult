@@ -193,7 +193,7 @@ export default function CTOPage() {
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ backgroundColor: MILK }}>
-      <PageMeta title="Systemise Dashboard — HAMZURY" description="Client tech projects." />
+      <PageMeta title="Systemise Dashboard — HAMZURY" description="Muhammad Auwal — CTO, Systemise. Client tech projects." />
 
       {/* Sidebar */}
       <div className="w-16 md:w-60 flex flex-col h-full shrink-0" style={{ backgroundColor: TEAL }}>
@@ -250,6 +250,37 @@ export default function CTOPage() {
         </div>
 
         <ScrollArea className="flex-1">
+
+          {/* CTO Hero / About Section */}
+          {activeSection === "overview" && (
+            <div style={{ backgroundColor: SYS }} className="relative overflow-hidden">
+              <div className="max-w-5xl mx-auto px-6 py-12 md:py-16 flex flex-col md:flex-row items-center gap-8">
+                {/* Avatar */}
+                <div className="w-24 h-24 md:w-28 md:h-28 rounded-full flex items-center justify-center shrink-0 text-3xl font-bold"
+                  style={{ backgroundColor: `${WHITE}15`, color: WHITE, border: `2px solid ${GOLD}40` }}>
+                  MA
+                </div>
+                {/* Info */}
+                <div className="text-center md:text-left">
+                  <p className="text-[11px] font-bold tracking-[0.25em] uppercase mb-1" style={{ color: GOLD }}>
+                    Chief Technology Officer
+                  </p>
+                  <h2 className="text-2xl md:text-3xl font-light tracking-tight" style={{ color: WHITE }}>
+                    Muhammad Auwal
+                  </h2>
+                  <p className="text-[10px] font-bold tracking-[0.2em] uppercase mt-1 mb-4" style={{ color: `${WHITE}60` }}>
+                    Department: Systemise
+                  </p>
+                  <p className="text-[13px] leading-relaxed max-w-xl" style={{ color: `${WHITE}85` }}>
+                    Muhammad Auwal leads HAMZURY's technology and systems division. He architects the digital
+                    infrastructure, oversees automation, and drives AI integration across all departments. Every
+                    dashboard, website, and system flows through Systemise.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="p-6 max-w-5xl mx-auto space-y-6">
 
             {activeSection === "overview" && (

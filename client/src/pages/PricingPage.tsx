@@ -10,182 +10,367 @@ const DARK  = "#1A1A1A";
 
 const BIZDOC_PLANS = [
   {
-    name: "Business Name Registration",
+    name: "CAC Registration",
     price: "From ₦50,000",
-    timeline: "7–14 business days",
+    timeline: "7–21 business days",
     features: [
-      "Name availability check",
-      "CAC business name registration",
+      "Business Name, Ltd, or Trustees",
+      "Name availability search",
+      "Full CAC documentation",
       "Certificate of registration",
-      "Post-registration compliance brief",
     ],
   },
   {
-    name: "Limited Company Incorporation",
-    price: "From ₦120,000",
-    timeline: "10–21 business days",
-    badge: "Most Requested",
-    features: [
-      "Everything in Business Name",
-      "MEMART & ARTT drafting",
-      "Multi-director setup",
-      "Corporate share structure",
-      "Post-incorporation documents",
-    ],
-  },
-  {
-    name: "Tax & Regulatory Compliance",
+    name: "Industry Licences & Permits",
     price: "From ₦80,000",
-    timeline: "5–10 business days",
-    features: [
-      "TIN registration (FIRS)",
-      "VAT setup & first filing",
-      "PAYE registration",
-      "Annual tax returns",
-      "Tax clearance certificate",
-    ],
-  },
-  {
-    name: "Industry Licensing",
-    price: "From ₦150,000",
     timeline: "Varies by agency",
     features: [
-      "NAFDAC, SON, DPR, NSCDC",
+      "NAFDAC, SON, DPR, Export",
       "Application preparation",
       "Agency liaison & follow-up",
       "Certificate delivery",
-      "Renewal tracking",
     ],
   },
   {
-    name: "Trademark & IP",
-    price: "From ₦95,000",
+    name: "Tax Compliance",
+    price: "From ₦60,000",
+    timeline: "5–10 business days",
+    features: [
+      "TIN registration (FIRS)",
+      "Tax Clearance Certificate (TCC)",
+      "VAT setup & filing",
+      "PAYE registration",
+    ],
+  },
+  {
+    name: "Legal Documentation & Contracts",
+    price: "From ₦40,000",
+    timeline: "3–7 business days",
+    features: [
+      "Contract drafting & review",
+      "Legal agreements",
+      "Terms & conditions",
+      "Compliance documentation",
+    ],
+  },
+  {
+    name: "Trademark & IP Registration",
+    price: "₦75,000",
     timeline: "30–90 days",
     features: [
       "Trademark search & clearance",
       "Registration application",
-      "IPO liaison",
+      "IPO liaison & follow-up",
       "Certificate delivery",
-      "5-year renewal reminder",
     ],
   },
   {
-    name: "Annual Compliance Retainer",
-    price: "From ₦180,000/yr",
+    name: "Foreign Business Registration",
+    price: "From ₦150,000",
+    timeline: "Varies",
+    badge: "Specialist",
+    features: [
+      "CERPAC application",
+      "Expatriate Quota (EQ)",
+      "Business Permit",
+      "Apostille & legalisation",
+    ],
+  },
+  {
+    name: "SCUML Registration",
+    price: "₦45,000",
+    timeline: "5–10 business days",
+    features: [
+      "SCUML certificate application",
+      "Documentation preparation",
+      "Agency liaison",
+      "Certificate delivery",
+    ],
+  },
+  {
+    name: "Annual Returns Filing",
+    price: "₦30,000",
+    timeline: "5–7 business days",
+    features: [
+      "CAC annual returns",
+      "Document preparation",
+      "Filing & submission",
+      "Confirmation of filing",
+    ],
+  },
+  {
+    name: "Contract & Document Templates",
+    price: "From ₦15,000",
+    timeline: "Instant – 3 days",
+    features: [
+      "Industry-specific templates",
+      "Editable Word/PDF format",
+      "Legal review included",
+      "Unlimited use licence",
+    ],
+  },
+  {
+    name: "Compliance Management Subscription",
+    price: "₦50,000/month",
     timeline: "Ongoing",
     badge: "Best Value",
     features: [
-      "All annual CAC returns",
-      "Tax filings (quarterly)",
-      "Compliance calendar",
+      "Monthly compliance monitoring",
+      "Deadline tracking & reminders",
       "Priority response",
-      "Monthly status updates",
+      "Quarterly status reports",
+    ],
+  },
+  {
+    name: "Sector Compliance Roadmap",
+    price: "₦30,000",
+    timeline: "3–5 business days",
+    features: [
+      "Industry-specific compliance map",
+      "Regulatory checklist",
+      "Timeline & cost estimates",
+      "Action plan document",
     ],
   },
 ];
 
 const SYSTEMISE_PLANS = [
   {
-    name: "Brand Identity",
+    name: "Brand Identity & Positioning",
     price: "From ₦150,000",
     timeline: "2–3 weeks",
     features: [
-      "Logo design (3 concepts)",
+      "Logo design & visual identity",
       "Color palette & typography",
-      "Brand voice guide",
-      "Business card design",
+      "Brand voice & positioning guide",
       "Brand guidelines document",
     ],
   },
   {
-    name: "Website Design",
-    price: "From ₦250,000",
-    timeline: "3–4 weeks",
+    name: "Corporate Website Development",
+    price: "From ₦200,000",
+    timeline: "3–5 weeks",
     badge: "Most Requested",
     features: [
-      "Up to 8 pages",
+      "Custom design & development",
       "Mobile responsive",
-      "Contact & lead capture forms",
-      "SEO foundation",
+      "SEO foundation & analytics",
       "1 month post-launch support",
     ],
   },
   {
-    name: "Business Systems Package",
-    price: "From ₦350,000",
-    timeline: "4–6 weeks",
+    name: "Social Media Account Management",
+    price: "₦100,000/month",
+    timeline: "Ongoing",
     features: [
-      "CRM setup & configuration",
-      "Client onboarding automation",
-      "Invoice & payment workflow",
-      "Team SOP documentation",
-      "Training session (2hrs)",
+      "Content creation & scheduling",
+      "Community management",
+      "Monthly performance reports",
+      "Platform strategy",
     ],
   },
   {
-    name: "Full Brand + Systems",
-    price: "From ₦600,000",
-    timeline: "6–8 weeks",
-    badge: "Complete Package",
+    name: "Business Process Automation",
+    price: "From ₦120,000",
+    timeline: "2–4 weeks",
     features: [
-      "Complete brand identity",
-      "Full website build",
-      "CRM + automation setup",
-      "Social media templates",
-      "Monthly management (3 months)",
+      "Workflow mapping & design",
+      "Tool integration & setup",
+      "SOP documentation",
+      "Team training session",
+    ],
+  },
+  {
+    name: "AI Agent Development",
+    price: "From ₦150,000",
+    timeline: "2–4 weeks",
+    features: [
+      "Custom AI agent build",
+      "Business-specific training",
+      "Integration with your systems",
+      "Ongoing support & tuning",
+    ],
+  },
+  {
+    name: "CRM & Lead Management Setup",
+    price: "From ₦180,000",
+    timeline: "2–3 weeks",
+    features: [
+      "CRM selection & configuration",
+      "Lead pipeline design",
+      "Automation & notifications",
+      "Team onboarding & training",
+    ],
+  },
+  {
+    name: "Internal Dashboard Build",
+    price: "From ₦200,000",
+    timeline: "3–5 weeks",
+    badge: "Enterprise",
+    features: [
+      "Custom dashboard design",
+      "Real-time data integration",
+      "Role-based access",
+      "Mobile-friendly interface",
+    ],
+  },
+  {
+    name: "Content Strategy & Production",
+    price: "From ₦100,000",
+    timeline: "Ongoing / project",
+    features: [
+      "Content calendar planning",
+      "Copywriting & design",
+      "Multi-platform distribution",
+      "Performance tracking",
+    ],
+  },
+  {
+    name: "Support Retainer",
+    price: "From ₦80,000/month",
+    timeline: "Ongoing",
+    features: [
+      "Dedicated support hours",
+      "Priority bug fixes & updates",
+      "Monthly review calls",
+      "System health monitoring",
     ],
   },
 ];
 
 const SKILLS_PLANS = [
   {
-    name: "Business Essentials Bootcamp",
-    price: "From ₦18,000",
+    name: "AI Founder Launchpad",
+    price: "₦75,000",
+    timeline: "4 weeks",
+    badge: "Flagship",
+    features: [
+      "Build & launch with AI tools",
+      "Live coaching sessions",
+      "Business model validation",
+      "Certificate of completion",
+    ],
+  },
+  {
+    name: "Vibe Coding for Founders",
+    price: "₦65,000",
+    timeline: "3 weeks",
+    features: [
+      "No-code & low-code development",
+      "Build your own MVP",
+      "AI-assisted coding workflow",
+      "Certificate of completion",
+    ],
+  },
+  {
+    name: "AI Sales Operator",
+    price: "₦55,000",
     timeline: "2 weeks",
     features: [
-      "10 live virtual sessions",
-      "Business plan template",
-      "Financial model",
-      "30-day action plan",
+      "AI-powered sales systems",
+      "Lead generation automation",
+      "CRM & pipeline setup",
       "Certificate of completion",
     ],
   },
   {
-    name: "Digital Marketing Intensive",
-    price: "From ₦35,000",
+    name: "Service Business in 21 Days",
+    price: "₦45,000",
     timeline: "3 weeks",
-    badge: "Most Popular",
     features: [
-      "15 live virtual sessions",
-      "Social media strategy",
-      "Content calendar",
-      "Email marketing setup",
+      "Service business blueprint",
+      "Client acquisition strategy",
+      "Pricing & packaging",
       "Certificate of completion",
     ],
   },
   {
-    name: "Data Analysis Bootcamp",
-    price: "From ₦45,000",
-    timeline: "4 weeks",
+    name: "Operations Automation Sprint",
+    price: "₦60,000",
+    timeline: "2 weeks",
     features: [
-      "20 live sessions + workshops",
-      "Excel, SQL & Tableau",
-      "Portfolio project",
-      "Real business datasets",
+      "Automate repetitive tasks",
+      "Tool selection & setup",
+      "Workflow design",
       "Certificate of completion",
     ],
   },
   {
-    name: "AI-Powered Business Bundle",
-    price: "From ₦65,000",
-    timeline: "3 days",
-    badge: "Best Value",
+    name: "AI Marketing & Content Engine",
+    price: "₦55,000",
+    timeline: "2 weeks",
     features: [
-      "AI for Lead Generation",
-      "AI for Content Creation",
-      "AI for Business Automation",
-      "50+ prompt templates",
-      "Tool setup walkthrough",
+      "AI content creation systems",
+      "Social media automation",
+      "Content calendar setup",
+      "Certificate of completion",
+    ],
+  },
+  {
+    name: "Digital Product Builder",
+    price: "₦65,000",
+    timeline: "3 weeks",
+    features: [
+      "Build a digital product",
+      "Launch strategy & pricing",
+      "Sales funnel setup",
+      "Certificate of completion",
+    ],
+  },
+  {
+    name: "Dashboard Builder Lab",
+    price: "₦60,000",
+    timeline: "2 weeks",
+    features: [
+      "Build real-time dashboards",
+      "Data visualization skills",
+      "Business intelligence tools",
+      "Certificate of completion",
+    ],
+  },
+  {
+    name: "Customer Success & Business Ops Lab",
+    price: "₦55,000",
+    timeline: "2 weeks",
+    features: [
+      "Customer success frameworks",
+      "Ops management systems",
+      "Retention & support strategy",
+      "Certificate of completion",
+    ],
+  },
+  {
+    name: "Robotics & Creative Tech Lab",
+    price: "₦45,000",
+    timeline: "3 weeks",
+    features: [
+      "Intro to robotics & IoT",
+      "Creative tech projects",
+      "Hands-on build sessions",
+      "Certificate of completion",
+    ],
+  },
+  {
+    name: "Corporate Staff Training",
+    price: "Custom pricing",
+    timeline: "Flexible",
+    features: [
+      "Tailored to your organisation",
+      "On-site or virtual delivery",
+      "Custom curriculum design",
+      "Post-training assessment",
+    ],
+  },
+  {
+    name: "RIDI Sponsorship",
+    price: "Sponsored (apply)",
+    timeline: "Cohort-based",
+    badge: "Community",
+    features: [
+      "Fully sponsored training",
+      "For underserved communities",
+      "Application-based selection",
+      "Mentorship included",
     ],
   },
 ];
@@ -357,7 +542,7 @@ export default function PricingPage() {
         <DeptSection
           id="bizdoc"
           label="BizDoc Consult"
-          subtitle="Compliance & regulatory services."
+          subtitle="Compliance & Documentation."
           plans={BIZDOC_PLANS}
           accentColor="#1B4D3E"
         />
@@ -365,7 +550,7 @@ export default function PricingPage() {
         <DeptSection
           id="systemise"
           label="Systemise"
-          subtitle="Brand, systems & digital."
+          subtitle="Systems, Brand & Automation."
           plans={SYSTEMISE_PLANS}
           accentColor={TEAL}
         />
@@ -373,7 +558,7 @@ export default function PricingPage() {
         <DeptSection
           id="skills"
           label="Hamzury Skills"
-          subtitle="Training & development."
+          subtitle="Training & Development."
           plans={SKILLS_PLANS}
           accentColor={GOLD}
         />
@@ -454,6 +639,13 @@ export default function PricingPage() {
         </div>
       </section>
 
+      {/* DISCLAIMER */}
+      <div className="py-6 px-6 md:px-12" style={{ backgroundColor: `${GOLD}10`, borderTop: `1px solid ${GOLD}15` }}>
+        <p className="text-xs font-light text-center max-w-3xl mx-auto" style={{ color: DARK, opacity: 0.6 }}>
+          All prices are estimates. Final pricing depends on your specific requirements. Contact us for a custom quote.
+        </p>
+      </div>
+
       {/* FOOTER */}
       <footer className="py-8 px-6 md:px-12 border-t" style={{ borderColor: `${TEAL}10` }}>
         <div className="flex justify-between items-center">
@@ -461,7 +653,7 @@ export default function PricingPage() {
             HAMZURY
           </Link>
           <p className="text-[11px] opacity-40" style={{ color: DARK }}>
-            All prices are starting rates. Final quote confirmed before work begins.
+            All prices are estimates. Final quote confirmed before work begins.
           </p>
         </div>
         <p className="text-[12px] font-light italic mt-3" style={{ color: `${DARK}50` }}>

@@ -903,9 +903,9 @@ export default function ClientDashboard() {
               <p className="text-[12px]" style={{ color: DARK, opacity: 0.6 }}>Registration, licences, compliance, templates, and ongoing management.</p>
             </div>
             <div className="rounded-xl p-4 cursor-pointer hover:shadow-sm transition-shadow"
-              style={{ backgroundColor: WHITE, border: `1px solid #0A1F1C20` }}
+              style={{ backgroundColor: WHITE, border: `1px solid #2563EB20` }}
               onClick={() => window.location.href = "/systemise"}>
-              <p className="text-[13px] font-semibold mb-1" style={{ color: "#0A1F1C" }}>Systemise</p>
+              <p className="text-[13px] font-semibold mb-1" style={{ color: "#2563EB" }}>Systemise</p>
               <p className="text-[12px]" style={{ color: DARK, opacity: 0.6 }}>Website, branding, social media, automation, AI agents, and dashboards.</p>
             </div>
             <div className="rounded-xl p-4 cursor-pointer hover:shadow-sm transition-shadow"

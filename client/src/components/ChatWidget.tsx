@@ -266,6 +266,15 @@ export default function ChatWidget({ department = "general", open: externalOpen,
   const [inputError, setInputError] = useState("");
   const [chatState, setChatState] = useState<ChatState>("INIT");
   const [leadData, setLeadData] = useState<LeadData>({});
+
+  // Auto-capture referral from URL params (e.g. hamzury.com/?ref=AFF-396)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get("ref");
+    if (ref) {
+      setLeadData(prev => ({ ...prev, referralCode: ref }));
+    }
+  }, []);
   const [aiMessages, setAiMessages] = useState<{ role: string; content: string }[]>([]);
   const [aiLoading, setAiLoading] = useState(false);
   const [userLang, setUserLang] = useState("english");
@@ -421,8 +430,8 @@ export default function ChatWidget({ department = "general", open: externalOpen,
   };
 
   /** Show main menu in the user's selected language */
-  const showMainButtons = () => {
-    const lang = userLang.toLowerCase();
+  const showMainButtons = (langOverride?: string) => {
+    const lang = (langOverride || userLang).toLowerCase();
     const labels = MENU_LABELS[lang] || MENU_LABELS.english;
     addBotOptions([
       { label: labels.request, value: "SELF_SERVICE" },
@@ -629,7 +638,7 @@ export default function ChatWidget({ department = "general", open: externalOpen,
       const greeting = greetings[lang] || "Great. How can I help you today?";
       setTimeout(() => {
         addBotMsg(greeting);
-        showMainButtons();
+        showMainButtons(lang);
       }, 400);
       return;
     }

@@ -21,85 +21,100 @@ const BG    = "#FFFAF6";   // Milk white background
 const CREAM = "#F5F3EF";   // Soft cream for cards
 const W     = "#FFFFFF";
 
-// ── WHAT YOU GET - accordion cards ───────────────────────────────────────────
-const SKILL_CARDS = [
+// ── 2026 PROGRAMS ──────────────────────────────────────────────────────────────
+type Program = {
+  icon: typeof Users;
+  quarter: string;
+  badge: string;
+  program: string;
+  description: string;
+  duration: string;
+};
+
+const PROGRAMS_2026: Program[] = [
+  // Q2 — Start and Sell
   {
-    icon: Users, badge: "DIGITAL MARKETING",
-    pain: "Spending on ads with nothing to show for it",
-    program: "Digital Marketing", price: "₦45,000", duration: "8 Weeks · Virtual & Physical",
-    description: "Strategy before spend. Build an audience, create content that converts, run profitable campaigns.",
-    outcomes: [
-      "Social media strategy built for your business and audience",
-      "SEO fundamentals. Be found on Google without paying for ads",
-      "Content creation system (batch, schedule, repeat)",
-      "Paid advertising. Meta, Google, and TikTok basics",
-      "Live campaigns running before you finish the program",
-    ],
+    icon: Lightbulb, quarter: "Q2", badge: "START & SELL",
+    program: "AI Founder Launchpad",
+    description: "Build your idea, offer, brand, and first revenue path using AI tools. Go from concept to paying customers in 3 weeks.",
+    duration: "3-week cohort",
   },
   {
-    icon: Target, badge: "BUSINESS DEVELOPMENT",
-    pain: "Great product. No structured way to grow clients",
-    program: "Business Development", price: "₦35,000", duration: "6 Weeks · Virtual & Physical",
-    description: "A repeatable framework for finding, closing, and retaining clients. Beyond referrals.",
-    outcomes: [
-      "Market positioning. Know exactly who you're selling to and why",
-      "Sales pipeline system. From first contact to closed deal",
-      "Client acquisition frameworks built for the Nigerian market",
-      "Negotiation and objection handling techniques",
-      "A 90-day business growth plan ready at graduation",
-    ],
+    icon: BookOpen, quarter: "Q2", badge: "START & SELL",
+    program: "Vibe Coding for Founders",
+    description: "Build MVPs and internal tools with AI-assisted coding. No prior programming experience needed.",
+    duration: "3-week cohort",
   },
   {
-    icon: Star, badge: "DATA ANALYSIS",
-    pain: "Making decisions by gut. Not by numbers",
-    program: "Data Analysis", price: "₦55,000", duration: "10 Weeks · Virtual",
-    description: "Raw data to clear dashboards. No prior experience needed.",
-    outcomes: [
-      "Excel mastery. Formulas, pivot tables, data cleaning",
-      "Power BI dashboard design and publishing",
-      "Business intelligence. turning data into decisions",
-      "Financial analysis and KPI tracking",
-      "Real business datasets used throughout. Not textbook exercises",
-    ],
+    icon: Target, quarter: "Q2", badge: "START & SELL",
+    program: "AI Sales Operator",
+    description: "Learn lead generation, follow-up systems, and AI-powered sales. Build a pipeline that works while you sleep.",
+    duration: "3-week cohort",
+  },
+  // Q3 — Systemize and Grow
+  {
+    icon: Star, quarter: "Q3", badge: "SYSTEMIZE & GROW",
+    program: "Service Business in 21 Days",
+    description: "Launch a real service business from scratch in 3 weeks. Offer, pricing, clients, and first revenue included.",
+    duration: "3-week cohort",
   },
   {
-    icon: BookOpen, badge: "CONTENT CREATION",
-    pain: "Want an online presence. Don't want to be on camera",
-    program: "Faceless Content Intensive", price: "₦25,000", duration: "2 Weeks · Virtual",
-    description: "Professional content without showing your face. AI voiceover, scripting, editing. All off-camera.",
-    outcomes: [
-      "Content pillars built around your niche and audience",
-      "AI voiceover setup and integration",
-      "Script writing framework for short-form and long-form",
-      "Video editing workflow (mobile and desktop)",
-      "30 days of ready-to-publish content created during the program",
-    ],
+    icon: Lightbulb, quarter: "Q3", badge: "SYSTEMIZE & GROW",
+    program: "Operations Automation Sprint",
+    description: "Automate the repetitive parts of your business. Invoicing, follow-ups, onboarding, and reporting on autopilot.",
+    duration: "3-week cohort",
   },
   {
-    icon: Lightbulb, badge: "AI FOR BUSINESS",
-    pain: "Everyone talks about AI. No idea where to start",
-    program: "AI-Powered Business Courses", price: "From ₦25,000", duration: "2–3 Days · Virtual",
-    description: "Practical AI workflows you implement the same week. Leads, content, automation.",
-    outcomes: [
-      "AI for lead generation. Build prospect lists automatically",
-      "AI for content creation. Captions, emails, scripts in minutes",
-      "AI for business automation. Reduce repetitive admin to near zero",
-      "ChatGPT / Claude workflows configured for your exact role",
-      "Tool stack: free and paid AI tools mapped to your budget",
-    ],
+    icon: BookOpen, quarter: "Q3", badge: "SYSTEMIZE & GROW",
+    program: "AI Marketing and Content Engine",
+    description: "Build a content and marketing system powered by AI. Produce a month of content in a single session.",
+    duration: "3-week cohort",
+  },
+  // Q4 — Productize and Scale
+  {
+    icon: GraduationCap, quarter: "Q4", badge: "PRODUCTIZE & SCALE",
+    program: "Digital Product Builder",
+    description: "Turn your knowledge or service into a sellable digital product. Course, template, or tool — shipped by graduation.",
+    duration: "3-week cohort",
   },
   {
-    icon: GraduationCap, badge: "INTERNSHIP",
-    pain: "Graduated. Can't find real work experience",
-    program: "Internship Programme", price: "Free / Stipend-based", duration: "3 Months · Physical & Hybrid",
-    description: "Placed inside active departments. Real projects, real deadlines, real deliverables.",
-    outcomes: [
-      "Hands-on work in BizDoc, Systemize, or Skills department",
-      "Real client projects you can show in your portfolio",
-      "Professional reference letter from HAMZURY leadership",
-      "Certificate of completion with specialisation track",
-      "Career mentorship session at end of programme",
-    ],
+    icon: Star, quarter: "Q4", badge: "PRODUCTIZE & SCALE",
+    program: "Dashboard Builder Lab",
+    description: "Build internal dashboards and data tools for businesses. A freelance-ready skill with immediate earning potential.",
+    duration: "3-week cohort",
+  },
+  {
+    icon: Users, quarter: "Q4", badge: "PRODUCTIZE & SCALE",
+    program: "Customer Success and Business Ops Lab",
+    description: "Master client management and business operations. Keep clients happy and your backend running smoothly.",
+    duration: "3-week cohort",
+  },
+];
+
+const ALWAYS_RUNNING: Program[] = [
+  {
+    icon: Lightbulb, quarter: "Always", badge: "ONGOING",
+    program: "Robotics and Creative Tech Lab",
+    description: "Hands-on robotics, coding, and creative problem-solving. Runs every Thursday and Friday.",
+    duration: "Ongoing",
+  },
+  {
+    icon: Users, quarter: "Always", badge: "ONGOING",
+    program: "Corporate Staff Training",
+    description: "Custom training for company teams. Tailored programs delivered at your pace and schedule.",
+    duration: "Ongoing",
+  },
+  {
+    icon: BookOpen, quarter: "Always", badge: "ONGOING",
+    program: "HALS — Hamzury AI Learning System",
+    description: "Self-paced online learning platform. Access courses, assignments, and resources anytime.",
+    duration: "Ongoing",
+  },
+  {
+    icon: GraduationCap, quarter: "Always", badge: "ONGOING",
+    program: "RIDI Sponsorship",
+    description: "Subsidized training for underserved communities. Apply for a fully-funded seat in any program.",
+    duration: "Ongoing",
   },
 ];
 
@@ -112,414 +127,9 @@ const SKILL_STEPS = [
   { num: "05", title: "You Execute", short: "Leave with a skill and a 30-day action plan", detail: "Graduate with a 30-day plan for your business. Alumni support for 60 days after." },
 ];
 
-// ── COURSE BLUEPRINT ──────────────────────────────────────────────────────────
-const COURSE_STAGE_TABS = [
-  { id: "overview",    num: "01", label: "Overview" },
-  { id: "curriculum",  num: "02", label: "Curriculum" },
-  { id: "outcomes",    num: "03", label: "Outcomes" },
-  { id: "enroll",      num: "04", label: "Enroll" },
-];
+// ── (Legacy blueprint types removed — 2026 programs use simplified cards) ──
 
-type CourseItem = { title: string; detail: string };
-type CourseStage = { id: string; tagline: string; primary: CourseItem[]; secondary: string[] };
-type CourseBlueprint = { id: string; label: string; tagline: string; badge: string; duration: string; price: string; stages: CourseStage[] };
-
-const COURSE_BLUEPRINTS: CourseBlueprint[] = [
-  {
-    id: "digital-marketing", label: "Digital Marketing", badge: "8 WEEKS",
-    tagline: "Build an audience, generate leads, and run profitable campaigns from scratch.",
-    duration: "8 Weeks · Virtual & Physical", price: "₦45,000",
-    stages: [
-      {
-        id: "overview", tagline: "For business owners spending money on marketing with little return. No prior digital knowledge required.",
-        primary: [
-          { title: "Who this program is for", detail: "Business owners, entrepreneurs, and marketing beginners who want to attract clients online without wasting ad budget on guesswork." },
-          { title: "Delivery format", detail: "Live sessions every weekend (virtual or physical). Sessions recorded for replay within 48 hours. Cohort size: max 25 students." },
-          { title: "What makes this different", detail: "Every module ends with a real deliverable applied to YOUR business. Not a hypothetical. By week 8, your campaigns are live and generating data." },
-        ],
-        secondary: ["Certificate of completion", "Alumni community access (lifetime)", "30-day post-graduation support", "Optional physical attendance"],
-      },
-      {
-        id: "curriculum", tagline: "8 weeks structured from strategy to execution. Everything in the right order.",
-        primary: [
-          { title: "Weeks 1–2: Strategy & Positioning", detail: "Audience research, competitor analysis, brand voice definition, and marketing goal setting. You leave with a documented strategy before you spend a naira." },
-          { title: "Weeks 3–4: Content & Social Media", detail: "Content pillars, platform selection (Instagram, TikTok, LinkedIn), batch creation workflows, scheduling systems, and engagement tactics." },
-          { title: "Weeks 5–6: SEO & Visibility", detail: "Google Business Profile, on-page SEO fundamentals, keyword strategy, and directory listings. Organic traffic without ad spend." },
-          { title: "Weeks 7–8: Paid Advertising", detail: "Meta Ads setup, audience targeting, creative briefs, budget management, and performance analysis. Live campaigns with real budgets." },
-        ],
-        secondary: ["WhatsApp marketing module", "Email marketing basics", "Analytics and reporting setup", "Canva content creation masterclass"],
-      },
-      {
-        id: "outcomes", tagline: "Leave with a running system. Not just knowledge.",
-        primary: [
-          { title: "A documented marketing strategy", detail: "Written, tested, and personalised to your business. Not a template. A real strategy with a content calendar, targeting parameters, and 90-day plan." },
-          { title: "Live social media presence", detail: "Professionally designed profiles, a content bank of 30+ posts, and an active audience that was built during the program." },
-          { title: "Running paid ad campaign", detail: "A Meta or Google ad campaign live and generating data by graduation. With your own ad account configured correctly." },
-          { title: "Measurement system", detail: "Analytics dashboards tracking the metrics that matter. You'll know your cost-per-lead, content reach, and which channels to double down on." },
-        ],
-        secondary: ["Certificate of completion", "Instructor feedback on all deliverables", "Alumni WhatsApp group", "60-day post-graduation support"],
-      },
-      {
-        id: "enroll", tagline: "Secure your seat before the cohort fills. Limited to 25 students per intake.",
-        primary: [
-          { title: "Program fee: ₦45,000", detail: "Full payment secures your seat. Accepted via Moniepoint bank transfer to HAMZURY Skills: Account 8067149356. Use your full name as reference." },
-          { title: "RIDI Scholarship", detail: "If you have a RIDI scholarship code, your fee is covered. Enter your code in the application form. Scholarship places are verified within 48 hours." },
-          { title: "Installment option", detail: "₦25,000 deposit to secure your seat + ₦20,000 balance before Week 3 begins. Contact us to arrange." },
-        ],
-        secondary: ["Application takes 2 minutes", "Confirmation within 24 hours", "Start date: next available cohort", "RIDI codes welcome"],
-      },
-    ],
-  },
-  {
-    id: "business-dev", label: "Business Development", badge: "6 WEEKS",
-    tagline: "Build a repeatable system for finding, closing, and retaining clients.",
-    duration: "6 Weeks · Virtual & Physical", price: "₦35,000",
-    stages: [
-      {
-        id: "overview", tagline: "For founders who rely on referrals, have inconsistent revenue, or can't seem to scale their client base.",
-        primary: [
-          { title: "Who this program is for", detail: "Founders, consultants, and service providers who have a good product but no structured way to find and close new clients consistently." },
-          { title: "Delivery format", detail: "Live sessions twice weekly (virtual). Includes role-plays, real client scenarios, and peer accountability groups. Max 20 students per cohort." },
-          { title: "What makes this different", detail: "This is not a motivational course. Every week you apply frameworks to real targets in your actual pipeline. By week 6, you have closed at least one new client." },
-        ],
-        secondary: ["Certificate of completion", "90-day business growth plan", "Alumni network access", "Optional physical session"],
-      },
-      {
-        id: "curriculum", tagline: "6 weeks from positioning to a closed deal.",
-        primary: [
-          { title: "Weeks 1–2: Positioning & Targeting", detail: "Define your ideal client profile, write your positioning statement, identify your three highest-leverage channels, and set a 90-day revenue target." },
-          { title: "Weeks 3–4: Outreach & Pipeline", detail: "Cold outreach scripts (WhatsApp, email, LinkedIn), follow-up sequences, CRM setup, and lead tracking. You leave with an active pipeline." },
-          { title: "Weeks 5–6: Closing & Retention", detail: "Proposals, objection handling, pricing psychology, and client onboarding systems. Live role-plays with real objections from your industry." },
-        ],
-        secondary: ["Negotiation masterclass", "Proposal writing workshop", "CRM setup (Notion or HubSpot)", "Sales script library"],
-      },
-      {
-        id: "outcomes", tagline: "Graduate with a system you can run every week without a sales team.",
-        primary: [
-          { title: "Documented sales pipeline", detail: "A real CRM with your ideal client profiles, outreach templates, and stage progression. Built during the program, ready to use day one after graduation." },
-          { title: "Active outreach system", detail: "WhatsApp, email, and LinkedIn sequences built and tested on real prospects. You'll have live conversations by week 3." },
-          { title: "90-day growth plan", detail: "A specific, sequenced plan with revenue targets, outreach volumes, conversion goals, and a weekly action checklist. Created in the final session." },
-          { title: "Closed deal", detail: "The final two weeks focus entirely on closing. Most students close at least one new client during the program. If you don't, we review why together." },
-        ],
-        secondary: ["Sales script templates", "Proposal template library", "CRM template (Notion)", "60-day post-grad support"],
-      },
-      {
-        id: "enroll", tagline: "20 seats per cohort. First paid, first confirmed.",
-        primary: [
-          { title: "Program fee: ₦35,000", detail: "Full payment via Moniepoint bank transfer: Account 8067149356. HAMZURY Skills. Use your full name as payment reference." },
-          { title: "Installment option", detail: "₦20,000 deposit + ₦15,000 balance before Week 2. Contact us to arrange." },
-          { title: "RIDI Scholarship", detail: "Scholarship holders. Enter your code at application stage. Verified within 48 hours." },
-        ],
-        secondary: ["Application takes 2 minutes", "Confirmation within 24 hours", "Next cohort: see calendar", "RIDI codes accepted"],
-      },
-    ],
-  },
-  {
-    id: "data-analysis", label: "Data Analysis", badge: "10 WEEKS",
-    tagline: "Go from raw data to clear dashboards and confident business decisions.",
-    duration: "10 Weeks · Virtual", price: "₦55,000",
-    stages: [
-      {
-        id: "overview", tagline: "For business owners and professionals who want to stop guessing and start deciding with data.",
-        primary: [
-          { title: "Who this program is for", detail: "Business owners, accountants, admin professionals, and anyone who works with numbers but has no structured data analysis training. Zero prior experience required." },
-          { title: "Delivery format", detail: "Live virtual sessions twice weekly. All exercises use real business datasets. Every tool covered is free or widely available in Nigerian workplaces." },
-          { title: "What makes this different", detail: "By week 10 you will have built a complete business intelligence dashboard for a real business. Either your own or a case study company with live data." },
-        ],
-        secondary: ["Excel + Power BI included", "Certificate of completion", "Datasets provided for all exercises", "Alumni community access"],
-      },
-      {
-        id: "curriculum", tagline: "10 weeks from spreadsheet basics to a published Power BI dashboard.",
-        primary: [
-          { title: "Weeks 1–3: Excel Mastery", detail: "VLOOKUP, SUMIF, pivot tables, data cleaning techniques, conditional formatting, and structured formulas. Starting from the absolute basics." },
-          { title: "Weeks 4–6: Business Intelligence", detail: "Power BI setup, data modelling, relationships, DAX basics, and designing your first interactive report. Connecting to Excel and CSV sources." },
-          { title: "Weeks 7–8: Financial & KPI Analysis", detail: "P&L analysis, revenue tracking, customer acquisition costs, and building a financial KPI dashboard from scratch." },
-          { title: "Weeks 9–10: Final Project", detail: "Build and present a complete business intelligence dashboard for a real dataset. Peer-reviewed by the cohort. Submitted for certificate." },
-        ],
-        secondary: ["SQL basics module (bonus week)", "Google Sheets integration", "Chart design principles", "Data storytelling for non-technical audiences"],
-      },
-      {
-        id: "outcomes", tagline: "Leave with a skill that earns in three different directions.",
-        primary: [
-          { title: "Excel mastery certificate", detail: "Intermediate-to-advanced Excel. Pivot tables, formulas, dashboards. Verifiable and in demand in every Nigerian industry." },
-          { title: "Published Power BI dashboard", detail: "A real, shareable BI dashboard built during the program. Employable portfolio piece or client deliverable from day one after graduation." },
-          { title: "Financial analysis capability", detail: "Ability to build P&L reports, track KPIs, analyse costs, and present findings to non-technical stakeholders." },
-          { title: "Freelance-ready skill", detail: "Data analysis is one of the highest-paying remote freelance skills in Nigeria. We include a session on how to price and sell your services." },
-        ],
-        secondary: ["Certificate of completion", "Portfolio project (graded)", "Freelancing starter guide", "Alumni job board access"],
-      },
-      {
-        id: "enroll", tagline: "20 seats. Most cohorts fill 2 weeks before start date.",
-        primary: [
-          { title: "Program fee: ₦55,000", detail: "Full payment via Moniepoint: Account 8067149356. HAMZURY Skills. Use your full name as reference." },
-          { title: "Installment: ₦30,000 + ₦25,000", detail: "₦30,000 deposit to secure + ₦25,000 before Week 4. Contact us to arrange." },
-          { title: "Corporate enrollment", detail: "Enrolling 3 or more staff from one company? Corporate rates available. Contact us directly." },
-        ],
-        secondary: ["Laptop required (any spec)", "All software is free", "Confirmation within 24 hours", "RIDI scholarship accepted"],
-      },
-    ],
-  },
-  {
-    id: "faceless-content", label: "Faceless Content Intensive", badge: "2 WEEKS",
-    tagline: "Build authority and a content system without ever appearing on camera.",
-    duration: "2 Weeks · Virtual", price: "₦25,000",
-    stages: [
-      {
-        id: "overview", tagline: "For business owners who know they need content but refuse to show their face on camera.",
-        primary: [
-          { title: "Who this program is for", detail: "Entrepreneurs, brand owners, coaches, and professionals who want a social media presence but are camera-shy, private, or simply prefer to stay off-screen." },
-          { title: "Delivery format", detail: "Intensive live sessions over 2 weeks (virtual). Daily practicals. You create content during every session. No homework required after class." },
-          { title: "What makes this different", detail: "You leave with 30 days of ready-to-publish content already created. Not planned. Actually created, edited, and scheduled." },
-        ],
-        secondary: ["No camera needed. Ever", "Phone-only setup", "Free tools only", "30 posts created during program"],
-      },
-      {
-        id: "curriculum", tagline: "2 weeks of intensive creation. From blank screen to full content bank.",
-        primary: [
-          { title: "Days 1–3: Strategy & Pillars", detail: "Identify your 3 content pillars, your target audience persona, and your platform strategy. Script your first 5 posts during class." },
-          { title: "Days 4–7: Creation & Tools", detail: "AI voiceover setup (ElevenLabs, CapCut), script writing templates, B-roll sourcing strategy, and video editing on your phone." },
-          { title: "Days 8–10: System & Batch", detail: "Batch creation workflow. Create 30 posts in a single session. Scheduling setup (Buffer or Meta Suite). Engagement strategy for faceless accounts." },
-        ],
-        secondary: ["Canva templates included", "AI voiceover tools setup", "Batch creation session (Day 9)", "Platform algorithm briefings"],
-      },
-      {
-        id: "outcomes", tagline: "Leave with a running content engine. Not just theory.",
-        primary: [
-          { title: "30 days of ready-to-publish content", detail: "Created, edited, captioned, and scheduled during the program. Go live the day after graduation." },
-          { title: "Faceless content system", detail: "A repeatable workflow you can run in 3 hours per week to produce 12+ posts per month indefinitely." },
-          { title: "AI tool stack configured", detail: "Your voiceover, scripting, and editing tools set up, tested, and integrated into your workflow." },
-        ],
-        secondary: ["Content calendar template", "Caption swipe file (50 captions)", "Algorithm guide per platform", "Alumni group access"],
-      },
-      {
-        id: "enroll", tagline: "15 seats only. Intensives fill fast.",
-        primary: [
-          { title: "Program fee: ₦25,000", detail: "Full payment via Moniepoint: Account 8067149356. HAMZURY Skills." },
-          { title: "No installment on this program", detail: "Due to the 2-week format, full payment is required to secure your seat. No exceptions." },
-          { title: "Phone is enough", detail: "You do not need a laptop. Everything in this program runs on a smartphone." },
-        ],
-        secondary: ["Smartphone required", "No laptop needed", "Seats: 15 max", "RIDI scholarship accepted"],
-      },
-    ],
-  },
-  {
-    id: "ai-business", label: "AI-Powered Business Courses", badge: "2–3 DAYS",
-    tagline: "Practical AI workflows you can implement in your business this week.",
-    duration: "2–3 Days · Virtual", price: "From ₦25,000",
-    stages: [
-      {
-        id: "overview", tagline: "For business owners who want to use AI but don't know where to start. No tech background required.",
-        primary: [
-          { title: "Three courses in one", detail: "Three focused courses: AI for Lead Generation, AI for Content Creation, and AI for Business Automation. Take one or all three. Enroll in sequence or together." },
-          { title: "Delivery format", detail: "Intensive 2–3 day virtual sprints. Morning session (strategy), afternoon session (implementation). By end of day one you have something running." },
-          { title: "What makes this different", detail: "Every workflow is tested, working, and free or near-free to run. We use tools available to any Nigerian business with a phone and internet connection." },
-        ],
-        secondary: ["No coding required", "Works on phone or laptop", "Free tools used throughout", "Certificate per course"],
-      },
-      {
-        id: "curriculum", tagline: "Three standalone intensives. One for each AI use case.",
-        primary: [
-          { title: "Course 1: AI for Lead Generation (1 day)", detail: "Build a prospect list of 100+ ideal clients using AI tools. Automate outreach messages via WhatsApp and email. Set up a lead pipeline that runs without you." },
-          { title: "Course 2: AI for Content Creation (1 day)", detail: "Generate captions, emails, scripts, and blog posts in minutes. Set up your custom AI content workflow. Produce a week of content in under 2 hours." },
-          { title: "Course 3: AI for Business Automation (1 day)", detail: "Automate invoicing, follow-ups, client onboarding, and reporting. Connect your tools (WhatsApp, email, CRM) into automatic sequences." },
-        ],
-        secondary: ["ChatGPT + Claude prompts included", "Make.com / Zapier walkthrough", "WhatsApp automation setup", "Tool stack for every budget"],
-      },
-      {
-        id: "outcomes", tagline: "Walk away with a running AI workflow. Not just ideas.",
-        primary: [
-          { title: "Live AI lead generation system", detail: "A running pipeline generating qualified leads daily. Without cold calling or manual searching." },
-          { title: "AI content workflow", detail: "A configured content system producing high-quality posts, emails, and scripts in a fraction of normal time." },
-          { title: "Automated business process", detail: "At least one complete automation running in your business. Invoices, follow-ups, or onboarding. Before you leave the course." },
-        ],
-        secondary: ["Prompt library (50+ prompts)", "Tool comparison guide", "Automation templates", "90-day follow-up check-in"],
-      },
-      {
-        id: "enroll", tagline: "Cohorts run monthly. Take one course or all three.",
-        primary: [
-          { title: "Per course: From ₦25,000", detail: "Each course is priced individually. Bundle all 3 for ₦65,000 (save ₦10,000). Payment via Moniepoint: Account 8067149356. HAMZURY Skills." },
-          { title: "Bundle: ₦65,000 for all 3", detail: "Enroll in all three AI courses at once and save ₦10,000. Best option if you want to fully integrate AI across your operations." },
-        ],
-        secondary: ["Laptop or phone works", "Internet required", "Recorded replays for 7 days", "RIDI scholarship accepted"],
-      },
-    ],
-  },
-  {
-    id: "internship", label: "Internship Programme", badge: "3 MONTHS",
-    tagline: "Real projects. Real departments. A portfolio that proves what you can do.",
-    duration: "3 Months · Physical & Hybrid", price: "Free / Stipend-based",
-    stages: [
-      {
-        id: "overview", tagline: "For recent graduates and undergraduates who need real work experience to launch their career.",
-        primary: [
-          { title: "Who this program is for", detail: "Fresh graduates (any field), final-year students, and career-changers who want professional experience in a real business environment. Not a fake internship." },
-          { title: "Delivery format", detail: "Physical placement at HAMZURY Abuja headquarters. Hybrid option available for select roles. 3-month placement with weekly reviews and monthly performance assessment." },
-          { title: "What makes this different", detail: "You work on real client projects under supervision. Real deadlines, real deliverables, real feedback. Your work appears in actual client outcomes. Not training simulations." },
-        ],
-        secondary: ["Physical placement. Abuja", "Stipend-based roles available", "Reference letter guaranteed", "Open to any field of study"],
-      },
-      {
-        id: "curriculum", tagline: "3 months of structured placement across HAMZURY's active departments.",
-        primary: [
-          { title: "Month 1: Orientation & Foundations", detail: "Department induction, tool setup, shadow senior team members, attend client calls, and complete your first solo deliverable by end of week 4." },
-          { title: "Month 2: Active Contribution", detail: "Assigned to live client projects. You own deliverables end-to-end. Research, execution, and submission. Weekly review with your department lead." },
-          { title: "Month 3: Lead & Deliver", detail: "Take ownership of a complete project scope from brief to delivery. Present your work to leadership. Final assessment and reference letter issued." },
-        ],
-        secondary: ["Available departments: BizDoc, Systemize, Skills, Media", "Weekly 1-on-1 with supervisor", "Monthly performance review", "Access to all internal training materials"],
-      },
-      {
-        id: "outcomes", tagline: "Leave with a portfolio, a reference, and a network.",
-        primary: [
-          { title: "Professional reference letter", detail: "Written and signed by your department lead at HAMZURY. Specific, credible, and usable for any employer or postgraduate application." },
-          { title: "Certificate of completion", detail: "Issued with your department specialisation track (e.g. 'BizDoc Compliance Operations' or 'Systemize Brand & Digital')." },
-          { title: "Portfolio of real work", detail: "3 to 5 real deliverables completed for actual clients. With permission to include in your portfolio. This is what separates HAMZURY interns in the job market." },
-          { title: "Career mentorship session", detail: "One 45-minute career strategy session with HAMZURY leadership in your final week. CV review, LinkedIn audit, and job-search guidance." },
-        ],
-        secondary: ["HAMZURY alumni network access", "First consideration for paid roles", "LinkedIn recommendation", "60-day post-placement support"],
-      },
-      {
-        id: "enroll", tagline: "Applications open quarterly. Only 8 placements per intake.",
-        primary: [
-          { title: "Application process", detail: "Apply using the form below. Tell us your field of study, which department interests you, and what you want to achieve in 3 months. Applications reviewed within 5 working days." },
-          { title: "Free placement", detail: "Standard internship placement is unpaid but provides all training, resources, tools, and the full reference package." },
-          { title: "Stipend-based roles", detail: "A small number of placements carry a monthly stipend (₦15,000–₦30,000) for high-performing candidates in live revenue-generating roles. Announced at intake." },
-        ],
-        secondary: ["8 placements per quarter", "Application takes 5 minutes", "Decision within 5 working days", "Physical attendance required. Abuja"],
-      },
-    ],
-  },
-  {
-    id: "digital", label: "Digital Skills Bootcamp", badge: "8 WEEKS",
-    tagline: "A hands-on intensive covering the digital tools that power modern work.",
-    duration: "8 Weeks · Virtual", price: "₦35,000",
-    stages: [
-      {
-        id: "overview", tagline: "For school leavers, career changers, and anyone who wants to earn online. No prior technical knowledge required.",
-        primary: [
-          { title: "Who this is for", detail: "School leavers, career changers, and anyone who wants to earn online. No prior technical knowledge required." },
-          { title: "Delivery format", detail: "100% virtual. Live sessions twice weekly. Session recordings available for 48 hours after each class." },
-          { title: "What makes this different", detail: "Every module produces a live, published deliverable. By week 8 your social media, email list, and online store are live and generating data." },
-        ],
-        secondary: ["Certificate of completion", "Alumni network access", "Portfolio project included"],
-      },
-      {
-        id: "curriculum", tagline: "From productivity fundamentals to a live digital income stream. In 8 weeks.",
-        primary: [
-          { title: "Digital marketing fundamentals", detail: "Learn how digital marketing works across social media, email, and e-commerce. With hands-on application from week one." },
-          { title: "Social media strategy & content creation", detail: "Build and grow an audience on the platforms your customers actually use. Content pillars, scheduling, and engagement tactics covered." },
-          { title: "Email marketing & automation tools", detail: "Set up your list, design campaigns, and automate sequences using free and affordable tools available in Nigeria." },
-          { title: "E-commerce setup & management", detail: "Launch your own online store or product listing. We walk through setup, product photography basics, and first-sale strategies." },
-        ],
-        secondary: ["Canva design toolkit", "Free tools only", "Live store setup session", "Alumni WhatsApp group"],
-      },
-      {
-        id: "outcomes", tagline: "Leave with a running digital presence and your first income stream active.",
-        primary: [
-          { title: "Freelance readiness", detail: "Build your first digital income stream during the program. By graduation, you have a portfolio, a social profile, and a store. All live." },
-          { title: "Social media & email presence", detail: "A professionally run social account and email list with your first 100 subscribers. Built during the 8 weeks." },
-          { title: "Digital marketing capability", detail: "Ability to plan and execute digital campaigns for your business or as a freelance service for clients." },
-        ],
-        secondary: ["Certificate of completion", "Alumni network access", "Portfolio project included", "60-day post-graduation support"],
-      },
-      {
-        id: "enroll", tagline: "Next cohort forming now. 20 seats available.",
-        primary: [
-          { title: "Program fee: ₦35,000", detail: "Full payment via Moniepoint: Account 8067149356. HAMZURY Skills. Use your full name as reference." },
-          { title: "Installment option", detail: "₦20,000 deposit + ₦15,000 balance before Week 3. Contact us to arrange." },
-          { title: "RIDI Scholarship", detail: "University students from underserved communities can apply for a full RIDI scholarship. Apply via the RIDI portal." },
-        ],
-        secondary: ["Application takes 2 minutes", "Confirmation within 24 hours", "Start date: next available cohort", "RIDI codes welcome"],
-      },
-    ],
-  },
-  {
-    id: "it", label: "IT Foundations Programme", badge: "10 WEEKS",
-    tagline: "Bridges the gap between academic theory and the real-world tech skills employers need.",
-    duration: "10 Weeks · Virtual + Physical", price: "₦45,000 / Free with RIDI Scholarship",
-    stages: [
-      {
-        id: "overview", tagline: "For university students and fresh graduates in IT, Computer Science, and related fields.",
-        primary: [
-          { title: "Who this is for", detail: "University students and fresh graduates in IT, Computer Science, Software Engineering, or related fields. Basic computer literacy required." },
-          { title: "Why this is different", detail: "Every session produces a deployable deliverable. By graduation you have 3 real projects on GitHub and a reviewed CV ready for applications." },
-          { title: "RIDI Scholarship", detail: "University students from underserved communities can apply for a full RIDI scholarship covering 100% of program fees. Apply via the RIDI portal." },
-        ],
-        secondary: ["University student discount available", "RIDI scholarship eligible", "Internship pathway through HAMZURY"],
-      },
-      {
-        id: "curriculum", tagline: "10 weeks from academic theory to a GitHub portfolio employers can actually verify.",
-        primary: [
-          { title: "Practical software development workflow", detail: "Git, version control, code reviews, and professional development practices used in real teams. Not taught in university." },
-          { title: "Database design & SQL fundamentals", detail: "Design relational databases from scratch. Write queries, joins, and stored procedures against real datasets." },
-          { title: "API integration basics", detail: "Understand REST APIs, make real API calls, and integrate external services into your own projects." },
-          { title: "Project management with industry tools", detail: "Jira, Notion, and GitHub Projects. The tools every tech team uses. Setup and workflow covered from day one." },
-        ],
-        secondary: ["GitHub portfolio setup", "CV & LinkedIn review session", "3 real projects built", "Access to HAMZURY alumni tech network"],
-      },
-      {
-        id: "outcomes", tagline: "Graduate with a verified portfolio, a reviewed CV, and an internship pathway.",
-        primary: [
-          { title: "3 projects on GitHub", detail: "Three real, deployable projects built during the program. Each with documentation, version history, and live demo links." },
-          { title: "CV & GitHub portfolio", detail: "A reviewed, industry-ready CV and GitHub profile. Formatted to pass ATS screening and impress technical interviewers." },
-          { title: "Internship pathway", detail: "High-performing graduates are offered placement consideration within HAMZURY's active tech projects and client partnerships." },
-        ],
-        secondary: ["Certificate of completion", "Internship pathway through HAMZURY", "Alumni job board access", "90-day post-graduation support"],
-      },
-      {
-        id: "enroll", tagline: "Limited to 20 students. University student discount available.",
-        primary: [
-          { title: "Program fee: ₦45,000", detail: "Full payment via Moniepoint: Account 8067149356. HAMZURY Skills. Use your full name as reference. University student discount available on request." },
-          { title: "RIDI Scholarship", detail: "University students from underserved communities can apply for a full RIDI scholarship covering 100% of program fees." },
-          { title: "Installment option", detail: "₦25,000 deposit + ₦20,000 balance before Week 4. Contact us to arrange." },
-        ],
-        secondary: ["Laptop required", "All software is free", "RIDI scholarship eligible", "University student discount available"],
-      },
-    ],
-  },
-  {
-    id: "ridi", label: "RIDI Scholarship Programme", badge: "SCHOLARSHIP",
-    tagline: "Fully-funded skills training for talented young Nigerians with financial barriers.",
-    duration: "Variable · per program", price: "Fully Funded",
-    stages: [
-      {
-        id: "overview", tagline: "RIDI (Reach, Invest, Develop, Impact) funds seats in HAMZURY Skills programs for qualifying candidates.",
-        primary: [
-          { title: "What RIDI is", detail: "RIDI is HAMZURY's scholarship arm. Funding Skills program seats for young Nigerians who demonstrate talent and ambition but face genuine financial barriers to enrolment." },
-          { title: "Who qualifies", detail: "Applicants aged 18–30 who are currently employed in low-income roles, self-employed with limited revenue, or unemployed graduates demonstrating clear intent and a specific skill goal." },
-          { title: "What's covered", detail: "Full tuition for any one HAMZURY Skills program. No partial funding. RIDI covers the complete program fee. Non-transferable, non-deferrable." },
-        ],
-        secondary: ["28 RIDI communities active", "Quarterly intake", "Any program eligible", "Community nominations accepted"],
-      },
-      {
-        id: "curriculum", tagline: "RIDI scholars enroll in the same cohorts as full-fee students. No separate tracks.",
-        primary: [
-          { title: "Same program, same cohort", detail: "RIDI scholars attend the exact same live sessions, access the same materials, and submit the same deliverables as full-fee students. No separation." },
-          { title: "Accountability check-in", detail: "RIDI scholars receive an additional monthly 15-minute check-in with the program coordinator. To support completion and flag challenges early." },
-          { title: "Community mentor", detail: "Each RIDI scholar is connected with a HAMZURY alumni mentor from a similar background for the duration of the program and 3 months post-graduation." },
-        ],
-        secondary: ["Cohort placement guaranteed on approval", "Mentor matching within 5 days of enrolment", "Community accountability group", "Alumni network access on graduation"],
-      },
-      {
-        id: "outcomes", tagline: "RIDI's target: 100% completion rate and immediate income impact.",
-        primary: [
-          { title: "Full certificate on completion", detail: "RIDI scholars receive the same certificate as full-fee graduates. Including department specialisation and HAMZURY verification." },
-          { title: "Income milestone tracking", detail: "RIDI tracks scholar income 3, 6, and 12 months post-graduation. This data funds the next intake cycle. Your success directly enables the next scholar." },
-          { title: "Community impact path", detail: "Top RIDI graduates are invited to join the RIDI Ambassador Programme. teaching peers in their community and earning a stipend in the process." },
-        ],
-        secondary: ["Certificate (same as full-fee)", "3-month income tracking", "Ambassador opportunity", "Nomination chain (each graduate nominates the next)"],
-      },
-      {
-        id: "enroll", tagline: "Apply for RIDI using the form below. Community nominations also accepted.",
-        primary: [
-          { title: "Individual application", detail: "Apply using the form below. Tell us your situation, your specific skill goal, and which program you'd like to join. Applications assessed within 7 days." },
-          { title: "Community nomination", detail: "RIDI community coordinators can nominate candidates directly using a unique community code. If you are a coordinator, contact us to register your community." },
-          { title: "Quarterly intake cycle", detail: "RIDI applications are reviewed quarterly (January, April, July, October). Apply anytime. You'll be considered at the next intake cycle." },
-        ],
-        secondary: ["No income proof required", "Decision within 7 days", "Quarterly intakes", "28 active communities"],
-      },
-    ],
-  },
-];
+// (Legacy COURSE_BLUEPRINTS removed — replaced by PROGRAMS_2026 and ALWAYS_RUNNING above)
 
 
 
@@ -795,7 +405,7 @@ export default function SkillsPortal() {
           {[
             { stat: "1,200+", label: "Students Trained" },
             { stat: "85+",    label: "Businesses Launched" },
-            { stat: "6",      label: "Active Programs" },
+            { stat: "13",     label: "Programs in 2026" },
             { stat: "4.8/5",  label: "Student Rating" },
           ].map(item => (
             <div key={item.label}>
@@ -806,25 +416,113 @@ export default function SkillsPortal() {
         </div>
       </section>
 
-      {/* ── PROGRAMS OVERVIEW ── */}
+      {/* ── PROGRAMS 2026 ── */}
       <section id="programs" className="py-20 md:py-28" style={{ backgroundColor: BG }}>
-        <div className="max-w-3xl mx-auto px-5">
-          <p className="text-[11px] font-bold tracking-[0.25em] uppercase mb-3" style={{ color: GOLD }}>OUR PROGRAMS</p>
-          <h2 className="text-[clamp(28px,4vw,40px)] font-normal tracking-tight mb-3" style={{ color: TEXT }}>Six programs. Built for execution.</h2>
-          <p className="text-[15px] opacity-50 mb-10" style={{ color: TEXT }}>Pick the gap you want to close.</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-            {["Digital Marketing", "Business Development", "Data Analysis", "Faceless Content Intensive", "AI-Powered Business", "Internship Programme"].map(p => (
-              <div key={p} className="flex items-center gap-3 p-4 rounded-xl" style={{ backgroundColor: W, border: `1px solid ${GOLD}20` }}>
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: DARK }} />
-                <span className="text-sm font-medium" style={{ color: TEXT }}>{p}</span>
-              </div>
-            ))}
+        <div className="max-w-6xl mx-auto px-5">
+          <p className="text-[11px] font-bold tracking-[0.25em] uppercase mb-3" style={{ color: GOLD }}>2026 PROGRAMS</p>
+          <h2 className="text-[clamp(28px,4vw,40px)] font-normal tracking-tight mb-3" style={{ color: TEXT }}>Three quarters. Nine cohort programs.</h2>
+          <p className="text-[15px] opacity-50 mb-14" style={{ color: TEXT }}>Each quarter builds on the last. Pick the stage that matches where you are.</p>
+
+          {/* Q2 */}
+          <div className="mb-14">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="text-[11px] font-bold tracking-[0.2em] uppercase px-3 py-1 rounded-full" style={{ backgroundColor: `${DARK}12`, color: DARK }}>Q2</span>
+              <span className="text-[15px] font-medium" style={{ color: TEXT }}>Start and Sell</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {PROGRAMS_2026.filter(p => p.quarter === "Q2").map(p => (
+                <div key={p.program} className="rounded-2xl p-6 border transition-all hover:-translate-y-0.5 hover:shadow-md" style={{ backgroundColor: W, borderColor: `${DARK}15` }}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <p.icon size={16} style={{ color: DARK }} />
+                    <span className="text-[10px] font-bold tracking-[0.15em] uppercase" style={{ color: GOLD }}>{p.badge}</span>
+                  </div>
+                  <h3 className="text-[16px] font-semibold mb-2" style={{ color: TEXT }}>{p.program}</h3>
+                  <p className="text-[13px] leading-relaxed mb-4" style={{ color: `${TEXT}88` }}>{p.description}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-medium px-2.5 py-1 rounded-full" style={{ backgroundColor: `${DARK}08`, color: DARK }}>{p.duration}</span>
+                    <button onClick={() => document.getElementById("calendar")?.scrollIntoView({ behavior: "smooth" })}
+                      className="text-[12px] font-semibold flex items-center gap-1 transition-opacity hover:opacity-70" style={{ color: DARK }}>
+                      Apply Now <ArrowRight size={12} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <a href="/skills/programs"
-            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-sm font-medium transition-all hover:-translate-y-0.5"
-            style={{ backgroundColor: DARK, color: W }}>
-            Explore All Programs <ArrowRight size={15} />
-          </a>
+
+          {/* Q3 */}
+          <div className="mb-14">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="text-[11px] font-bold tracking-[0.2em] uppercase px-3 py-1 rounded-full" style={{ backgroundColor: `${DARK}12`, color: DARK }}>Q3</span>
+              <span className="text-[15px] font-medium" style={{ color: TEXT }}>Systemize and Grow</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {PROGRAMS_2026.filter(p => p.quarter === "Q3").map(p => (
+                <div key={p.program} className="rounded-2xl p-6 border transition-all hover:-translate-y-0.5 hover:shadow-md" style={{ backgroundColor: W, borderColor: `${DARK}15` }}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <p.icon size={16} style={{ color: DARK }} />
+                    <span className="text-[10px] font-bold tracking-[0.15em] uppercase" style={{ color: GOLD }}>{p.badge}</span>
+                  </div>
+                  <h3 className="text-[16px] font-semibold mb-2" style={{ color: TEXT }}>{p.program}</h3>
+                  <p className="text-[13px] leading-relaxed mb-4" style={{ color: `${TEXT}88` }}>{p.description}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-medium px-2.5 py-1 rounded-full" style={{ backgroundColor: `${DARK}08`, color: DARK }}>{p.duration}</span>
+                    <button onClick={() => document.getElementById("calendar")?.scrollIntoView({ behavior: "smooth" })}
+                      className="text-[12px] font-semibold flex items-center gap-1 transition-opacity hover:opacity-70" style={{ color: DARK }}>
+                      Apply Now <ArrowRight size={12} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Q4 */}
+          <div className="mb-14">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="text-[11px] font-bold tracking-[0.2em] uppercase px-3 py-1 rounded-full" style={{ backgroundColor: `${DARK}12`, color: DARK }}>Q4</span>
+              <span className="text-[15px] font-medium" style={{ color: TEXT }}>Productize and Scale</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {PROGRAMS_2026.filter(p => p.quarter === "Q4").map(p => (
+                <div key={p.program} className="rounded-2xl p-6 border transition-all hover:-translate-y-0.5 hover:shadow-md" style={{ backgroundColor: W, borderColor: `${DARK}15` }}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <p.icon size={16} style={{ color: DARK }} />
+                    <span className="text-[10px] font-bold tracking-[0.15em] uppercase" style={{ color: GOLD }}>{p.badge}</span>
+                  </div>
+                  <h3 className="text-[16px] font-semibold mb-2" style={{ color: TEXT }}>{p.program}</h3>
+                  <p className="text-[13px] leading-relaxed mb-4" style={{ color: `${TEXT}88` }}>{p.description}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-medium px-2.5 py-1 rounded-full" style={{ backgroundColor: `${DARK}08`, color: DARK }}>{p.duration}</span>
+                    <button onClick={() => document.getElementById("calendar")?.scrollIntoView({ behavior: "smooth" })}
+                      className="text-[12px] font-semibold flex items-center gap-1 transition-opacity hover:opacity-70" style={{ color: DARK }}>
+                      Apply Now <ArrowRight size={12} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Always Running */}
+          <div>
+            <div className="flex items-center gap-3 mb-6">
+              <span className="text-[11px] font-bold tracking-[0.2em] uppercase px-3 py-1 rounded-full" style={{ backgroundColor: `${GOLD}20`, color: GOLD }}>ALWAYS RUNNING</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {ALWAYS_RUNNING.map(p => (
+                <div key={p.program} className="rounded-2xl p-5 border transition-all hover:-translate-y-0.5 hover:shadow-md" style={{ backgroundColor: W, borderColor: `${GOLD}20` }}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <p.icon size={15} style={{ color: GOLD }} />
+                    <span className="text-[10px] font-bold tracking-[0.15em] uppercase" style={{ color: `${TEXT}55` }}>{p.badge}</span>
+                  </div>
+                  <h3 className="text-[14px] font-semibold mb-2" style={{ color: TEXT }}>{p.program}</h3>
+                  <p className="text-[12px] leading-relaxed mb-3" style={{ color: `${TEXT}77` }}>{p.description}</p>
+                  <span className="text-[11px] font-medium px-2.5 py-1 rounded-full" style={{ backgroundColor: `${GOLD}12`, color: GOLD }}>{p.duration}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -877,7 +575,7 @@ export default function SkillsPortal() {
 
       {/* ── COURSE BLUEPRINT LINK ── */}
       <section className="py-12 px-6 text-center" style={{ backgroundColor: CREAM }}>
-        <p className="text-sm mb-4 opacity-60" style={{ color: TEXT }}>Week-by-week curriculum for every program.</p>
+        <p className="text-sm mb-4 opacity-60" style={{ color: TEXT }}>Detailed curriculum revealed after enrollment.</p>
         <a href="/skills/blueprint"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium border transition-all hover:opacity-80"
           style={{ borderColor: `${DARK}30`, color: DARK }}>
