@@ -167,8 +167,8 @@ function Router() {
         </RoleGuard>
       </Route>
 
-      {/* Client Portal */}
-      <Route path={"/client"} component={ClientPage} />
+      {/* Client Portal — /client redirects to home (tracking is on department pages) */}
+      <Route path={"/client"}>{() => { window.location.href = "/"; return null; }}</Route>
       <Route path={"/client/dashboard"} component={ClientDashboard} />
 
       {/* Affiliate Portal */}
