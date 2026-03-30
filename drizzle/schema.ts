@@ -58,7 +58,7 @@ export const leads = mysqlTable("leads", {
   businessName: varchar("businessName", { length: 255 }),
   phone: varchar("phone", { length: 50 }),
   email: varchar("email", { length: 320 }),
-  service: varchar("service", { length: 100 }).notNull(),
+  service: varchar("service", { length: 500 }).notNull(),
   context: text("context"),
   /** Source: chat, referral, walk-in, bizdev */
   source: varchar("source", { length: 50 }).default("chat"),

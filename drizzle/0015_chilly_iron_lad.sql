@@ -1,0 +1,1 @@
+ALTER TABLE `leads` MODIFY COLUMN `service` varchar(500) NOT NULL;

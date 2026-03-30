@@ -449,7 +449,7 @@ export default function Home() {
 
                       {/* Input row */}
                       <div className="flex gap-2 mb-3">
-                        <input type="text" placeholder="HMZ-17/3-9567"
+                        <input type="text" placeholder="HMZ-26/3-XXXX"
                           className="flex-1 rounded-xl px-4 py-3 text-sm outline-none border font-mono"
                           style={{ borderColor: `${TEAL}18`, backgroundColor: WHITE, color: TEAL }}
                           value={trackRef}
@@ -461,7 +461,7 @@ export default function Home() {
                           {trackLoading ? "…" : "Access"}
                         </button>
                       </div>
-                      <p className="text-[11px] mb-4" style={{ color: TEAL, opacity: 0.35 }}>Enter your reference number e.g. HMZ-17/3-9567</p>
+                      <p className="text-[11px] mb-4" style={{ color: TEAL, opacity: 0.35 }}>Enter your reference number e.g. HMZ-26/3-XXXX</p>
 
                       {/* Not found */}
                       {trackNotFound && (

@@ -111,7 +111,7 @@ export default function MyUpdateWidget() {
                 </button>
               </div>
               <p className="text-[11px] mb-4" style={{ color: TEAL, opacity: 0.35 }}>
-                Enter your reference number e.g. HMZ-17/3-9567
+                Enter your reference number e.g. HMZ-26/3-XXXX
               </p>
 
               {notFound && (

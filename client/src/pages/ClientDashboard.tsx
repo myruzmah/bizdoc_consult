@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   CheckCircle, Circle, ChevronDown, Loader2, AlertCircle, LogOut,
   Send, MessageSquare, Calendar,
@@ -66,11 +66,10 @@ const SERVICE_DETAILS: Record<string, { pitch: string; includes: string[]; price
   ip: { pitch: "Your brand name and ideas are assets. Protect them before someone else takes them.", includes: ["Trademark search", "Application filing", "Certificate delivery"], price: "\u20A675,000" },
   workspace: { pitch: "Set up your team's digital workspace -- email, cloud storage, collaboration tools.", includes: ["Google Workspace or Microsoft 365", "Email setup", "Team onboarding"], price: "from \u20A650,000" },
   monthly_filing: { pitch: "We file your taxes every month so you never miss a deadline or face penalties.", includes: ["Monthly FIRS filing", "VAT returns", "PAYE processing"], price: "Included in \u20A6150,000/year", value: "We handle every filing so you never think about tax deadlines again." },
-  renewal_tracking: { pitch: "Licences and registrations expire. We track every deadline and renew on time.", includes: ["CAC annual returns", "Licence renewals", "Permit tracking"], price: "Included in subscription" },
-  penalty_prevention: { pitch: "Late filings cost money. We prevent every penalty before it happens.", includes: ["Deadline alerts", "Proactive filing", "Penalty review"], price: "Included in subscription" },
-  tcc_annual: { pitch: "Your Tax Clearance Certificate proves you are a serious business. We get it for you yearly.", includes: ["3-year tax review", "Application filing", "Certificate delivery"], price: "Included in subscription" },
-  compliance_report: { pitch: "Monthly compliance status reports so you always know where you stand.", includes: ["Filing status", "Upcoming deadlines", "Compliance score"], price: "Included in subscription" },
-  audit_support: { pitch: "If regulators come knocking, we have your records ready.", includes: ["Record keeping", "Audit preparation", "Response support"], price: "Included in subscription" },
+  renewal_dates: { pitch: "Your licences and registrations have expiry dates. We track every one.", includes: ["CAC annual returns date", "Licence renewal dates", "Permit expiry alerts"], price: "Included" },
+  tcc_cert: { pitch: "Tax Clearance Certificate -- proof your business is compliant. Delivered annually.", includes: ["3-year tax review", "FIRS submission", "Certificate delivery"], price: "Included" },
+  financial_report: { pitch: "Monthly and annual financial reports showing your compliance status.", includes: ["Monthly filing summary", "Annual financial statement", "Tax position report"], price: "Included" },
+  acknowledgement: { pitch: "Every filing comes with an official acknowledgement document from FIRS.", includes: ["Filing receipt", "Submission confirmation", "Record keeping"], price: "Included" },
   online_always: { pitch: "Learn at your own pace. Our online programs are always open.", includes: ["Self-paced modules", "HALS access", "Certificate on completion"], price: "from \u20A645,000", value: "Start learning today -- no waiting for a cohort." },
   physical_cohort: { pitch: "Limited seats. Next cohort filling fast. In-person training in Abuja.", includes: ["3-week intensive", "Hands-on projects", "Networking", "Certificate"], price: "from \u20A655,000", value: "Only 25 seats per cohort. Early registration recommended." },
 };
@@ -772,7 +771,7 @@ export default function ClientDashboard() {
       <div className="flex h-[calc(100vh-56px)]">
 
         {/* ─── LEFT SIDE: Business Health (scrollable) ─── */}
-        <div className="flex-1 w-full overflow-y-auto px-5 md:px-8 pb-12 max-w-4xl mx-auto">
+        <div className="flex-1 w-full overflow-y-auto px-4 md:px-6 pb-12 max-w-4xl mx-auto">
 
           {/* Welcome header */}
           <div className="pt-8 pb-2">
@@ -814,16 +813,15 @@ export default function ClientDashboard() {
                 id: "compliance_mgmt",
                 icon: Clock,
                 label: "Compliance Management",
-                desc: "Monthly filing, penalty prevention, renewals, TCC",
-                pitch: "We prevent penalties, track deadlines, and file on your behalf every month. \u20A6150,000/year.",
+                desc: "Monthly filing, renewals, certificates, reports",
+                pitch: "We prevent penalties, track deadlines, and file on your behalf. \u20A6150,000/year.",
                 color: "#1B4D3E",
                 items: [
                   { id: "monthly_filing", label: "Monthly Tax Filing", short: "Filing" },
-                  { id: "renewal_tracking", label: "Renewal Tracking", short: "Renewals" },
-                  { id: "penalty_prevention", label: "Penalty Prevention", short: "Prevent" },
-                  { id: "tcc_annual", label: "Annual TCC Certificate", short: "TCC" },
-                  { id: "compliance_report", label: "Compliance Reports", short: "Reports" },
-                  { id: "audit_support", label: "Audit Support", short: "Audit" },
+                  { id: "renewal_dates", label: "Renewal Dates & Tracking", short: "Renewals" },
+                  { id: "tcc_cert", label: "TCC Certificate", short: "TCC" },
+                  { id: "financial_report", label: "Financial Report", short: "Report" },
+                  { id: "acknowledgement", label: "Filing Acknowledgement", short: "Receipt" },
                 ],
               },
               {
@@ -914,34 +912,40 @@ export default function ClientDashboard() {
               const done = status === "Completed";
               const active: Record<string, ItemState> = {};
 
-              if (s.includes("full business") || s.includes("architecture")) {
+              if (s.includes("full business") || s.includes("architecture") || s.includes("scuml")) {
+                // Real Tilz Spa services
                 active.cac = done ? "delivered" : "in_progress";
-                active.tin = "paid"; active.tcc = "paid";
-                active.brand_id = "paid"; active.website = "paid";
-                active.social_setup = "paid"; active.social_mgmt = "paid";
-                active.monthly_filing = "paid"; active.renewal_tracking = "paid";
-                active.penalty_prevention = "paid"; active.tcc_annual = "paid";
-                active.compliance_report = "paid"; active.audit_support = "paid";
-                active.dashboard = "paid";   // dashboard build
-                active.team = "paid";        // 1 staff in skills
+                active.tin = "paid";
+                active.brand_id = "in_progress"; // delivering tomorrow
+                active.website = "paid";
+                active.social_setup = "paid";
+                active.social_mgmt = "paid";
+                active.dashboard = "paid";
+                active.monthly_filing = "paid";
               }
+              // Individual service detection
+              if (s.includes("scuml")) active.cac = done ? "delivered" : "in_progress";
+              if (s.includes("tin")) active.tin = done ? "delivered" : "in_progress";
+              if (s.includes("branding") || s.includes("brand")) active.brand_id = done ? "delivered" : "in_progress";
+              if (s.includes("website") || s.includes("webpage")) active.website = done ? "delivered" : "in_progress";
+              if (s.includes("social media account")) active.social_setup = done ? "delivered" : "in_progress";
+              if (s.includes("social media management")) active.social_mgmt = done ? "delivered" : "in_progress";
+              if (s.includes("lead generation")) active.crm = done ? "delivered" : "in_progress";
+              if (s.includes("founder dashboard")) active.dashboard = done ? "delivered" : "in_progress";
+              if (s.includes("whatsapp automation")) active.automation = done ? "delivered" : "in_progress";
               if (s.includes("management") || s.includes("subscription") || s.includes("tax management")) {
                 active.monthly_filing = done ? "delivered" : "in_progress";
-                active.renewal_tracking = "paid";
-                active.penalty_prevention = "paid";
-                active.tcc_annual = "paid";
-                active.compliance_report = "paid";
-                active.audit_support = "paid";
+                active.renewal_dates = "paid";
+                active.tcc_cert = "paid";
+                active.financial_report = "paid";
+                active.acknowledgement = "paid";
               }
               if (s.includes("cac") || s.includes("registration")) active.cac = done ? "delivered" : "in_progress";
-              if (s.includes("tax") || s.includes("tin")) active.tin = done ? "delivered" : "in_progress";
+              if (s.includes("tax") && !s.includes("whatsapp")) active.tin = done ? "delivered" : "in_progress";
               if (s.includes("tcc")) active.tcc = done ? "delivered" : "in_progress";
               if (s.includes("licence") || s.includes("nafdac")) active.licence = done ? "delivered" : "in_progress";
-              if (s.includes("website")) active.website = done ? "delivered" : "in_progress";
-              if (s.includes("brand")) active.brand_id = done ? "delivered" : "in_progress";
-              if (s.includes("social media")) { active.social_setup = done ? "delivered" : "in_progress"; active.social_mgmt = done ? "delivered" : "in_progress"; }
               if (s.includes("automation") || s.includes("crm")) { active.crm = done ? "delivered" : "in_progress"; active.automation = done ? "delivered" : "in_progress"; }
-              if (s.includes("dashboard")) active.dashboard = done ? "delivered" : "in_progress";
+              if (s.includes("dashboard") && !s.includes("founder")) active.dashboard = done ? "delivered" : "in_progress";
               if (s.includes("training") || s.includes("skill") || s.includes("cohort")) active.team = done ? "delivered" : "in_progress";
               if (s.includes("contract") || s.includes("legal")) active.contracts = done ? "delivered" : "in_progress";
 
@@ -993,26 +997,21 @@ export default function ClientDashboard() {
                   return (
                     <div className="mt-6 mb-4">
                       <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: GOLD, marginBottom: 12 }}>My Active Services</p>
-                      <div className="rounded-2xl p-4 overflow-x-auto" style={{ backgroundColor: WHITE, border: `1px solid ${BORDER}` }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 0, minWidth: "max-content" }}>
+                      <div className="rounded-2xl p-4" style={{ backgroundColor: WHITE, border: `1px solid ${BORDER}`, overflow: "hidden" }}>
+                        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
                           {paidItems.map((item, i) => (
-                            <div key={item.id} style={{ display: "flex", alignItems: "center" }}>
-                              {i > 0 && <div style={{ width: 20, height: 1, background: item.state === "delivered" ? "#22C55E" : GOLD, flexShrink: 0 }} />}
-                              <div style={{ textAlign: "center", flexShrink: 0, padding: "0 4px" }}>
-                                <div style={{
-                                  width: 36, height: 36, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto",
-                                  background: item.state === "delivered" ? "#22C55E" : item.state === "in_progress" ? "#22C55E" : `${GOLD}20`,
-                                  border: item.state === "paid" ? `2px solid ${GOLD}` : "none",
-                                  animation: item.state === "in_progress" ? "stagePulse 2s infinite" : "none",
-                                }}>
-                                  {item.state === "delivered" ? <CheckCircle size={16} color="white" /> : item.state === "in_progress" ? <Clock size={14} color="white" /> : <span style={{ fontSize: 10, color: GOLD }}>₦</span>}
+                            <React.Fragment key={item.id}>
+                              {i > 0 && <ArrowRight size={14} style={{ color: "#D1D5DB", flexShrink: 0 }} />}
+                              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 12px", borderRadius: 20, background: item.state === "delivered" ? "#22C55E10" : item.state === "in_progress" ? "#22C55E10" : "#B48C4C10" }}>
+                                <div style={{ width: 24, height: 24, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: item.state === "delivered" ? "#22C55E" : item.state === "in_progress" ? "#22C55E" : "#B48C4C", animation: item.state === "in_progress" ? "stagePulse 2s infinite" : "none" }}>
+                                  {item.state === "delivered" ? <CheckCircle size={12} color="white" /> : item.state === "in_progress" ? <Clock size={12} color="white" /> : <span style={{fontSize:8, color:"white"}}>₦</span>}
                                 </div>
-                                <p style={{ fontSize: 10, color: DARK, marginTop: 4, fontWeight: 500 }}>{item.short}</p>
-                                <p style={{ fontSize: 9, color: "#999", marginTop: 1 }}>
-                                  {item.state === "delivered" ? "Done" : item.state === "in_progress" ? "Now" : "Queued"}
-                                </p>
+                                <div>
+                                  <p style={{ fontSize: 12, fontWeight: 500, color: "#1A1A1A" }}>{item.short}</p>
+                                  <p style={{ fontSize: 10, color: "#999" }}>{item.state === "delivered" ? "Delivered" : item.state === "in_progress" ? "In Progress" : "Queued"}</p>
+                                </div>
                               </div>
-                            </div>
+                            </React.Fragment>
                           ))}
                         </div>
                       </div>
@@ -1147,8 +1146,8 @@ export default function ClientDashboard() {
                         {isExpanded && (
                           <div style={{ animation: "expandDown 0.3s ease-out both" }}>
                             {/* Horizontal scrollable items */}
-                            <div className="overflow-x-auto px-5 pb-2">
-                              <div className="flex items-center gap-1 py-4" style={{ minWidth: "max-content" }}>
+                            <div className="px-5 pb-2" style={{ overflow: "hidden" }}>
+                              <div className="flex items-center gap-1 py-4 flex-wrap">
                                 {pillar.items.map((item, i) => {
                                   const state: ItemState = activeItems[item.id] || "inactive";
                                   const isSelected = selectedItem === item.id;
@@ -1241,8 +1240,8 @@ export default function ClientDashboard() {
                                       </p>
                                     )}
                                     {/* Month pipeline row */}
-                                    <div className="overflow-x-auto pb-2 mb-3">
-                                      <div style={{ display: "flex", alignItems: "center", gap: 0, minWidth: "max-content" }}>
+                                    <div className="pb-2 mb-3" style={{ overflow: "hidden" }}>
+                                      <div style={{ display: "flex", alignItems: "center", gap: 0, flexWrap: "wrap" }}>
                                         {TAX_MONTHS.map((m, mi) => {
                                           const isDone = mi < currentTaxMonth;
                                           const isCurrent = mi === currentTaxMonth;

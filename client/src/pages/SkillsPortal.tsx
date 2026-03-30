@@ -679,7 +679,7 @@ export default function SkillsPortal() {
               value={trackRef}
               onChange={e => { setTrackRef(e.target.value); setTrackSubmitted(false); }}
               onKeyDown={e => e.key === "Enter" && handleTrack()}
-              placeholder="e.g. HAM-A4K9-1234"
+              placeholder="e.g. HMZ-26/3-XXXX"
               className="flex-1 px-4 py-3 rounded-xl border text-[14px] font-mono outline-none transition-all"
               style={{ borderColor: `${TEXT}20`, backgroundColor: `${TEXT}04`, color: TEXT }}
             />

@@ -712,7 +712,7 @@ export default function ChatWidget({ department = "general", open: externalOpen,
         return;
       }
       if (val === "TRACK") {
-        setTimeout(() => addBotMsg("Enter your reference (e.g. HMZ-17/3-9567) or phone number."), 400);
+        setTimeout(() => addBotMsg("Enter your reference (e.g. HMZ-26/3-XXXX) or phone number."), 400);
         setChatState("TRACK_REF");
         return;
       }
@@ -893,7 +893,7 @@ export default function ChatWidget({ department = "general", open: externalOpen,
         setChatState("SUCCESS");
         return;
       }
-      addBotMsg("Please enter a valid reference (e.g. HMZ-17/3-9567) or phone number.");
+      addBotMsg("Please enter a valid reference (e.g. HMZ-26/3-XXXX) or phone number.");
       return;
     }
 
