@@ -750,11 +750,11 @@ export const appRouter = router({
         phone: z.string().optional(),
       }))
       .query(async ({ input }) => {
-        const task = await getTaskByRef(input.ref.trim().toUpperCase());
+        const task = await getTaskByRef(input.ref.trim());
         if (!task) return { found: false as const, reason: "not_found" as const };
 
-        // Phone verification
-        if (input.phone) {
+        // Phone verification — only if phone is actual digits (not a ref)
+        if (input.phone && /^\d+$/.test(input.phone.replace(/\D/g, "").slice(-6))) {
           const storedDigits = (task.phone || "").replace(/\D/g, "").slice(-6);
           const inputDigits = input.phone.replace(/\D/g, "").slice(-6);
           if (storedDigits && inputDigits && storedDigits !== inputDigits) {
