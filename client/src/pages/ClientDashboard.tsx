@@ -6,7 +6,7 @@ import {
   ArrowRight, Quote,
   Shield, Globe, Zap, TrendingUp, Clock,
   Users, Sparkles, Palette, Briefcase,
-  X, UserPlus, FileCheck, Award, GraduationCap, Lock,
+  X, UserPlus, FileCheck, Award, GraduationCap, Lock, FileText,
 } from "lucide-react";
 import PageMeta from "../components/PageMeta";
 import { trpc } from "@/lib/trpc";
@@ -32,15 +32,15 @@ const DEPT_ACCENT: Record<string, string> = {
 };
 
 /* ── Service detail cards (curiosity pitches) ── */
-const SERVICE_DETAILS: Record<string, { pitch: string; includes: string[]; price: string }> = {
-  cac: { pitch: "Without CAC, your business doesn't legally exist. No bank account, no contracts, no tenders.", includes: ["Name reservation", "Incorporation filing", "Certificate delivery"], price: "from \u20A650,000" },
-  tin: { pitch: "No TIN means no tax clearance. No tax clearance means no government contracts.", includes: ["TIN registration with FIRS", "VAT setup", "First filing support"], price: "from \u20A660,000" },
+const SERVICE_DETAILS: Record<string, { pitch: string; includes: string[]; price: string; value?: string }> = {
+  cac: { pitch: "Without CAC, your business doesn't legally exist. No bank account, no contracts, no tenders.", includes: ["Name reservation", "Incorporation filing", "Certificate delivery"], price: "from \u20A650,000", value: "We handle the entire filing process so you never visit CAC yourself." },
+  tin: { pitch: "No TIN means no tax clearance. No tax clearance means no government contracts.", includes: ["TIN registration with FIRS", "VAT setup", "First filing support"], price: "from \u20A660,000", value: "We register, file, and manage your tax ID so you stay compliant without stress." },
   tcc: { pitch: "Tax Clearance is your proof of good standing. Banks and government agencies require it.", includes: ["3-year tax review", "Filing and submission", "Certificate collection"], price: "from \u20A660,000" },
   licence: { pitch: "Your sector has rules. Operating without the right permit risks shutdown or heavy fines.", includes: ["Sector assessment", "Application filing", "Licence collection"], price: "from \u20A680,000" },
   contracts: { pitch: "If a partner or staff betrays you, are your agreements protecting you?", includes: ["Employment contracts", "NDAs", "Partnership agreements"], price: "from \u20A640,000" },
   templates: { pitch: "Professional document templates save you time and protect your business.", includes: ["Contract templates", "Invoice templates", "Agreement packs"], price: "from \u20A615,000" },
   annual: { pitch: "Miss your annual returns and CAC can strike off your company.", includes: ["Annual return filing", "Status letter", "Back-filing if needed"], price: "\u20A630,000" },
-  management: { pitch: "We handle all your renewals, filings, and compliance calendar. You focus on business.", includes: ["Monthly compliance check", "Renewal management", "Deadline tracking"], price: "\u20A650,000/month" },
+  management: { pitch: "We handle all your renewals, filings, and compliance calendar. You focus on business.", includes: ["Monthly compliance check", "Renewal management", "Deadline tracking"], price: "\u20A650,000/month", value: "Every month we collect your records, file your taxes, deliver your report, and track your deadlines automatically." },
   brand_id: { pitch: "Your brand is your first impression. Make it count.", includes: ["Logo design", "Color palette", "Brand guidelines"], price: "from \u20A6150,000" },
   positioning: { pitch: "Positioning is how premium clients choose you over competitors.", includes: ["Market analysis", "Value proposition", "Messaging framework"], price: "from \u20A6100,000" },
   website: { pitch: "Your website works while you sleep. Is it working for you?", includes: ["Professional website", "Mobile responsive", "SEO basics"], price: "from \u20A6200,000" },
@@ -48,14 +48,14 @@ const SERVICE_DETAILS: Record<string, { pitch: string; includes: string[]; price
   materials: { pitch: "Business cards, letterheads, and presentation materials that match your brand.", includes: ["Business cards", "Letterhead", "Presentation template"], price: "from \u20A650,000" },
   pitch_deck: { pitch: "A pitch deck that closes deals, not one that puts investors to sleep.", includes: ["Investor-ready deck", "Financial summary", "Visual storytelling"], price: "from \u20A680,000" },
   social_setup: { pitch: "Set up your social media properly from day one. First impressions matter.", includes: ["Profile optimization", "Bio and branding", "Initial content"], price: "from \u20A650,000" },
-  social_mgmt: { pitch: "Consistent posting builds trust. We handle it so you don't have to.", includes: ["Daily posting", "Engagement management", "Monthly report"], price: "\u20A6100,000/month" },
+  social_mgmt: { pitch: "Consistent posting builds trust. We handle it so you don't have to.", includes: ["Daily posting", "Engagement management", "Monthly report"], price: "\u20A6100,000/month", value: "We create, schedule, and manage all your social media content daily so you focus on business." },
   content: { pitch: "Professional content that builds authority and attracts the right clients.", includes: ["Photo/video content", "Copywriting", "Scheduling"], price: "from \u20A6100,000" },
   seo: { pitch: "If clients can't find you on Google, you're invisible.", includes: ["Keyword research", "On-page optimization", "Google Business"], price: "from \u20A680,000" },
   reputation: { pitch: "What do people see when they Google your business name?", includes: ["Review management", "Crisis response", "Trust signals"], price: "from \u20A660,000" },
   crm: { pitch: "Stop losing leads in WhatsApp. A CRM tracks every opportunity.", includes: ["CRM setup", "Pipeline configuration", "Team training"], price: "from \u20A6180,000" },
-  automation: { pitch: "Every repeated task is time your business is wasting.", includes: ["Workflow automation", "Email sequences", "Task automation"], price: "from \u20A6120,000" },
-  dashboard: { pitch: "See your business performance at a glance. No more guessing.", includes: ["Custom dashboard", "Real-time data", "KPI tracking"], price: "from \u20A6200,000" },
-  ai_agent: { pitch: "An AI that handles customer queries, bookings, or follow-ups 24/7.", includes: ["Custom AI bot", "Integration setup", "Training data"], price: "from \u20A6150,000" },
+  automation: { pitch: "Every repeated task is time your business is wasting.", includes: ["Workflow automation", "Email sequences", "Task automation"], price: "from \u20A6120,000", value: "We build workflows that handle follow-ups, invoicing, and lead tracking without your team doing it manually." },
+  dashboard: { pitch: "See your business performance at a glance. No more guessing.", includes: ["Custom dashboard", "Real-time data", "KPI tracking"], price: "from \u20A6200,000", value: "See your entire business performance in one screen -- revenue, clients, tasks, team -- updated in real time." },
+  ai_agent: { pitch: "An AI that handles customer queries, bookings, or follow-ups 24/7.", includes: ["Custom AI bot", "Integration setup", "Training data"], price: "from \u20A6150,000", value: "A custom AI that answers client questions, books appointments, or handles support 24/7 while you sleep." },
   research: { pitch: "Know your market before your competitors do.", includes: ["Market research", "Competitor analysis", "Trend report"], price: "from \u20A680,000" },
   founder: { pitch: "Build your idea, offer, and first revenue path using AI tools.", includes: ["12-week program", "AI tools training", "Capstone project"], price: "\u20A675,000" },
   team: { pitch: "Your systems are only as good as the people using them.", includes: ["Custom curriculum", "Practical exercises", "Certification"], price: "Custom pricing" },
@@ -64,11 +64,23 @@ const SERVICE_DETAILS: Record<string, { pitch: string; includes: string[]; price
   nda: { pitch: "Protect your business relationships with proper non-disclosure agreements.", includes: ["NDA drafting", "Customization", "Legal review"], price: "from \u20A630,000" },
   board_res: { pitch: "Board resolutions formalize your company's major decisions.", includes: ["Resolution drafting", "Minutes template", "Filing support"], price: "from \u20A625,000" },
   ip: { pitch: "Your brand name and ideas are assets. Protect them before someone else takes them.", includes: ["Trademark search", "Application filing", "Certificate delivery"], price: "\u20A675,000" },
-  workspace: { pitch: "Set up your team's digital workspace — email, cloud storage, collaboration tools.", includes: ["Google Workspace or Microsoft 365", "Email setup", "Team onboarding"], price: "from \u20A650,000" },
+  workspace: { pitch: "Set up your team's digital workspace -- email, cloud storage, collaboration tools.", includes: ["Google Workspace or Microsoft 365", "Email setup", "Team onboarding"], price: "from \u20A650,000" },
 };
 
 /* ── Monthly/subscription service IDs ── */
 const MONTHLY_SERVICE_IDS = new Set(["management", "social_mgmt"]);
+
+/* ── Tax Management Pipeline Data ── */
+const TAX_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const TAX_CHECKLIST = [
+  "Login credentials received",
+  "Statement of account collected",
+  "Questionnaire completed",
+  "Monthly filing done",
+  "Monthly report delivered",
+];
+const TAX_MONTH_FULL = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const currentTaxMonth = new Date().getMonth(); // 0-indexed
 
 /* ── 5 Business Health Areas ── */
 interface HealthItem {
@@ -311,6 +323,10 @@ const cssAnimations = `
   from { opacity: 0; max-height: 0; }
   to { opacity: 1; max-height: 600px; }
 }
+@keyframes slideDown {
+  from { opacity: 0; max-height: 0; overflow: hidden; }
+  to { opacity: 1; max-height: 600px; overflow: visible; }
+}
 `;
 
 /* ── Chat message type ── */
@@ -361,6 +377,8 @@ export default function ClientDashboard() {
   const [uploads, setUploads] = useState<{name: string; file: string; time: string}[]>([]);
   const [uploadName, setUploadName] = useState("");
   const [showUploadInput, setShowUploadInput] = useState(false);
+  const [showStrengthDetail, setShowStrengthDetail] = useState(false);
+  const [expandedTaxMonth, setExpandedTaxMonth] = useState<number | null>(null);
 
   /* Chat state */
   const [chatMessages, setChatMessages] = useState<ChatMsg[]>([]);
@@ -592,12 +610,17 @@ export default function ClientDashboard() {
     const fn = (task.clientName || "").split(" ")[0];
     const svc = task.service || "";
     const st = task.status || "";
-    // Build context-aware greeting
+    const bn = task.businessName || "";
+    // Build context-aware greeting with business direction
     let g = `Hi ${fn}.`;
-    if (svc.toLowerCase().includes("full business") || svc.toLowerCase().includes("architecture")) {
-      g += ` Your ${svc} is ${st.toLowerCase()}. Registration is being handled and tax, brand, and systems are queued. Once registration completes, we'll move to tax compliance next.`;
+    if (bn && svc) {
+      if (svc.toLowerCase().includes("full business") || svc.toLowerCase().includes("architecture")) {
+        g += ` ${bn} is set up for a full business architecture -- your compliance and brand setup are in progress. Once complete, your business will be positioned to attract premium clients and operate with full legal protection. ${overallPct}% of your business structure is in place.`;
+      } else {
+        g += ` ${bn} -- your ${svc.toLowerCase()} is currently ${st.toLowerCase()}. ${overallPct}% of your business structure is in place. Once this service is delivered, your business gets stronger.`;
+      }
     } else if (svc) {
-      g += ` Your ${svc} service is currently ${st.toLowerCase()}.`;
+      g += ` Your ${svc} service is currently ${st.toLowerCase()}. ${overallPct}% of your business structure is in place.`;
     }
     g += ` Anything you'd like to know?`;
     // Use setTimeout to avoid setState during render
@@ -934,7 +957,7 @@ export default function ClientDashboard() {
                   if (paidItems.length === 0) return null;
                   return (
                     <div className="mt-6 mb-4">
-                      <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: GOLD, marginBottom: 12 }}>Your Plan</p>
+                      <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: GOLD, marginBottom: 12 }}>My Active Services</p>
                       <div className="rounded-2xl p-4 overflow-x-auto" style={{ backgroundColor: WHITE, border: `1px solid ${BORDER}` }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 0, minWidth: "max-content" }}>
                           {paidItems.map((item, i) => (
@@ -964,8 +987,11 @@ export default function ClientDashboard() {
 
                 {/* ═══ BUSINESS STRENGTH METER ═══ */}
                 <div
-                  className="mt-6 mb-6 rounded-2xl p-5 md:p-6 flex items-center gap-5"
-                  style={{ backgroundColor: WHITE, border: `1px solid ${BORDER}` }}
+                  className="mt-6 mb-2 rounded-2xl p-5 md:p-6 flex items-center gap-5 cursor-pointer"
+                  style={{ backgroundColor: WHITE, border: `1px solid ${BORDER}`, transition: "box-shadow 0.2s ease" }}
+                  onClick={() => setShowStrengthDetail(prev => !prev)}
+                  onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.04)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "0 0 0 0 rgba(0,0,0,0)"; }}
                 >
                   {/* Circular gauge */}
                   <div className="relative shrink-0" style={{ width: 80, height: 80 }}>
@@ -978,7 +1004,7 @@ export default function ClientDashboard() {
                         strokeLinecap="round"
                         strokeDasharray={`${(strengthPct / 100) * 213.6} 213.6`}
                         transform="rotate(-90 40 40)"
-                        style={{ transition: "stroke-dasharray 0.7s ease-out" }}
+                        style={{ transition: "stroke-dashoffset 1s ease-out, stroke-dasharray 0.7s ease-out" }}
                       />
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
@@ -995,6 +1021,19 @@ export default function ClientDashboard() {
                     </p>
                   </div>
                 </div>
+                {showStrengthDetail && (
+                  <div className="mt-3 mb-4 rounded-xl p-4" style={{ backgroundColor: `${GOLD}08`, border: `1px solid ${GOLD}20`, animation: "fadeIn 0.2s ease-out" }}>
+                    <p style={{ fontSize: 14, fontWeight: 500, color: DARK, marginBottom: 8 }}>We are building this with you.</p>
+                    <p style={{ fontSize: 13, color: "#666", lineHeight: 1.6 }}>
+                      Every service we deliver strengthens your business. Your goal is to reach 100% --
+                      a fully structured, protected, visible, and capable business. We are here every step
+                      of the way. You are not doing this alone.
+                    </p>
+                    <p style={{ fontSize: 12, color: GOLD, marginTop: 8, fontStyle: "italic" }}>
+                      "{FOUNDER_QUOTES[Math.floor(Math.random() * FOUNDER_QUOTES.length)]}"
+                    </p>
+                  </div>
+                )}
 
                 {/* ═══ PILLAR CARDS ═══ */}
                 <div className="space-y-3 mb-8">
@@ -1103,7 +1142,7 @@ export default function ClientDashboard() {
                                         onClick={() => setSelectedItem(isSelected ? null : item.id)}
                                       >
                                         <div
-                                          className="flex items-center justify-center mx-auto"
+                                          className="flex items-center justify-center mx-auto hover:scale-110"
                                           style={{
                                             width: 42,
                                             height: 42,
@@ -1111,7 +1150,7 @@ export default function ClientDashboard() {
                                             backgroundColor: bgColor,
                                             animation: state === "in_progress" ? "stagePulse 2s infinite" : "none",
                                             boxShadow: isSelected ? `0 0 0 3px ${bgColor}40` : "none",
-                                            transition: "box-shadow 0.2s",
+                                            transition: "box-shadow 0.2s, transform 0.15s ease",
                                           }}
                                         >
                                           {state === "delivered" ? (
@@ -1142,10 +1181,102 @@ export default function ClientDashboard() {
                               const detail = SERVICE_DETAILS[item.id];
                               const isMonthly = MONTHLY_SERVICE_IDS.has(item.id);
 
+                              /* ── Tax Management: 12-month pipeline ── */
+                              if (selectedItem === "management" && pillar.id === "compliance" && state !== "inactive") {
+                                return (
+                                  <div
+                                    className="mx-4 mb-4 rounded-xl p-5"
+                                    style={{ backgroundColor: CREAM, border: `1px solid ${BORDER}`, animation: "fadeIn 0.2s ease-out", maxHeight: 600, overflowY: "auto", transition: "max-height 0.3s ease-out" }}
+                                  >
+                                    <div className="flex items-center justify-between mb-3">
+                                      <div className="flex items-center gap-2">
+                                        <p className="text-[13px] font-medium" style={{ color: DARK }}>Tax Management Pipeline</p>
+                                        <span className="text-[8px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full" style={{ backgroundColor: `${GOLD}12`, color: GOLD }}>Monthly</span>
+                                      </div>
+                                      <CheckCircle size={16} style={{ color: GREEN }} />
+                                    </div>
+                                    {detail && (
+                                      <p className="text-[12px] font-light leading-relaxed italic mb-1" style={{ color: MUTED }}>
+                                        "{detail.pitch}"
+                                      </p>
+                                    )}
+                                    {detail?.value && (
+                                      <p className="text-[12px] font-light leading-relaxed italic mb-3" style={{ color: GOLD }}>
+                                        {detail.value}
+                                      </p>
+                                    )}
+                                    {/* Month pipeline row */}
+                                    <div className="overflow-x-auto pb-2 mb-3">
+                                      <div style={{ display: "flex", alignItems: "center", gap: 0, minWidth: "max-content" }}>
+                                        {TAX_MONTHS.map((m, mi) => {
+                                          const isDone = mi < currentTaxMonth;
+                                          const isCurrent = mi === currentTaxMonth;
+                                          const icon = isDone ? "\u2705" : isCurrent ? "\u23f3" : "\u2b1c";
+                                          const isExp = expandedTaxMonth === mi;
+                                          return (
+                                            <div key={m} style={{ display: "flex", alignItems: "center" }}>
+                                              {mi > 0 && <div style={{ width: 8, height: 1, background: isDone ? GREEN : isCurrent ? GOLD : `${GREY}40`, flexShrink: 0 }} />}
+                                              <div
+                                                style={{ textAlign: "center", cursor: "pointer", padding: "2px 4px", borderRadius: 8, backgroundColor: isExp ? `${GOLD}10` : "transparent", transition: "background-color 0.15s ease" }}
+                                                onClick={() => setExpandedTaxMonth(isExp ? null : mi)}
+                                              >
+                                                <p style={{ fontSize: 14, lineHeight: 1 }}>{icon}</p>
+                                                <p style={{ fontSize: 9, color: isDone ? GREEN : isCurrent ? GOLD : LABEL, fontWeight: isCurrent ? 700 : 400, marginTop: 2 }}>{m}</p>
+                                              </div>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                    {/* Expanded month checklist */}
+                                    {expandedTaxMonth !== null && (() => {
+                                      const mi = expandedTaxMonth;
+                                      const isDone = mi < currentTaxMonth;
+                                      const isCurrent = mi === currentTaxMonth;
+                                      const yr = new Date().getFullYear();
+                                      const checklistItems = [...TAX_CHECKLIST];
+                                      if (mi === 11) {
+                                        checklistItems.push("Annual TCC Filing");
+                                        checklistItems.push("TCC Certificate Delivery");
+                                      }
+                                      return (
+                                        <div className="rounded-lg p-3 mt-1" style={{ backgroundColor: WHITE, border: `1px solid ${BORDER}`, animation: "fadeIn 0.2s ease-out", transition: "max-height 0.3s ease-out" }}>
+                                          <p className="text-[12px] font-medium mb-2" style={{ color: DARK }}>
+                                            {TAX_MONTH_FULL[mi]} {yr} {isDone ? "\u2705" : isCurrent ? "\u23f3" : "\u2b1c"}
+                                          </p>
+                                          <div className="space-y-1.5">
+                                            {checklistItems.map((cl, ci) => {
+                                              const clDone = isDone || (isCurrent && ci === 0);
+                                              const clInProgress = isCurrent && ci === 1;
+                                              const clPending = isCurrent && ci > 1;
+                                              const isPastAll = !isDone && !isCurrent;
+                                              return (
+                                                <div key={ci} className="flex items-center gap-2">
+                                                  <span style={{ fontSize: 12 }}>
+                                                    {clDone ? "\u2713" : clInProgress ? "\u23f3" : "\u2b1c"}
+                                                  </span>
+                                                  <span style={{
+                                                    fontSize: 11,
+                                                    color: clDone ? GREEN : clInProgress ? GOLD : isPastAll ? LABEL : MUTED,
+                                                    fontWeight: clInProgress ? 500 : 400,
+                                                  }}>
+                                                    {cl}{clInProgress ? " -- collecting" : ""}
+                                                  </span>
+                                                </div>
+                                              );
+                                            })}
+                                          </div>
+                                        </div>
+                                      );
+                                    })()}
+                                  </div>
+                                );
+                              }
+
                               return (
                                 <div
                                   className="mx-4 mb-4 rounded-xl p-5"
-                                  style={{ backgroundColor: CREAM, border: `1px solid ${BORDER}`, animation: "fadeIn 0.2s ease-out" }}
+                                  style={{ backgroundColor: CREAM, border: `1px solid ${BORDER}`, animation: "fadeIn 0.2s ease-out", maxHeight: 600, overflowY: "auto", transition: "max-height 0.3s ease-out" }}
                                 >
                                   {/* Header row */}
                                   <div className="flex items-center justify-between mb-3">
@@ -1166,10 +1297,20 @@ export default function ClientDashboard() {
 
                                   {/* Pitch line */}
                                   {detail && (
-                                    <p className="text-[12px] font-light leading-relaxed italic mb-3" style={{ color: MUTED }}>
+                                    <p className="text-[12px] font-light leading-relaxed italic mb-1" style={{ color: MUTED }}>
                                       "{detail.pitch}"
                                     </p>
                                   )}
+
+                                  {/* Value description */}
+                                  {detail?.value && (
+                                    <p className="text-[12px] font-light leading-relaxed italic mb-3" style={{ color: GOLD }}>
+                                      {detail.value}
+                                    </p>
+                                  )}
+
+                                  {/* Pitch margin if no value */}
+                                  {detail && !detail.value && <div style={{ marginBottom: 8 }} />}
 
                                   {/* Active states: show delivery info */}
                                   {(state === "delivered" || state === "in_progress") && (
@@ -1211,7 +1352,7 @@ export default function ClientDashboard() {
                                     </>
                                   )}
 
-                                  {/* Inactive but no detail data — fallback */}
+                                  {/* Inactive but no detail data -- fallback */}
                                   {state === "inactive" && !detail && (
                                     <button
                                       onClick={() => {
@@ -1320,6 +1461,25 @@ export default function ClientDashboard() {
                       <p style={{fontSize:11, color:"#999", marginTop:4}}>PDF, JPG, PNG — max 5MB</p>
                     </div>
                   )}
+                </div>
+
+                {/* ═══ DOWNLOADS ═══ */}
+                <div className="mt-4 rounded-2xl p-5" style={{ backgroundColor: WHITE, border: `1px solid ${BORDER}` }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: GOLD, marginBottom: 12 }}>
+                    Downloads
+                  </p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    <button style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: DARK, background: "none", border: "none", cursor: "pointer", padding: "8px 0", borderBottom: "1px solid #f5f5f5" }}>
+                      <FileText size={16} color={GOLD} /> Full Business Setup Report
+                    </button>
+                    <button style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: DARK, background: "none", border: "none", cursor: "pointer", padding: "8px 0", borderBottom: "1px solid #f5f5f5" }}>
+                      <FileText size={16} color={GOLD} /> Service Proposal
+                    </button>
+                    <button style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: DARK, background: "none", border: "none", cursor: "pointer", padding: "8px 0" }}>
+                      <FileText size={16} color={GOLD} /> Payment Receipts
+                    </button>
+                  </div>
+                  <p style={{ fontSize: 11, color: "#999", marginTop: 8 }}>Documents will be available as your services are delivered.</p>
                 </div>
 
 
