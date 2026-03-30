@@ -367,7 +367,6 @@ export default function TeamPage() {
             <Link href="/systemise" className="opacity-40 hover:opacity-80 transition-opacity">Systemise</Link>
             <Link href="/skills" className="opacity-40 hover:opacity-80 transition-opacity">Skills</Link>
             <Link href="/ridi" className="opacity-40 hover:opacity-80 transition-opacity">RIDI</Link>
-            <Link href="/login" className="opacity-20 hover:opacity-50 transition-opacity">Staff</Link>
           </div>
         </div>
       </footer>

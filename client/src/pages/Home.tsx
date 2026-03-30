@@ -13,8 +13,6 @@ import { useState, useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import MotivationalQuoteBar from "@/components/MotivationalQuoteBar";
 
-const LOGIN_URL = "/login";
-
 // Apple-standard palette
 const CHARCOAL = "#1A1A1A";
 const GOLD     = "#B48C4C";
