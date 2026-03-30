@@ -6,7 +6,7 @@ import {
   ArrowRight,
   Users, GraduationCap, Star, Target,
   Lightbulb, BookOpen, X, Loader2, Menu,
-  Calendar, Clock, CheckCircle,
+  Calendar, Clock, CheckCircle, MessageSquare,
 } from "lucide-react";
 import MotivationalQuoteBar from "@/components/MotivationalQuoteBar";
 
@@ -235,6 +235,18 @@ export default function SkillsPortal() {
               style={{ backgroundColor: W }}
               onClick={() => setMobileMenuOpen(false)}
             >
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  const btn = document.querySelector('[data-chat-trigger]') as HTMLElement;
+                  if (btn) btn.click();
+                }}
+                className="flex items-center gap-2 px-3 py-3.5 rounded-xl w-full text-left mx-2"
+                style={{ backgroundColor: "#B48C4C10", color: "#B48C4C" }}
+              >
+                <MessageSquare size={16} />
+                <span className="text-[13px] font-medium">Chat with us</span>
+              </button>
               <p className="px-5 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.15em]" style={{ color: `${TEXT}40` }}>Departments</p>
               {[
                 { label: "Home",           href: "/" },

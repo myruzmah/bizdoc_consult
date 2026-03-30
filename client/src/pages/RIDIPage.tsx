@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { Loader2, CheckCircle, Menu, X } from "lucide-react";
+import { Loader2, CheckCircle, Menu, X, MessageSquare } from "lucide-react";
 import PageMeta from "@/components/PageMeta";
 import { trpc } from "@/lib/trpc";
 
@@ -164,6 +164,18 @@ export default function RIDIPage() {
               style={{ backgroundColor: WHITE }}
               onClick={() => setNavMenuOpen(false)}
             >
+              <button
+                onClick={() => {
+                  setNavMenuOpen(false);
+                  const btn = document.querySelector('[data-chat-trigger]') as HTMLElement;
+                  if (btn) btn.click();
+                }}
+                className="flex items-center gap-2 px-3 py-3.5 rounded-xl w-full text-left mx-2"
+                style={{ backgroundColor: "#B48C4C10", color: "#B48C4C" }}
+              >
+                <MessageSquare size={16} />
+                <span className="text-[13px] font-medium">Chat with us</span>
+              </button>
               <p className="px-5 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.15em]" style={{ color: `${DARK}40` }}>Departments</p>
               {[
                 { label: "Home",           href: "/" },

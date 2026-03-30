@@ -1,12 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
-import { Home, X } from "lucide-react";
+import { Menu, X, ChevronDown, MessageSquare } from "lucide-react";
 import PageMeta from "@/components/PageMeta";
 
-const TEAL  = "#2D2D2D";   // Apple grey — general
-const GOLD  = "#B48C4C";
-const CREAM = "#FFFAF6";   // Milk white
-const DARK  = "#1A1A1A";
+const CHARCOAL = "#1A1A1A";
+const GOLD     = "#B48C4C";
+const MILK     = "#FFFAF6";
+const WHITE    = "#FFFFFF";
+
+// Department tag colors
+const DEPT_COLORS: Record<string, string> = {
+  "HAMZURY":        "#2563EB",
+  "BizDoc Consult": "#1B4D3E",
+  "CSO Division":   "#2563EB",
+  "BizDev & HR":    "#2563EB",
+  "BizDev":         "#2563EB",
+  "Finance":        "#2563EB",
+  "HAMZURY Skills": "#1E3A5F",
+  "Media":          "#2563EB",
+  "Systemise":      "#1E3A5F",
+  "Operations":     "#2563EB",
+};
 
 interface StaffMember {
   name: string;
@@ -147,119 +161,229 @@ const TEAM: StaffMember[] = [
   },
 ];
 
-export default function TeamPage() {
-  const [selected, setSelected] = useState<StaffMember | null>(null);
+function StaffCard({ member }: { member: StaffMember }) {
+  const [expanded, setExpanded] = useState(false);
+  const deptColor = DEPT_COLORS[member.dept] ?? member.color;
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: CREAM }}>
+    <button
+      onClick={() => setExpanded(prev => !prev)}
+      className="w-full text-left rounded-[20px] overflow-hidden transition-all duration-300 hover:-translate-y-1 focus:outline-none"
+      style={{
+        backgroundColor: WHITE,
+        boxShadow: "0 2px 16px rgba(0,0,0,0.04)",
+      }}
+    >
+      <div className="p-6">
+        {/* Top row: avatar + name */}
+        <div className="flex items-center gap-4">
+          <div
+            className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 text-[14px] font-semibold"
+            style={{ backgroundColor: member.color, color: WHITE }}
+          >
+            {member.initials}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[15px] font-medium tracking-tight truncate" style={{ color: CHARCOAL }}>
+              {member.name}
+            </p>
+            <p className="text-[13px] font-light mt-0.5" style={{ color: `${CHARCOAL}70` }}>
+              {member.role}
+            </p>
+          </div>
+          <ChevronDown
+            size={16}
+            className="shrink-0 transition-transform duration-300"
+            style={{
+              color: `${CHARCOAL}30`,
+              transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+            }}
+          />
+        </div>
+
+        {/* Department tag */}
+        <div className="mt-3">
+          <span
+            className="inline-block text-[10px] font-semibold tracking-[0.12em] uppercase px-3 py-1 rounded-full"
+            style={{ backgroundColor: `${deptColor}10`, color: deptColor }}
+          >
+            {member.dept}
+          </span>
+        </div>
+
+        {/* Expandable bio */}
+        <div
+          className="overflow-hidden transition-all duration-300"
+          style={{
+            maxHeight: expanded ? 200 : 0,
+            opacity: expanded ? 1 : 0,
+            marginTop: expanded ? 16 : 0,
+          }}
+        >
+          <div style={{ height: 1, backgroundColor: `${CHARCOAL}08`, marginBottom: 14 }} />
+          <p className="text-[13px] font-light leading-relaxed" style={{ color: `${CHARCOAL}70` }}>
+            {member.bio}
+          </p>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+export default function TeamPage() {
+  const [navMenuOpen, setNavMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  return (
+    <div className="min-h-screen" style={{ backgroundColor: MILK, fontFamily: "'Inter', sans-serif" }}>
       <PageMeta
         title="Our Team — HAMZURY"
         description="Meet the operators, advisors, and educators behind HAMZURY's portfolio of services."
         canonical="https://hamzury.com/team"
       />
 
-      {/* Fixed Nav */}
+      {/* ── Nav ── */}
       <nav
-        className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 md:px-12 h-14"
-        style={{ backgroundColor: `${CREAM}f0`, backdropFilter: "blur(12px)", borderBottom: `1px solid ${TEAL}0d` }}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? "py-3" : "py-5"}`}
+        style={{
+          backgroundColor: scrolled ? `${WHITE}F5` : "transparent",
+          backdropFilter: scrolled ? "blur(20px)" : "none",
+          boxShadow: scrolled ? "0 1px 20px rgba(0,0,0,0.04)" : "none",
+        }}
       >
-        <span className="text-[13px] font-light tracking-[0.12em] uppercase" style={{ color: TEAL, letterSpacing: "0.15em" }}>
-          HAMZURY
-        </span>
-        <div />
-        <Link href="/">
-          <span className="flex items-center justify-center w-8 h-8 rounded-full cursor-pointer transition-opacity hover:opacity-60" style={{ color: TEAL }}>
-            <Home size={16} />
-          </span>
-        </Link>
+        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between relative">
+          <Link href="/">
+            <span
+              className="text-[13px] tracking-[4px] font-light uppercase cursor-pointer transition-opacity hover:opacity-60"
+              style={{ color: CHARCOAL, letterSpacing: "0.25em" }}
+            >
+              HAMZURY
+            </span>
+          </Link>
+          <button
+            onClick={() => setNavMenuOpen(p => !p)}
+            className="flex items-center justify-center w-9 h-9 transition-opacity hover:opacity-70"
+            style={{ color: CHARCOAL }}
+            aria-label="Menu"
+          >
+            {navMenuOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
+
+          {navMenuOpen && (
+            <div
+              className="absolute top-12 right-0 rounded-2xl py-2 min-w-[220px] shadow-xl"
+              style={{ backgroundColor: WHITE }}
+              onClick={() => setNavMenuOpen(false)}
+            >
+              <button
+                onClick={() => {
+                  setNavMenuOpen(false);
+                  const btn = document.querySelector('[data-chat-trigger]') as HTMLElement;
+                  if (btn) btn.click();
+                }}
+                className="flex items-center gap-2 px-3 py-3.5 rounded-xl w-full text-left mx-2"
+                style={{ backgroundColor: "#B48C4C10", color: "#B48C4C" }}
+              >
+                <MessageSquare size={16} />
+                <span className="text-[13px] font-medium">Chat with us</span>
+              </button>
+              <p className="px-5 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.15em]" style={{ color: `${CHARCOAL}40` }}>Departments</p>
+              {[
+                { label: "Home",           href: "/" },
+                { label: "BizDoc Consult", href: "/bizdoc" },
+                { label: "Systemise",      href: "/systemise" },
+                { label: "Hamzury Skills", href: "/skills" },
+                { label: "RIDI",           href: "/ridi" },
+              ].map(item => (
+                <Link key={item.href} href={item.href}>
+                  <span className="block px-5 py-2.5 text-[13px] font-medium transition-colors hover:bg-gray-50 cursor-pointer" style={{ color: CHARCOAL }}>
+                    {item.label}
+                  </span>
+                </Link>
+              ))}
+              <div className="mx-4 my-1.5" style={{ height: 1, backgroundColor: `${CHARCOAL}0C` }} />
+              <p className="px-5 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.15em]" style={{ color: `${CHARCOAL}40` }}>More</p>
+              {[
+                { label: "Pricing",    href: "/pricing" },
+                { label: "Affiliate",  href: "/affiliate" },
+                { label: "Training",   href: "/training" },
+                { label: "Alumni",     href: "/alumni" },
+                { label: "Consultant", href: "/consultant" },
+                { label: "Founder",    href: "/founder" },
+              ].map(item => (
+                <Link key={item.href} href={item.href}>
+                  <span className="block px-5 py-2.5 text-[13px] font-medium transition-colors hover:bg-gray-50 cursor-pointer" style={{ color: CHARCOAL, opacity: 0.7 }}>
+                    {item.label}
+                  </span>
+                </Link>
+              ))}
+              <div className="mx-4 my-1.5" style={{ height: 1, backgroundColor: `${CHARCOAL}0C` }} />
+              <Link href="/login">
+                <span className="block px-5 py-2.5 text-[12px] font-medium transition-colors hover:bg-gray-50 cursor-pointer" style={{ color: `${CHARCOAL}50` }}>
+                  Staff Login
+                </span>
+              </Link>
+            </div>
+          )}
+        </div>
       </nav>
 
-      {/* Hero */}
-      <section className="pt-32 pb-16 px-6 md:px-12">
-        <div className="max-w-4xl mx-auto">
+      {/* ── Hero ── */}
+      <section className="pt-36 pb-20 md:pt-44 md:pb-24 px-6">
+        <div className="max-w-3xl mx-auto text-center">
           <p className="text-[11px] font-medium tracking-[0.25em] uppercase mb-5" style={{ color: GOLD }}>
-            The People
+            OUR TEAM
           </p>
           <h1
-            className="text-[clamp(32px,5vw,56px)] font-light tracking-tight mb-5 leading-[1.1]"
-            style={{ color: TEAL, letterSpacing: "-0.025em" }}
+            className="text-[clamp(32px,5vw,52px)] font-light tracking-tight leading-[1.1] mb-6"
+            style={{ color: CHARCOAL, letterSpacing: "-0.025em" }}
           >
-            The team behind
-            <br />HAMZURY.
+            The team behind HAMZURY.
           </h1>
-          <p className="text-[15px] font-light leading-relaxed max-w-lg" style={{ color: DARK, opacity: 0.55 }}>
-            Operators, advisors, and educators who have built what they now teach. Each role is deliberate. Each person, exceptional.
+          <p className="text-[15px] font-light leading-relaxed max-w-md mx-auto" style={{ color: `${CHARCOAL}60` }}>
+            Operators, advisors, and educators who built what they now teach. Each role is deliberate. Each person, exceptional.
           </p>
         </div>
       </section>
 
-      {/* Grid */}
-      <section className="pb-24 px-6 md:px-12">
+      {/* ── Staff grid ── */}
+      <section className="pb-28 px-6">
         <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {TEAM.map((member) => (
-              <button
-                key={member.name + member.role}
-                onClick={() => setSelected(member)}
-                className="text-left rounded-2xl overflow-hidden border bg-white cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md focus:outline-none"
-                style={{ borderColor: `${member.color}18` }}
-              >
-                {/* Avatar band */}
-                <div
-                  className="h-28 flex items-center justify-center"
-                  style={{ backgroundColor: `${member.color}0e` }}
-                >
-                  <div
-                    className="w-14 h-14 rounded-full flex items-center justify-center text-[15px] font-semibold"
-                    style={{ backgroundColor: member.color, color: GOLD }}
-                  >
-                    {member.initials}
-                  </div>
-                </div>
-                {/* Info */}
-                <div className="p-5">
-                  <p className="text-[14px] font-medium mb-0.5" style={{ color: TEAL }}>
-                    {member.name}
-                  </p>
-                  <p className="text-[12px] mb-1.5" style={{ color: DARK, opacity: 0.5 }}>
-                    {member.role}
-                  </p>
-                  <p
-                    className="text-[10px] font-semibold tracking-wider uppercase"
-                    style={{ color: member.color, opacity: 0.65 }}
-                  >
-                    {member.dept}
-                  </p>
-                </div>
-              </button>
+              <StaffCard key={member.name + member.role} member={member} />
             ))}
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer
-        className="px-6 md:px-12 py-10 border-t"
-        style={{ backgroundColor: TEAL, borderColor: `${GOLD}18` }}
-      >
-        <div className="max-w-5xl mx-auto">
-          {/* Founder Quote */}
-          <div className="text-center mb-10 pb-8" style={{ borderBottom: `1px solid ${GOLD}18` }}>
-            <p className="text-[15px] font-light italic leading-relaxed max-w-lg mx-auto mb-3" style={{ color: CREAM, opacity: 0.6 }}>
-              "We don't hire to fill seats. We hire to build something that outlasts all of us."
-            </p>
-            <p className="text-[11px] font-medium tracking-[0.2em] uppercase" style={{ color: GOLD, opacity: 0.5 }}>
-              Muhammad Hamzury — Founder
-            </p>
-          </div>
+      {/* ── Founder quote ── */}
+      <section className="py-20 px-6" style={{ backgroundColor: WHITE }}>
+        <div className="max-w-2xl mx-auto text-center">
+          <p className="text-[15px] font-light italic leading-relaxed mb-4" style={{ color: `${CHARCOAL}60` }}>
+            "We don't hire to fill seats. We hire to build something that outlasts all of us."
+          </p>
+          <p className="text-[11px] font-medium tracking-[0.2em] uppercase" style={{ color: GOLD }}>
+            Muhammad Hamzury — Founder
+          </p>
         </div>
+      </section>
+
+      {/* ── Footer ── */}
+      <footer className="py-12 px-6" style={{ backgroundColor: CHARCOAL }}>
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-5">
-          <span className="text-[14px] font-light tracking-tight" style={{ color: CREAM, letterSpacing: "-0.02em" }}>
+          <span className="text-[14px] font-light tracking-tight" style={{ color: MILK, letterSpacing: "-0.02em" }}>
             HAMZURY
           </span>
           <div
             className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] font-medium uppercase tracking-wider"
-            style={{ color: CREAM }}
+            style={{ color: MILK }}
           >
             <Link href="/" className="opacity-40 hover:opacity-80 transition-opacity">Home</Link>
             <Link href="/bizdoc" className="opacity-40 hover:opacity-80 transition-opacity">BizDoc</Link>
@@ -270,78 +394,6 @@ export default function TeamPage() {
           </div>
         </div>
       </footer>
-
-      {/* Overlay */}
-      {selected && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-6"
-          style={{ backgroundColor: `${TEAL}f2`, backdropFilter: "blur(16px)" }}
-          onClick={() => setSelected(null)}
-        >
-          <div
-            className="relative w-full max-w-md rounded-3xl p-10 flex flex-col items-center text-center"
-            style={{ backgroundColor: `${TEAL}`, border: `1px solid ${GOLD}28` }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close */}
-            <button
-              onClick={() => setSelected(null)}
-              className="absolute top-5 right-5 w-8 h-8 flex items-center justify-center rounded-full transition-opacity hover:opacity-60"
-              style={{ color: CREAM, opacity: 0.5 }}
-            >
-              <X size={18} />
-            </button>
-
-            {/* Avatar */}
-            <div
-              className="w-20 h-20 rounded-full flex items-center justify-center text-[22px] font-semibold mb-6"
-              style={{ backgroundColor: selected.color, color: GOLD }}
-            >
-              {selected.initials}
-            </div>
-
-            {/* Name */}
-            <h2
-              className="text-[22px] font-light tracking-tight mb-2 leading-snug"
-              style={{ color: CREAM, letterSpacing: "-0.02em" }}
-            >
-              {selected.name}
-            </h2>
-
-            {/* Role */}
-            <p className="text-[13px] font-light mb-1" style={{ color: GOLD }}>
-              {selected.role}
-            </p>
-
-            {/* Dept */}
-            <p
-              className="text-[10px] font-semibold tracking-[0.2em] uppercase mb-6"
-              style={{ color: CREAM, opacity: 0.35 }}
-            >
-              {selected.dept}
-            </p>
-
-            {/* Bio */}
-            <p
-              className="text-[14px] font-light leading-relaxed mb-8"
-              style={{ color: CREAM, opacity: 0.65 }}
-            >
-              {selected.bio}
-            </p>
-
-            {/* WhatsApp CTA */}
-            <a
-              href={`https://wa.me/2348067149356?text=Hi%2C%20I%27d%20like%20to%20reach%20${encodeURIComponent(selected.name)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-[13px] font-medium transition-opacity hover:opacity-80"
-              style={{ backgroundColor: GOLD, color: TEAL }}
-            >
-              Contact via WhatsApp
-            </a>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
