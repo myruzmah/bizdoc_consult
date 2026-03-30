@@ -1639,10 +1639,26 @@ export default function ClientDashboard() {
                               ))}
                             </div>
                             <p style={{ fontSize: 13, color: MUTED, marginBottom: 16 }}>{p.price}</p>
-                            <button onClick={() => { setPitchArea(null); setMobileChatOpen(true); setTimeout(() => handleChatSend(`I want to activate ${p.title}. Show me how to get started.`), 200); }}
-                              style={{ width: "100%", padding: "14px 0", borderRadius: 12, background: GOLD, color: WHITE, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
-                              Activate
-                            </button>
+                            <div style={{ display: "flex", gap: 8 }}>
+                              <button onClick={() => {
+                                const scenarios: Record<string, string> = {
+                                  "Legal & Compliance": "Tell me about the real risks of operating without proper compliance. Give me a real scenario of a Nigerian business that got shut down or fined because they were not documented. What could happen to my business if I ignore this?",
+                                  "Brand & Visibility": "Explain the real cost of having a weak brand. Give me a scenario where a business lost a premium client because their website or social media looked unprofessional. What am I losing every day without a strong brand?",
+                                  "Systems & Automation": "Show me how much time and money I am wasting by doing things manually. Give me a real example of a business that automated their follow-ups and doubled their revenue. What is the cost of not automating?",
+                                  "Team & Capability": "Explain what happens when a business depends too much on the founder. Give me a scenario where untrained staff cost a business real money. Why should I invest in training my team now?",
+                                  "Growth & Scale": "Tell me what happens to businesses that try to grow without structure. Give me a real example of a company that scaled too fast and collapsed. How do I avoid that?",
+                                };
+                                setPitchArea(null); setMobileChatOpen(true);
+                                setTimeout(() => handleChatSend(scenarios[p.title] || `Tell me more about ${p.title} and why my business needs it. Give me real scenarios.`), 200);
+                              }}
+                                style={{ flex: 1, padding: "14px 0", borderRadius: 12, background: "none", color: DARK, border: `1px solid ${GREY}`, fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
+                                Learn More
+                              </button>
+                              <button onClick={() => { setPitchArea(null); setMobileChatOpen(true); setTimeout(() => handleChatSend(`I want to activate ${p.title}. Show me how to get started and how to pay.`), 200); }}
+                                style={{ flex: 1, padding: "14px 0", borderRadius: 12, background: GOLD, color: WHITE, border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+                                Activate
+                              </button>
+                            </div>
                           </div>
                         );
                       })()}
