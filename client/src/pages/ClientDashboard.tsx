@@ -2,11 +2,11 @@ import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   CheckCircle, Circle, ChevronDown, Loader2, AlertCircle, LogOut,
   Send, MessageSquare, Calendar,
-  Phone, CreditCard, Copy,
+  CreditCard, Copy, Upload,
   ArrowRight, Quote,
   Shield, Globe, Zap, TrendingUp, Clock,
   Users, Sparkles, Palette,
-  X, UserPlus, FileCheck, Award, GraduationCap, Lock, Unlock,
+  X, UserPlus, FileCheck, Award, GraduationCap, Lock,
 } from "lucide-react";
 import PageMeta from "../components/PageMeta";
 import { trpc } from "@/lib/trpc";
@@ -30,6 +30,41 @@ const DEPT_ACCENT: Record<string, string> = {
   systemise: "#2563EB",
   skills: "#1E3A5F",
 };
+
+/* ── Service detail cards (curiosity pitches) ── */
+const SERVICE_DETAILS: Record<string, { pitch: string; includes: string[]; price: string }> = {
+  cac: { pitch: "Without CAC, your business doesn't legally exist. No bank account, no contracts, no tenders.", includes: ["Name reservation", "Incorporation filing", "Certificate delivery"], price: "from \u20A650,000" },
+  tin: { pitch: "No TIN means no tax clearance. No tax clearance means no government contracts.", includes: ["TIN registration with FIRS", "VAT setup", "First filing support"], price: "from \u20A660,000" },
+  tcc: { pitch: "Tax Clearance is your proof of good standing. Banks and government agencies require it.", includes: ["3-year tax review", "Filing and submission", "Certificate collection"], price: "from \u20A660,000" },
+  licence: { pitch: "Your sector has rules. Operating without the right permit risks shutdown or heavy fines.", includes: ["Sector assessment", "Application filing", "Licence collection"], price: "from \u20A680,000" },
+  contracts: { pitch: "If a partner or staff betrays you, are your agreements protecting you?", includes: ["Employment contracts", "NDAs", "Partnership agreements"], price: "from \u20A640,000" },
+  templates: { pitch: "Professional document templates save you time and protect your business.", includes: ["Contract templates", "Invoice templates", "Agreement packs"], price: "from \u20A615,000" },
+  annual: { pitch: "Miss your annual returns and CAC can strike off your company.", includes: ["Annual return filing", "Status letter", "Back-filing if needed"], price: "\u20A630,000" },
+  management: { pitch: "We handle all your renewals, filings, and compliance calendar. You focus on business.", includes: ["Monthly compliance check", "Renewal management", "Deadline tracking"], price: "\u20A650,000/month" },
+  brand_id: { pitch: "Your brand is your first impression. Make it count.", includes: ["Logo design", "Color palette", "Brand guidelines"], price: "from \u20A6150,000" },
+  positioning: { pitch: "Positioning is how premium clients choose you over competitors.", includes: ["Market analysis", "Value proposition", "Messaging framework"], price: "from \u20A6100,000" },
+  website: { pitch: "Your website works while you sleep. Is it working for you?", includes: ["Professional website", "Mobile responsive", "SEO basics"], price: "from \u20A6200,000" },
+  content_strategy: { pitch: "Content without strategy is noise. Strategy without content is silence.", includes: ["Content calendar", "Platform strategy", "Engagement plan"], price: "from \u20A6100,000" },
+  materials: { pitch: "Business cards, letterheads, and presentation materials that match your brand.", includes: ["Business cards", "Letterhead", "Presentation template"], price: "from \u20A650,000" },
+  pitch_deck: { pitch: "A pitch deck that closes deals, not one that puts investors to sleep.", includes: ["Investor-ready deck", "Financial summary", "Visual storytelling"], price: "from \u20A680,000" },
+  social_setup: { pitch: "Set up your social media properly from day one. First impressions matter.", includes: ["Profile optimization", "Bio and branding", "Initial content"], price: "from \u20A650,000" },
+  social_mgmt: { pitch: "Consistent posting builds trust. We handle it so you don't have to.", includes: ["Daily posting", "Engagement management", "Monthly report"], price: "\u20A6100,000/month" },
+  content: { pitch: "Professional content that builds authority and attracts the right clients.", includes: ["Photo/video content", "Copywriting", "Scheduling"], price: "from \u20A6100,000" },
+  seo: { pitch: "If clients can't find you on Google, you're invisible.", includes: ["Keyword research", "On-page optimization", "Google Business"], price: "from \u20A680,000" },
+  reputation: { pitch: "What do people see when they Google your business name?", includes: ["Review management", "Crisis response", "Trust signals"], price: "from \u20A660,000" },
+  crm: { pitch: "Stop losing leads in WhatsApp. A CRM tracks every opportunity.", includes: ["CRM setup", "Pipeline configuration", "Team training"], price: "from \u20A6180,000" },
+  automation: { pitch: "Every repeated task is time your business is wasting.", includes: ["Workflow automation", "Email sequences", "Task automation"], price: "from \u20A6120,000" },
+  dashboard: { pitch: "See your business performance at a glance. No more guessing.", includes: ["Custom dashboard", "Real-time data", "KPI tracking"], price: "from \u20A6200,000" },
+  ai_agent: { pitch: "An AI that handles customer queries, bookings, or follow-ups 24/7.", includes: ["Custom AI bot", "Integration setup", "Training data"], price: "from \u20A6150,000" },
+  research: { pitch: "Know your market before your competitors do.", includes: ["Market research", "Competitor analysis", "Trend report"], price: "from \u20A680,000" },
+  founder: { pitch: "Build your idea, offer, and first revenue path using AI tools.", includes: ["12-week program", "AI tools training", "Capstone project"], price: "\u20A675,000" },
+  team: { pitch: "Your systems are only as good as the people using them.", includes: ["Custom curriculum", "Practical exercises", "Certification"], price: "Custom pricing" },
+  ai_skills: { pitch: "AI is changing business. Learn how to use it before your competitors do.", includes: ["AI tools mastery", "Prompt engineering", "Business application"], price: "\u20A655,000" },
+  growth: { pitch: "Scaling without structure breaks businesses. We help you grow right.", includes: ["Growth strategy", "Expansion planning", "Management systems"], price: "Custom pricing" },
+};
+
+/* ── Monthly/subscription service IDs ── */
+const MONTHLY_SERVICE_IDS = new Set(["management", "social_mgmt"]);
 
 /* ── 5 Business Health Areas ── */
 interface HealthItem {
@@ -478,7 +513,7 @@ export default function ClientDashboard() {
     } catch {
       setChatMessages(prev => {
         const updated = [...prev];
-        updated[updated.length - 1] = { role: "assistant", content: "Connection issue. Please try again or call us at 08067149356." };
+        updated[updated.length - 1] = { role: "assistant", content: "Connection issue. Please try again shortly." };
         return updated;
       });
     } finally {
@@ -685,24 +720,14 @@ export default function ClientDashboard() {
         >
           HAMZURY
         </a>
-        <div className="flex items-center gap-4">
-          <a
-            href="tel:08067149356"
-            className="flex items-center gap-1.5 text-[12px] font-light"
-            style={{ color: MUTED }}
-          >
-            <Phone size={12} />
-            <span className="hidden sm:inline">08067149356</span>
-          </a>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-1.5 text-[11px] font-medium opacity-40 hover:opacity-70 transition-opacity px-3 py-1.5 rounded-lg"
-            style={{ color: DARK, backgroundColor: `${DARK}06` }}
-          >
-            <LogOut size={12} />
-            Exit
-          </button>
-        </div>
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-1.5 text-[11px] font-medium opacity-40 hover:opacity-70 transition-opacity px-3 py-1.5 rounded-lg"
+          style={{ color: DARK, backgroundColor: `${DARK}06` }}
+        >
+          <LogOut size={12} />
+          Exit
+        </button>
       </nav>
 
       {/* ═══ TWO-COLUMN LAYOUT ═══ */}
@@ -896,13 +921,11 @@ export default function ClientDashboard() {
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
+                    <div style={{ width: 40, height: 2, backgroundColor: GOLD, marginBottom: 8, borderRadius: 1 }} />
                     <p className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-1" style={{ color: LABEL }}>
                       Business Strength
                     </p>
-                    <p className="text-[14px] font-medium leading-snug mb-1" style={{ color: DARK }}>
-                      {pillarsWithActive.length} of 5 pillars active
-                    </p>
-                    <p className="text-[12px] font-light leading-relaxed" style={{ color: MUTED }}>
+                    <p className="text-[13px] font-light leading-relaxed" style={{ color: MUTED }}>
                       {strengthMessage}
                     </p>
                   </div>
@@ -920,19 +943,21 @@ export default function ClientDashboard() {
                     return (
                       <div
                         key={pillar.id}
-                        className="rounded-2xl overflow-hidden transition-all"
+                        className="rounded-2xl overflow-hidden transition-all duration-200"
                         style={{
                           backgroundColor: WHITE,
-                          borderLeft: `3px solid ${pillarColor}`,
                           border: `1px solid ${BORDER}`,
                           borderLeftWidth: 3,
                           borderLeftColor: pillarColor,
+                          boxShadow: "0 0 0 0 rgba(0,0,0,0)",
                         }}
+                        onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.04)"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "0 0 0 0 rgba(0,0,0,0)"; }}
                       >
                         {/* Collapsed header */}
                         <button
                           onClick={() => { setExpandedArea(isExpanded ? null : pillar.id); setSelectedItem(null); }}
-                          className="w-full px-4 py-4 flex items-center justify-between text-left"
+                          className="w-full px-5 py-5 flex items-center justify-between text-left"
                         >
                           <div className="flex items-center gap-3 min-w-0">
                             <div
@@ -942,11 +967,19 @@ export default function ClientDashboard() {
                               <PillarIcon size={20} style={{ color: pillarColor }} />
                             </div>
                             <div className="min-w-0">
-                              <p className="text-[14px] font-semibold truncate" style={{ color: DARK }}>{pillar.label}</p>
-                              <p className="text-[12px] font-light truncate" style={{ color: MUTED }}>{pillar.desc}</p>
+                              <p className="text-[15px] font-medium truncate" style={{ color: DARK }}>{pillar.label}</p>
+                              <p className="text-[11px] font-light truncate" style={{ color: MUTED }}>{pillar.desc}</p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2 shrink-0 ml-2">
+                            {pillar.items.some(it => MONTHLY_SERVICE_IDS.has(it.id) && activeItems[it.id]) && (
+                              <span
+                                className="text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5"
+                                style={{ backgroundColor: `${GOLD}12`, color: GOLD, borderRadius: 12 }}
+                              >
+                                Monthly
+                              </span>
+                            )}
                             {activeCount > 0 ? (
                               <span
                                 className="text-[11px] font-medium px-2 py-0.5"
@@ -966,8 +999,8 @@ export default function ClientDashboard() {
 
                         {/* Pitch for inactive pillars */}
                         {!isExpanded && activeCount === 0 && (
-                          <div className="px-4 pb-3 -mt-1">
-                            <p className="text-[12px] font-light italic" style={{ color: LABEL }}>{pillar.pitch}</p>
+                          <div className="px-5 pb-4 -mt-1">
+                            <p className="text-[11px] font-light italic" style={{ color: LABEL }}>{pillar.pitch}</p>
                           </div>
                         )}
 
@@ -975,7 +1008,7 @@ export default function ClientDashboard() {
                         {isExpanded && (
                           <div style={{ animation: "expandDown 0.3s ease-out both" }}>
                             {/* Horizontal scrollable items */}
-                            <div className="overflow-x-auto px-4 pb-2">
+                            <div className="overflow-x-auto px-5 pb-2">
                               <div className="flex items-center gap-1 py-4" style={{ minWidth: "max-content" }}>
                                 {pillar.items.map((item, i) => {
                                   const state: ItemState = activeItems[item.id] || "inactive";
@@ -992,7 +1025,7 @@ export default function ClientDashboard() {
                                           className="shrink-0"
                                           style={{
                                             width: 24,
-                                            height: 2,
+                                            height: 1,
                                             backgroundColor: lineColor(
                                               activeItems[pillar.items[i - 1].id] || "inactive",
                                               state
@@ -1007,8 +1040,8 @@ export default function ClientDashboard() {
                                         <div
                                           className="flex items-center justify-center mx-auto"
                                           style={{
-                                            width: 44,
-                                            height: 44,
+                                            width: 42,
+                                            height: 42,
                                             borderRadius: "50%",
                                             backgroundColor: bgColor,
                                             animation: state === "in_progress" ? "stagePulse 2s infinite" : "none",
@@ -1041,55 +1074,90 @@ export default function ClientDashboard() {
                               const item = pillar.items.find(it => it.id === selectedItem);
                               if (!item) return null;
                               const state: ItemState = activeItems[item.id] || "inactive";
+                              const detail = SERVICE_DETAILS[item.id];
+                              const isMonthly = MONTHLY_SERVICE_IDS.has(item.id);
 
                               return (
                                 <div
-                                  className="mx-4 mb-4 rounded-xl p-4"
+                                  className="mx-4 mb-4 rounded-xl p-5"
                                   style={{ backgroundColor: CREAM, border: `1px solid ${BORDER}`, animation: "fadeIn 0.2s ease-out" }}
                                 >
-                                  <div className="flex items-center justify-between mb-2">
-                                    <p className="text-[13px] font-medium" style={{ color: DARK }}>{item.label}</p>
-                                    <span
-                                      className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                                      style={{
-                                        backgroundColor: state === "delivered" ? `${GREEN}15` : state === "in_progress" ? `${GREEN}15` : state === "paid" ? `${GOLD}15` : `${GREY}20`,
-                                        color: state === "delivered" ? GREEN : state === "in_progress" ? GREEN : state === "paid" ? GOLD : LABEL,
-                                      }}
-                                    >
-                                      {state === "delivered" ? "Delivered" : state === "in_progress" ? "In Progress" : state === "paid" ? "Paid, Queued" : "Not Active"}
-                                    </span>
+                                  {/* Header row */}
+                                  <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center gap-2">
+                                      <p className="text-[13px] font-medium" style={{ color: DARK }}>{item.label}</p>
+                                      {isMonthly && (
+                                        <span className="text-[8px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full" style={{ backgroundColor: `${GOLD}12`, color: GOLD }}>Monthly</span>
+                                      )}
+                                    </div>
+                                    {(state === "delivered" || state === "in_progress") ? (
+                                      <CheckCircle size={16} style={{ color: GREEN }} />
+                                    ) : state === "paid" ? (
+                                      <Clock size={16} style={{ color: GOLD }} />
+                                    ) : (
+                                      <Lock size={16} style={{ color: GREY }} />
+                                    )}
                                   </div>
 
+                                  {/* Pitch line */}
+                                  {detail && (
+                                    <p className="text-[12px] font-light leading-relaxed italic mb-3" style={{ color: MUTED }}>
+                                      "{detail.pitch}"
+                                    </p>
+                                  )}
+
+                                  {/* Active states: show delivery info */}
                                   {(state === "delivered" || state === "in_progress") && (
-                                    <p className="text-[12px] font-light italic" style={{ color: MUTED }}>
+                                    <p className="text-[11px] font-light" style={{ color: LABEL }}>
                                       {state === "delivered"
-                                        ? `Completed${task.createdAt ? ` -- ${formatDate(task.createdAt)}` : ""}. This item is in place.`
-                                        : `Currently being handled.${task.deadline ? ` Expected: ${formatDate(task.deadline)}` : ""}`}
+                                        ? `Delivered${task.createdAt ? ` \u00b7 ${formatDate(task.createdAt)}` : ""}`
+                                        : `In progress${task.deadline ? ` \u00b7 Expected: ${formatDate(task.deadline)}` : ""}`}
                                     </p>
                                   )}
 
                                   {state === "paid" && (
-                                    <p className="text-[12px] font-light italic" style={{ color: MUTED }}>
-                                      Paid and queued. This will start once the current active work completes.
+                                    <p className="text-[11px] font-light" style={{ color: LABEL }}>
+                                      Paid and queued. Starts once current work completes.
                                     </p>
                                   )}
 
-                                  {state === "inactive" && (
+                                  {/* Inactive: full curiosity card */}
+                                  {state === "inactive" && detail && (
                                     <>
-                                      <p className="text-[12px] font-light leading-relaxed mb-3" style={{ color: DARK }}>
-                                        {pillar.pitch}
-                                      </p>
+                                      <div className="space-y-1.5 mb-3">
+                                        {detail.includes.map((inc, ii) => (
+                                          <div key={ii} className="flex items-start gap-2">
+                                            <span className="text-[11px] mt-0.5" style={{ color: GOLD }}>{"\u00b7"}</span>
+                                            <span className="text-[11px] font-light" style={{ color: DARK }}>{inc}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                      <p className="text-[12px] font-medium mb-4" style={{ color: DARK }}>{detail.price}</p>
                                       <button
                                         onClick={() => {
                                           setMobileChatOpen(true);
-                                          setTimeout(() => handleChatSend(`I want to activate ${item.label}. What does it include and how do I get started?`), 100);
+                                          setTimeout(() => handleChatSend(`I want to add ${item.label} to my plan. ${detail.price}`), 100);
                                         }}
-                                        className="flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-semibold uppercase tracking-wider transition-all hover:opacity-90"
+                                        className="flex items-center gap-2 px-5 py-2.5 rounded-full text-[11px] font-semibold transition-all hover:opacity-90"
                                         style={{ backgroundColor: GOLD, color: WHITE }}
                                       >
-                                        <Unlock size={13} /> Activate <ArrowRight size={13} />
+                                        Add to my plan <ArrowRight size={13} />
                                       </button>
                                     </>
+                                  )}
+
+                                  {/* Inactive but no detail data — fallback */}
+                                  {state === "inactive" && !detail && (
+                                    <button
+                                      onClick={() => {
+                                        setMobileChatOpen(true);
+                                        setTimeout(() => handleChatSend(`I want to activate ${item.label}. What does it include and how do I get started?`), 100);
+                                      }}
+                                      className="flex items-center gap-2 px-5 py-2.5 rounded-full text-[11px] font-semibold transition-all hover:opacity-90"
+                                      style={{ backgroundColor: GOLD, color: WHITE }}
+                                    >
+                                      Add to my plan <ArrowRight size={13} />
+                                    </button>
                                   )}
                                 </div>
                               );
@@ -1097,16 +1165,16 @@ export default function ClientDashboard() {
 
                             {/* If no item selected and pillar is inactive, show activate CTA */}
                             {!selectedItem && activeCount === 0 && (
-                              <div className="mx-4 mb-4">
+                              <div className="mx-5 mb-4">
                                 <button
                                   onClick={() => {
                                     setMobileChatOpen(true);
                                     setTimeout(() => handleChatSend(`I want to build my ${pillar.label.toLowerCase()}. What's included?`), 100);
                                   }}
-                                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-semibold uppercase tracking-wider transition-all hover:opacity-90"
-                                  style={{ backgroundColor: DARK, color: GOLD }}
+                                  className="flex items-center gap-2 px-5 py-2.5 rounded-full text-[11px] font-semibold transition-all hover:opacity-90"
+                                  style={{ backgroundColor: GOLD, color: WHITE }}
                                 >
-                                  <Unlock size={13} /> Activate {pillar.label} <ArrowRight size={13} />
+                                  Activate {pillar.label} <ArrowRight size={13} />
                                 </button>
                               </div>
                             )}
@@ -1147,12 +1215,30 @@ export default function ClientDashboard() {
                   ) : (
                     <p className="text-[13px] font-light" style={{ color: LABEL }}>No documents needed at this stage.</p>
                   )}
+                  <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    style={{ display: "none" }}
+                    id="doc-upload"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      if (file.size > 5 * 1024 * 1024) {
+                        setChatMessages(prev => [...prev, { role: "assistant", content: "File must be under 5MB. Please try a smaller file." }]);
+                        setMobileChatOpen(true);
+                        return;
+                      }
+                      setChatMessages(prev => [...prev, { role: "assistant", content: `${file.name} received. Our team will process it shortly.` }]);
+                      setMobileChatOpen(true);
+                    }}
+                  />
                   <button
-                    onClick={() => window.open(`https://wa.me/2348067149356?text=I need to upload documents. Ref: ${task.ref}`)}
-                    className="mt-3 text-[12px] font-light"
+                    onClick={() => document.getElementById("doc-upload")?.click()}
+                    className="flex items-center gap-1.5 mt-3 text-[12px] font-light transition-opacity hover:opacity-70"
                     style={{ color: GOLD, background: "none", border: "none", cursor: "pointer", padding: 0 }}
                   >
-                    Upload via WhatsApp →
+                    <Upload size={12} />
+                    Upload a document (PDF, JPG, PNG -- max 5MB)
                   </button>
                 </div>
 
@@ -1172,7 +1258,7 @@ export default function ClientDashboard() {
                   >
                     <div className="px-5 py-4">
                       <div className="flex items-center justify-between mb-1">
-                        <p className="text-[15px] font-medium" style={{ color: DARK }}>{task.service}</p>
+                        <p className="text-[13px] font-medium" style={{ color: DARK }}>{task.service}</p>
                         <span
                           className="text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
                           style={{
