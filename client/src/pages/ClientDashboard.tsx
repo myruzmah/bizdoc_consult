@@ -1598,12 +1598,41 @@ export default function ClientDashboard() {
 
                 {/* ═══ SECTION 6: 5 DOTS — tap for closing pitch ═══ */}
                 {(() => {
-                  const DOT_PITCHES: Record<string, { title: string; why: string; risk: string; includes: string[]; price: string }> = {
-                    Compliance: { title: "Legal & Compliance", why: "Without proper documentation, your business is one audit away from shutdown. Every licence, every filing, every contract protects you.", risk: "Operating without compliance exposes you to fines, shutdowns, and lost contracts.", includes: ["CAC Registration", "TIN & Tax Filing", "Sector Licences", "Legal Contracts", "Annual Returns", "Compliance Management"], price: "from ₦50,000" },
-                    Brand: { title: "Brand & Visibility", why: "Premium clients decide in 3 seconds. If your brand looks amateur or you are invisible online, they move to your competitor.", risk: "Weak branding costs you premium clients every single day.", includes: ["Brand Identity", "Professional Website", "Social Media Setup", "Content Strategy", "Social Media Management"], price: "from ₦150,000" },
-                    Systems: { title: "Systems & Automation", why: "Every task your team repeats manually is money burned. Automation handles follow-ups, invoicing, and leads while you sleep.", risk: "Manual operations limit your growth and waste your team's time.", includes: ["CRM & Lead Management", "Workflow Automation", "Business Dashboard", "AI Agent", "WhatsApp Automation"], price: "from ₦120,000" },
-                    Team: { title: "Team & Capability", why: "Your business is only as strong as the people running it. Trained teams deliver better, faster, and without you being present.", risk: "Untrained staff make expensive mistakes and depend on you for everything.", includes: ["AI Founder Launchpad", "Corporate Staff Training", "Operations Sprint", "Team Enablement"], price: "from ₦45,000" },
-                    Growth: { title: "Growth & Scale", why: "Structure is what separates businesses that last from businesses that don't. Growth without structure breaks everything.", risk: "Scaling without systems creates chaos, not revenue.", includes: ["Growth Strategy", "Expansion Planning", "Management Subscription", "Performance Dashboards"], price: "Custom" },
+                  const DOT_PITCHES: Record<string, { title: string; why: string; risk: string; items: { name: string; advantage: string; price: string }[] }> = {
+                    Compliance: { title: "Legal & Compliance", why: "Without proper documentation, your business is one audit away from shutdown.", risk: "Fines, shutdowns, and lost contracts.", items: [
+                      { name: "CAC Registration", advantage: "Legally recognized. Can open bank accounts, sign contracts, bid for tenders.", price: "₦50,000" },
+                      { name: "TIN & Tax Filing", advantage: "Tax compliant. Get Tax Clearance Certificate for government contracts.", price: "₦60,000" },
+                      { name: "Sector Licences", advantage: "Operate legally in your industry. Avoid regulatory shutdown.", price: "₦80,000" },
+                      { name: "Legal Contracts", advantage: "Protect against staff theft, partner betrayal, and client disputes.", price: "₦40,000" },
+                      { name: "Annual Returns", advantage: "Keep your registration active. Avoid CAC striking off your company.", price: "₦30,000" },
+                      { name: "Compliance Management", advantage: "We track all deadlines, file on time, prevent every penalty automatically.", price: "₦150,000/yr" },
+                    ]},
+                    Brand: { title: "Brand & Visibility", why: "Premium clients decide in 3 seconds. Amateur brand = lost revenue.", risk: "Losing premium clients every day.", items: [
+                      { name: "Brand Identity", advantage: "Logo, colors, typography that make clients trust you instantly.", price: "₦150,000" },
+                      { name: "Professional Website", advantage: "Works while you sleep. Converts visitors into paying clients.", price: "₦200,000" },
+                      { name: "Social Media Setup", advantage: "Professional presence across all platforms from day one.", price: "₦50,000" },
+                      { name: "Content Strategy", advantage: "Consistent content that builds authority and attracts the right clients.", price: "₦100,000" },
+                      { name: "Social Media Management", advantage: "Daily posting, engagement, and monthly reports. Hands-off for you.", price: "₦100,000/mo" },
+                    ]},
+                    Systems: { title: "Systems & Automation", why: "Every manual task is money burned. Automation works while you sleep.", risk: "Wasting 12-15 hours weekly on tasks a system can handle.", items: [
+                      { name: "CRM & Lead Management", advantage: "Never lose a lead again. Track every opportunity from first contact to payment.", price: "₦180,000" },
+                      { name: "Workflow Automation", advantage: "Follow-ups, invoicing, and reminders happen automatically.", price: "₦120,000" },
+                      { name: "Business Dashboard", advantage: "See revenue, clients, tasks, and team performance in one screen.", price: "₦200,000" },
+                      { name: "AI Agent", advantage: "Answers client questions, books appointments, handles support 24/7.", price: "₦150,000" },
+                      { name: "WhatsApp Automation", advantage: "Auto-replies, lead capture, booking confirmations on WhatsApp.", price: "₦120,000" },
+                    ]},
+                    Team: { title: "Team & Capability", why: "Your business is only as strong as the people running it.", risk: "Untrained staff make expensive mistakes.", items: [
+                      { name: "AI Founder Launchpad", advantage: "Build your idea, offer, and first revenue path using AI tools.", price: "₦75,000" },
+                      { name: "Corporate Staff Training", advantage: "Your team learns to use your systems, tools, and processes properly.", price: "Custom" },
+                      { name: "Operations Sprint", advantage: "Automate how your team works in 3 weeks. Less manual, more output.", price: "₦60,000" },
+                      { name: "Team Enablement", advantage: "Your business runs without you being present every day.", price: "Custom" },
+                    ]},
+                    Growth: { title: "Growth & Scale", why: "Growth without structure breaks everything.", risk: "Scaling creates chaos instead of revenue.", items: [
+                      { name: "Growth Strategy", advantage: "Clear roadmap for what to build next and when.", price: "Custom" },
+                      { name: "Expansion Planning", advantage: "New markets, new locations, new revenue streams — structured.", price: "Custom" },
+                      { name: "Management Subscription", advantage: "We handle your compliance, renewals, and filings every month.", price: "₦150,000/yr" },
+                      { name: "Performance Dashboards", advantage: "Track what matters. Revenue, clients, team KPIs — real time.", price: "₦200,000" },
+                    ]},
                   };
                   const areaMap: Record<string, string[]> = { Compliance: ["compliance", "compliance_mgmt", "legal"], Brand: ["branding", "visibility"], Systems: ["tools"], Team: ["skills"], Growth: ["skills"] };
                   return (
@@ -1622,41 +1651,68 @@ export default function ClientDashboard() {
                         })}
                       </div>
 
-                      {/* ── PITCH POPUP ── */}
+                      {/* ── PITCH POPUP WITH CHECKLIST ── */}
                       {pitchArea && DOT_PITCHES[pitchArea] && (() => {
                         const p = DOT_PITCHES[pitchArea];
+                        const [checkedItems, setCheckedItems] = React.useState<Set<string>>(new Set());
+                        const [expandedItem, setExpandedItem] = React.useState<string | null>(null);
+                        const toggleCheck = (name: string) => setCheckedItems(prev => { const n = new Set(prev); n.has(name) ? n.delete(name) : n.add(name); return n; });
+                        const selectedNames = Array.from(checkedItems);
                         return (
-                          <div style={{ margin: "16px auto", maxWidth: 400, background: WHITE, borderRadius: 20, padding: 24, boxShadow: "0 8px 32px rgba(0,0,0,0.08)", textAlign: "left", animation: "fadeUp 0.3s ease-out" }}>
-                            <p style={{ fontSize: 16, fontWeight: 600, color: DARK, marginBottom: 12 }}>{p.title}</p>
-                            <p style={{ fontSize: 13, color: DARK, lineHeight: 1.6, marginBottom: 12 }}>{p.why}</p>
-                            <p style={{ fontSize: 12, color: ORANGE, fontWeight: 500, marginBottom: 16 }}>{p.risk}</p>
+                          <div style={{ margin: "16px auto", maxWidth: 420, background: WHITE, borderRadius: 20, padding: 24, boxShadow: "0 8px 32px rgba(0,0,0,0.08)", textAlign: "left", animation: "fadeUp 0.3s ease-out" }}>
+                            <p style={{ fontSize: 16, fontWeight: 600, color: DARK, marginBottom: 8 }}>{p.title}</p>
+                            <p style={{ fontSize: 13, color: MUTED, lineHeight: 1.5, marginBottom: 4 }}>{p.why}</p>
+                            <p style={{ fontSize: 11, color: ORANGE, fontWeight: 500, marginBottom: 16 }}>{p.risk}</p>
+
+                            {/* Service checklist */}
                             <div style={{ marginBottom: 16 }}>
-                              {p.includes.map((item, i) => (
-                                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0", borderBottom: i < p.includes.length - 1 ? `1px solid ${CREAM}` : "none" }}>
-                                  <div style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: GOLD, flexShrink: 0 }} />
-                                  <span style={{ fontSize: 12, color: DARK }}>{item}</span>
+                              {p.items.map((item, i) => (
+                                <div key={i} style={{ borderBottom: i < p.items.length - 1 ? `1px solid ${BG}` : "none" }}>
+                                  <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", cursor: "pointer" }}
+                                    onClick={() => toggleCheck(item.name)}>
+                                    <div style={{ width: 20, height: 20, borderRadius: 6, border: checkedItems.has(item.name) ? "none" : `2px solid ${GREY}`, backgroundColor: checkedItems.has(item.name) ? GOLD : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s" }}>
+                                      {checkedItems.has(item.name) && <CheckCircle size={14} color={WHITE} />}
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                      <span style={{ fontSize: 13, fontWeight: 500, color: DARK }}>{item.name}</span>
+                                      <span style={{ fontSize: 11, color: MUTED, marginLeft: 8 }}>{item.price}</span>
+                                    </div>
+                                    <button onClick={(e) => { e.stopPropagation(); setExpandedItem(expandedItem === item.name ? null : item.name); }}
+                                      style={{ background: "none", border: "none", fontSize: 11, color: GOLD, cursor: "pointer", padding: "4px 8px", fontWeight: 500 }}>
+                                      {expandedItem === item.name ? "Less" : "Info"}
+                                    </button>
+                                  </div>
+                                  {expandedItem === item.name && (
+                                    <div style={{ padding: "0 0 10px 30px", animation: "fadeUp 0.2s ease-out" }}>
+                                      <p style={{ fontSize: 12, color: DARK, lineHeight: 1.5 }}>{item.advantage}</p>
+                                    </div>
+                                  )}
                                 </div>
                               ))}
                             </div>
-                            <p style={{ fontSize: 13, color: MUTED, marginBottom: 16 }}>{p.price}</p>
+
+                            {/* Selected count */}
+                            {selectedNames.length > 0 && (
+                              <p style={{ fontSize: 11, color: GOLD, fontWeight: 600, marginBottom: 12 }}>{selectedNames.length} selected</p>
+                            )}
+
+                            {/* Buttons */}
                             <div style={{ display: "flex", gap: 8 }}>
                               <button onClick={() => {
-                                const scenarios: Record<string, string> = {
-                                  "Legal & Compliance": "Tell me about the real risks of operating without proper compliance. Give me a real scenario of a Nigerian business that got shut down or fined because they were not documented. What could happen to my business if I ignore this?",
-                                  "Brand & Visibility": "Explain the real cost of having a weak brand. Give me a scenario where a business lost a premium client because their website or social media looked unprofessional. What am I losing every day without a strong brand?",
-                                  "Systems & Automation": "Show me how much time and money I am wasting by doing things manually. Give me a real example of a business that automated their follow-ups and doubled their revenue. What is the cost of not automating?",
-                                  "Team & Capability": "Explain what happens when a business depends too much on the founder. Give me a scenario where untrained staff cost a business real money. Why should I invest in training my team now?",
-                                  "Growth & Scale": "Tell me what happens to businesses that try to grow without structure. Give me a real example of a company that scaled too fast and collapsed. How do I avoid that?",
-                                };
+                                const items = selectedNames.length > 0 ? selectedNames.join(", ") : p.items.map(it => it.name).join(", ");
                                 setPitchArea(null); setMobileChatOpen(true);
-                                setTimeout(() => handleChatSend(scenarios[p.title] || `Tell me more about ${p.title} and why my business needs it. Give me real scenarios.`), 200);
+                                setTimeout(() => handleChatSend(`Tell me more about these services: ${items}. Explain the advantage of each, what happens if I don't have them, and give me real business scenarios. Do not use my business name for privacy.`), 200);
                               }}
                                 style={{ flex: 1, padding: "14px 0", borderRadius: 12, background: "none", color: DARK, border: `1px solid ${GREY}`, fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
                                 Learn More
                               </button>
-                              <button onClick={() => { setPitchArea(null); setMobileChatOpen(true); setTimeout(() => handleChatSend(`I want to activate ${p.title}. Show me how to get started and how to pay.`), 200); }}
+                              <button onClick={() => {
+                                const items = selectedNames.length > 0 ? selectedNames.join(", ") : "all services in " + p.title;
+                                setPitchArea(null); setMobileChatOpen(true);
+                                setTimeout(() => handleChatSend(`I want to activate: ${items}. Show me how to get started and how to pay.`), 200);
+                              }}
                                 style={{ flex: 1, padding: "14px 0", borderRadius: 12, background: GOLD, color: WHITE, border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-                                Activate
+                                Activate{selectedNames.length > 0 ? ` (${selectedNames.length})` : ""}
                               </button>
                             </div>
                           </div>
