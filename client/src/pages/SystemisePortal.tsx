@@ -158,32 +158,15 @@ export default function SystemizePortal() {
                 <MessageSquare size={16} />
                 <span className="text-[13px] font-medium">Chat with us</span>
               </button>
-              <p className="px-5 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.15em]" style={{ color: `${G}40` }}>Related</p>
               {[
-                { label: "CTO",            href: "/systemise/cto" },
-                { label: "BizDoc Consult",  href: "/bizdoc" },
-                { label: "Pricing",         href: "/pricing" },
-                { label: "Hamzury Skills",  href: "/skills" },
+                { label: "Home",      href: "/" },
+                { label: "BizDoc",    href: "/bizdoc" },
+                { label: "Skills",    href: "/skills" },
+                { label: "Pricing",   href: "/pricing" },
+                { label: "CTO",       href: "/systemise/cto" },
               ].map(item => (
                 <Link key={item.href} href={item.href}>
                   <span className="block px-5 py-2.5 text-[13px] font-medium transition-colors hover:bg-gray-50 cursor-pointer" style={{ color: G }}>
-                    {item.label}
-                  </span>
-                </Link>
-              ))}
-              <div className="mx-4 my-1.5" style={{ height: 1, backgroundColor: `${G}0C` }} />
-              <p className="px-5 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.15em]" style={{ color: `${G}40` }}>Explore</p>
-              {[
-                { label: "Home",       href: "/" },
-                { label: "RIDI",       href: "/ridi" },
-                { label: "Team",       href: "/team" },
-                { label: "Affiliate",  href: "/affiliate" },
-                { label: "Consultant", href: "/consultant" },
-                { label: "Training",   href: "/training" },
-                { label: "Alumni",     href: "/alumni" },
-              ].map(item => (
-                <Link key={item.href} href={item.href}>
-                  <span className="block px-5 py-2.5 text-[13px] font-medium transition-colors hover:bg-gray-50 cursor-pointer" style={{ color: G, opacity: 0.7 }}>
                     {item.label}
                   </span>
                 </Link>
