@@ -138,6 +138,9 @@ async function startServer() {
     "HMZ012-26/3": "dajot@hamzury.com",
     "HMZ013-26/3": "lalo@hamzury.com",
     "HMZ014-26/3": "rabilu@hamzury.com",
+    "HMZ015-26/3": "habeeba@hamzury.com",
+    "HMZ016-26/3": "pius@hamzury.com",
+    "HMZ017-26/3": "abdulwafeed@hamzury.com",
   };
 
   // ─── Login rate limiter (10 attempts per 15 minutes per IP) ──────────────
