@@ -6,6 +6,7 @@ import NotificationBell from "@/components/NotificationBell";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { Link } from "wouter";
+import TemplateEditor from "@/components/TemplateEditor";
 import {
   Home, LogOut, LayoutDashboard, Calendar, Video, Mic,
   Image, Bot, Upload, CheckCircle2, Clock, Edit3,
@@ -24,7 +25,7 @@ const WHITE = "#FFFFFF";
 const DARK  = "#1A1A1A";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type Section = "clients" | "inbox" | "overview" | "calendar" | "aitwin" | "podcast" | "vault" | "social";
+type Section = "clients" | "inbox" | "overview" | "calendar" | "aitwin" | "podcast" | "vault" | "social" | "templates";
 
 const SECTIONS: { id: Section; label: string; icon: React.ReactNode }[] = [
   { id: "clients",   label: "Social Clients",  icon: <Users size={16} /> },
@@ -35,6 +36,7 @@ const SECTIONS: { id: Section; label: string; icon: React.ReactNode }[] = [
   { id: "podcast",   label: "Podcast",          icon: <Mic size={16} /> },
   { id: "vault",     label: "Asset Vault",      icon: <Folder size={16} /> },
   { id: "social",    label: "Social Reports",   icon: <TrendingUp size={16} /> },
+  { id: "templates", label: "Templates",        icon: <Image size={16} /> },
 ];
 
 const TASK_STATUS_COLORS: Record<string, { bg: string; text: string }> = {
@@ -1227,6 +1229,7 @@ export default function MediaDashboard() {
       case "podcast":  return renderPodcast();
       case "vault":    return renderVault();
       case "social":   return renderSocial();
+      case "templates": return <TemplateEditor />;
     }
   }
 
