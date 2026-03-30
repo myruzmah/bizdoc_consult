@@ -660,6 +660,8 @@ export default function ClientDashboard() {
   const [chatLoading, setChatLoading] = useState(false);
   const [mobileChatOpen, setMobileChatOpen] = useState(false);
   const [pitchArea, setPitchArea] = useState<string | null>(null);
+  const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
+  const [expandedItem, setExpandedItem] = useState<string | null>(null);
   const [autoGreeted, setAutoGreeted] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLInputElement>(null);
@@ -1642,7 +1644,7 @@ export default function ClientDashboard() {
                         {(["Compliance", "Brand", "Systems", "Team", "Growth"] as const).map(area => {
                           const isActive = areaMap[area]?.some(pid => PILLARS.find(p => p.id === pid)?.items.some(it => activeItems[it.id])) || false;
                           return (
-                            <button key={area} onClick={() => setPitchArea(pitchArea === area ? null : area)}
+                            <button key={area} onClick={() => { setPitchArea(pitchArea === area ? null : area); setCheckedItems(new Set()); setExpandedItem(null); }}
                               style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, background: "none", border: "none", cursor: "pointer", minHeight: 44, padding: "8px 4px", opacity: pitchArea && pitchArea !== area ? 0.3 : 1, transition: "opacity 0.2s" }}>
                               <div style={{ width: 14, height: 14, borderRadius: "50%", backgroundColor: isActive ? GREEN : `${MUTED}30`, boxShadow: pitchArea === area ? `0 0 0 4px ${GOLD}40` : "none", transition: "all 0.2s" }} />
                               <span style={{ fontSize: 11, color: pitchArea === area ? DARK : MUTED, fontWeight: pitchArea === area ? 600 : 400 }}>{area}</span>
@@ -1654,8 +1656,6 @@ export default function ClientDashboard() {
                       {/* ── PITCH POPUP WITH CHECKLIST ── */}
                       {pitchArea && DOT_PITCHES[pitchArea] && (() => {
                         const p = DOT_PITCHES[pitchArea];
-                        const [checkedItems, setCheckedItems] = React.useState<Set<string>>(new Set());
-                        const [expandedItem, setExpandedItem] = React.useState<string | null>(null);
                         const toggleCheck = (name: string) => setCheckedItems(prev => { const n = new Set(prev); n.has(name) ? n.delete(name) : n.add(name); return n; });
                         const selectedNames = Array.from(checkedItems);
                         return (
