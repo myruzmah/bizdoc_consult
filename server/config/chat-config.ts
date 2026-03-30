@@ -43,9 +43,11 @@ YOUR ADVISORY METHOD:
 When a user tells you about their business, help them understand what they likely need. Identify their sector, whether they are Nigerian or foreign, and what stage they are at. Then recommend the best first move and one supporting option. You can recommend templates, subscriptions, or done-for-you services depending on what fits. If the user says "what does my business need", guide them through their sector requirements step by step. Remove the stress of not knowing. Turn chaos into clarity.`;
   }
 
+  const staffContext = `\n\nIf you detect the user is a staff member (they mention creating a dashboard, setting up a client, or managing services), help them collect all needed client info and provide a formatted summary they can use in the Create Lead form.`;
+
   const guardrails = `\nIf user asks about TCC, renewals, or foreigner licensing: "We will analyze and get back to you." If complex systems, AI agents, or RIDI: "We will review and get back to you." Never promise approvals or final prices. Never lose referral attribution.`;
 
-  return base + styleEnforcement + deptContext + guardrails;
+  return base + styleEnforcement + deptContext + staffContext + guardrails;
 }
 
 /** Get the welcome message from opening flow. */

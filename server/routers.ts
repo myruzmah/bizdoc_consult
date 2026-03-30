@@ -198,6 +198,7 @@ export const appRouter = router({
         service: z.string().min(1),
         department: z.string().min(1),
         notes: z.string().optional(),
+        quotedPrice: z.string().optional(),
         referralCode: z.string().optional(),
         referrerName: z.string().optional(),
       }))
@@ -218,8 +219,10 @@ export const appRouter = router({
           notifyCso: true,
         });
         const task = await createTaskFromLead(lead);
-        // Update task department to match
-        await updateTask(task.id, { department: input.department });
+        // Update task department and quoted price if provided
+        const taskUpdate: Record<string, any> = { department: input.department };
+        if (input.quotedPrice) taskUpdate.quotedPrice = input.quotedPrice;
+        await updateTask(task.id, taskUpdate);
         await createActivityLog({
           leadId: lead.id,
           taskId: task.id,

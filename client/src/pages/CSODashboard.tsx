@@ -104,12 +104,12 @@ export default function CSODashboard() {
 
   // Manual lead creation
   const [showCreateLead, setShowCreateLead] = useState(false);
-  const [newLead, setNewLead] = useState({ name: "", businessName: "", phone: "", email: "", service: "", department: "bizdoc", notes: "" });
+  const [newLead, setNewLead] = useState({ name: "", businessName: "", phone: "", email: "", service: "", department: "bizdoc", notes: "", totalAmount: "", depositPaid: "" });
   const createLeadMutation = trpc.leads.createManual.useMutation({
     onSuccess: (result) => {
       toast.success(`Lead created — Ref: ${result.ref}`);
       setShowCreateLead(false);
-      setNewLead({ name: "", businessName: "", phone: "", email: "", service: "", department: "bizdoc", notes: "" });
+      setNewLead({ name: "", businessName: "", phone: "", email: "", service: "", department: "bizdoc", notes: "", totalAmount: "", depositPaid: "" });
       unassignedQuery.refetch();
       leadsQuery.refetch();
     },
@@ -425,10 +425,25 @@ export default function CSODashboard() {
                         <option value="media">Media</option>
                       </select>
                     </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <input placeholder="Total Amount (₦)" value={newLead.totalAmount} onChange={e => setNewLead(p => ({ ...p, totalAmount: e.target.value }))}
+                        className="px-3 py-2 rounded-lg border text-[13px] outline-none" style={{ borderColor: `${TEAL}20` }} />
+                      <input placeholder="Deposit Paid (₦)" value={newLead.depositPaid} onChange={e => setNewLead(p => ({ ...p, depositPaid: e.target.value }))}
+                        className="px-3 py-2 rounded-lg border text-[13px] outline-none" style={{ borderColor: `${TEAL}20` }} />
+                    </div>
                     <textarea placeholder="Notes / Context" value={newLead.notes} onChange={e => setNewLead(p => ({ ...p, notes: e.target.value }))}
                       rows={2} className="w-full px-3 py-2 rounded-lg border text-[13px] outline-none resize-none" style={{ borderColor: `${TEAL}20` }} />
                     <button
-                      onClick={() => { if (newLead.name && newLead.service) createLeadMutation.mutate(newLead); else toast.error("Name and Service are required"); }}
+                      onClick={() => {
+                        if (newLead.name && newLead.service) {
+                          const fullNotes = [
+                            newLead.totalAmount ? `Total: ₦${newLead.totalAmount}` : "",
+                            newLead.depositPaid ? `Deposit: ₦${newLead.depositPaid}` : "",
+                            newLead.notes
+                          ].filter(Boolean).join(". ");
+                          createLeadMutation.mutate({ ...newLead, notes: fullNotes, quotedPrice: newLead.totalAmount || undefined });
+                        } else toast.error("Name and Service are required");
+                      }}
                       disabled={createLeadMutation.isPending}
                       className="px-4 py-2 rounded-lg text-[13px] font-medium transition-opacity"
                       style={{ backgroundColor: TEAL, color: WHITE, opacity: createLeadMutation.isPending ? 0.6 : 1 }}
