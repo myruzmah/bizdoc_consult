@@ -1225,7 +1225,7 @@ function HelpersView({ staffList }: { staffList: any[] }) {
               <label className="text-[10px] font-bold uppercase tracking-wider opacity-40 block mb-1" style={{ color: TEAL }}>Lead Reference</label>
               <input
                 type="text"
-                placeholder="e.g. HAM-AB12-3456"
+                placeholder="e.g. HMZ-26/3-1234"
                 value={leadRef}
                 onChange={e => setLeadRef(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg border text-[13px] outline-none"

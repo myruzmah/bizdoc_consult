@@ -3,7 +3,7 @@ import { FileSearch, Loader2, AlertCircle, ArrowRight, Shield, Phone } from "luc
 import PageMeta from "../components/PageMeta";
 import { trpc } from "@/lib/trpc";
 
-/* ── Unified brand — all refs are HAM-XXXX-YYYY ── */
+/* ── Unified brand — all refs are HMZ-26/3-XXXX ── */
 const THEME = { primary: "#2D2D2D", accent: "#B48C4C", label: "HAMZURY" };
 
 const CREAM = "#FFFAF6";
@@ -140,7 +140,7 @@ export default function ClientPage() {
             value={ref}
             onChange={(e) => { setRef(e.target.value.toUpperCase()); setSearched(false); setError(""); }}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            placeholder="HAM-XXXX-1234"
+            placeholder="HMZ-26/3-XXXX"
             className="w-full h-12 px-4 rounded-xl text-[15px] font-mono tracking-wide bg-transparent border transition-colors focus:outline-none"
             style={{
               borderColor: error ? "#DC2626" : `${theme.primary}15`,
@@ -275,7 +275,7 @@ export default function ClientPage() {
             Your reference number was sent to you via WhatsApp when your file was created.
           </p>
           <p className="text-[10px] mt-2 font-mono opacity-20" style={{ color: DARK }}>
-            Format: HAM-XXXX-YYYY
+            Format: HMZ-26/3-XXXX
           </p>
         </div>
 

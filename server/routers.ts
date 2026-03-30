@@ -678,13 +678,13 @@ export const appRouter = router({
 
   // ─── Public Tracking ──────────────────────────────────────────────────────
   tracking: router({
-    lookup: rateLimitedProcedure
+    lookup: publicProcedure
       .input(z.object({
         ref: z.string().min(1),
         phone: z.string().optional(),
       }))
       .query(async ({ input }) => {
-        const task = await getTaskByRef(input.ref.trim().toUpperCase());
+        const task = await getTaskByRef(input.ref.trim());
         if (!task) return { found: false as const, reason: "not_found" as const };
 
         // Phone verification: if phone provided, verify it matches (last 6 digits)

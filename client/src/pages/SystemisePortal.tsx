@@ -887,7 +887,13 @@ export default function SystemizePortal() {
     { enabled: false, retry: false }
   );
   const handleTrackInput = (val: string) => {
-    setTrackCode(val.toUpperCase());
+    let raw = val.replace(/[^0-9]/g, "");
+    if (raw.length > 8) raw = raw.slice(0, 8);
+    let formatted = "HMZ-";
+    if (raw.length > 0) formatted += raw.slice(0, 2);
+    if (raw.length > 2) formatted += "/" + raw.slice(2, 3);
+    if (raw.length > 3) formatted += "-" + raw.slice(3);
+    setTrackCode(formatted);
     setTrackSubmitted(false);
   };
   const handleTrack = () => {
@@ -980,11 +986,7 @@ export default function SystemizePortal() {
             Our Services <ArrowRight size={16} />
           </button>
           <button
-            onClick={() => {
-              localStorage.setItem("hamzury-chat-context", "I want to track my project status. Can you help me check?");
-              const btn = document.querySelector('[data-chat-trigger]') as HTMLElement;
-              if (btn) btn.click();
-            }}
+            onClick={() => document.getElementById("track")?.scrollIntoView({ behavior: "smooth" })}
             className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl text-[14px] font-semibold transition-opacity hover:opacity-80 border"
             style={{ borderColor: `${G}30`, color: G, backgroundColor: "transparent" }}
           >
@@ -1277,7 +1279,7 @@ export default function SystemizePortal() {
       </section>
 
       {/* ── TRACK ── */}
-      <section ref={myUpdateRef} className="py-16 px-6 border-t" style={{ borderColor: `${G}10`, backgroundColor: W }}>
+      <section id="track" ref={myUpdateRef} className="py-16 px-6 border-t" style={{ borderColor: `${G}10`, backgroundColor: W }}>
         <div className="max-w-lg mx-auto">
           <p className="text-[11px] font-bold tracking-[0.25em] uppercase mb-2" style={{ color: Au }}>TRACK</p>
           <h2 className="text-[clamp(22px,3vw,30px)] font-light tracking-tight mb-2" style={{ color: G }}>Track Your Project</h2>
@@ -1329,7 +1331,23 @@ export default function SystemizePortal() {
                       }}
                     />
                   </div>
-                  <p className="text-[12px] opacity-50" style={{ color: G }}>{trackQuery.data.statusMessage}</p>
+                  <p className="text-[12px] opacity-50 mb-4" style={{ color: G }}>{trackQuery.data.statusMessage}</p>
+                  <a
+                    href="/client/dashboard"
+                    onClick={e => {
+                      e.preventDefault();
+                      localStorage.setItem("hamzury-client-session", JSON.stringify({
+                        ref: trackQuery.data!.ref, phone: "", name: trackQuery.data!.clientName ?? trackQuery.data!.businessName,
+                        businessName: trackQuery.data!.businessName, service: trackQuery.data!.service,
+                        status: trackQuery.data!.status, expiresAt: Date.now() + 24 * 60 * 60 * 1000
+                      }));
+                      window.location.href = "/client/dashboard";
+                    }}
+                    className="block w-full py-3 rounded-xl text-[13px] font-semibold text-center transition-opacity hover:opacity-90"
+                    style={{ backgroundColor: G, color: Au }}
+                  >
+                    Open Full Dashboard →
+                  </a>
                 </div>
               ) : (
                 <div className="rounded-2xl p-5 text-center" style={{ backgroundColor: `${G}05` }}>

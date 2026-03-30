@@ -86,7 +86,7 @@ const DEPARTMENTS: Record<string, { label: string; color: string; sections: Sect
         items: [
           "All client documents stored in the secure file system — never on personal devices.",
           "Physical documents: scanned, uploaded, and returned to client within 48 hours.",
-          "Reference numbers (HAM-XXXX-YYYY) must be attached to every file and communication.",
+          "Reference numbers (HMZ-26/3-XXXX) must be attached to every file and communication.",
           "Document retention: 7 years minimum as per Nigerian tax law requirements.",
         ],
       },

@@ -1593,7 +1593,13 @@ export default function BizDocPortal() {
   );
 
   const handleTrackInput = (val: string) => {
-    setTrackCode(val.toUpperCase());
+    let raw = val.replace(/[^0-9]/g, "");
+    if (raw.length > 8) raw = raw.slice(0, 8);
+    let formatted = "HMZ-";
+    if (raw.length > 0) formatted += raw.slice(0, 2);
+    if (raw.length > 2) formatted += "/" + raw.slice(2, 3);
+    if (raw.length > 3) formatted += "-" + raw.slice(3);
+    setTrackCode(formatted);
     setTrackSubmitted(false);
   };
 

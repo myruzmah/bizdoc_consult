@@ -391,7 +391,7 @@ export default function SkillsPortal() {
             style={{ backgroundColor: DARK, color: BG, boxShadow: `0 8px 32px ${DARK}25` }}>
             Our Services <ArrowRight className="w-5 h-5" />
           </button>
-          <button onClick={() => myUpdateRef.current?.scrollIntoView({ behavior: "smooth" })}
+          <button onClick={() => document.getElementById("track")?.scrollIntoView({ behavior: "smooth" })}
             className="px-7 py-4 rounded-lg text-sm font-medium border transition-opacity hover:opacity-80 inline-flex items-center gap-2"
             style={{ borderColor: `${TEXT}30`, color: TEXT }}>
             Track <ArrowRight className="w-4 h-4" />
@@ -680,7 +680,7 @@ export default function SkillsPortal() {
       </section>
 
       {/* ── TRACK ── */}
-      <section ref={myUpdateRef} className="py-16 px-6 border-t" style={{ borderColor: `${TEXT}10`, backgroundColor: W }}>
+      <section id="track" ref={myUpdateRef} className="py-16 px-6 border-t" style={{ borderColor: `${TEXT}10`, backgroundColor: W }}>
         <div className="max-w-lg mx-auto">
           <p className="text-[11px] font-bold tracking-[0.25em] uppercase mb-2" style={{ color: GOLD }}>TRACK</p>
           <h2 className="text-[clamp(22px,3vw,30px)] font-light tracking-tight mb-2" style={{ color: TEXT }}>Track Your Application</h2>
@@ -740,15 +740,30 @@ export default function SkillsPortal() {
                   )}
                   {trackQuery.data.status === "accepted" && (
                     <div className="mt-2 p-3 rounded-xl text-[12px]" style={{ backgroundColor: "#16A34A15", color: "#15803D" }}>
-                      🎉 Congratulations. Check your email for onboarding details.
+                      Congratulations. Check your email for onboarding details.
                     </div>
                   )}
+                  <a
+                    href="/client/dashboard"
+                    onClick={e => {
+                      e.preventDefault();
+                      localStorage.setItem("hamzury-client-session", JSON.stringify({
+                        ref: trackQuery.data!.ref, phone: "", name: trackQuery.data!.program,
+                        status: trackQuery.data!.status, expiresAt: Date.now() + 24 * 60 * 60 * 1000
+                      }));
+                      window.location.href = "/client/dashboard";
+                    }}
+                    className="block w-full mt-3 py-3 rounded-xl text-[13px] font-semibold text-center transition-opacity hover:opacity-90"
+                    style={{ backgroundColor: DARK, color: BG }}
+                  >
+                    Open Full Dashboard →
+                  </a>
                 </div>
               ) : (
                 <div className="rounded-2xl p-5 text-center" style={{ backgroundColor: `${TEXT}05` }}>
                   <p className="text-[14px] font-light mb-1" style={{ color: TEXT }}>Reference not found</p>
                   <p className="text-[12px] opacity-40" style={{ color: TEXT }}>
-                    Check the ref format. E.g. HAM-A4K9-1234. Or WhatsApp us on 08067149356.
+                    Check the ref format. E.g. HMZ-26/3-1234. Or WhatsApp us on 08067149356.
                   </p>
                 </div>
               )}
