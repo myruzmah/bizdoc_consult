@@ -31,51 +31,307 @@ const DEPT_ACCENT: Record<string, string> = {
   skills: "#1E3A5F",
 };
 
-/* ── Service detail cards (curiosity pitches) ── */
-const SERVICE_DETAILS: Record<string, { pitch: string; includes: string[]; price: string; value?: string }> = {
-  cac: { pitch: "Without CAC, your business doesn't legally exist. No bank account, no contracts, no tenders.", includes: ["Name reservation", "Incorporation filing", "Certificate delivery"], price: "from \u20A650,000", value: "We handle the entire filing process so you never visit CAC yourself." },
-  tin: { pitch: "No TIN means no tax clearance. No tax clearance means no government contracts.", includes: ["TIN registration with FIRS", "VAT setup", "First filing support"], price: "from \u20A660,000", value: "We register, file, and manage your tax ID so you stay compliant without stress." },
-  tcc: { pitch: "Tax Clearance is your proof of good standing. Banks and government agencies require it.", includes: ["3-year tax review", "Filing and submission", "Certificate collection"], price: "from \u20A660,000" },
-  licence: { pitch: "Your sector has rules. Operating without the right permit risks shutdown or heavy fines.", includes: ["Sector assessment", "Application filing", "Licence collection"], price: "from \u20A680,000" },
-  contracts: { pitch: "If a partner or staff betrays you, are your agreements protecting you?", includes: ["Employment contracts", "NDAs", "Partnership agreements"], price: "from \u20A640,000" },
-  templates: { pitch: "Professional document templates save you time and protect your business.", includes: ["Contract templates", "Invoice templates", "Agreement packs"], price: "from \u20A615,000" },
-  annual: { pitch: "Miss your annual returns and CAC can strike off your company.", includes: ["Annual return filing", "Status letter", "Back-filing if needed"], price: "\u20A630,000" },
-  management: { pitch: "We handle all your renewals, filings, and compliance calendar. You focus on business.", includes: ["Monthly compliance check", "Renewal management", "Deadline tracking"], price: "\u20A650,000/month", value: "Every month we collect your records, file your taxes, deliver your report, and track your deadlines automatically." },
-  brand_id: { pitch: "Your brand is your first impression. Make it count.", includes: ["Logo design", "Color palette", "Brand guidelines"], price: "from \u20A6150,000" },
-  positioning: { pitch: "Positioning is how premium clients choose you over competitors.", includes: ["Market analysis", "Value proposition", "Messaging framework"], price: "from \u20A6100,000" },
-  website: { pitch: "Your website works while you sleep. Is it working for you?", includes: ["Professional website", "Mobile responsive", "SEO basics"], price: "from \u20A6200,000" },
-  content_strategy: { pitch: "Content without strategy is noise. Strategy without content is silence.", includes: ["Content calendar", "Platform strategy", "Engagement plan"], price: "from \u20A6100,000" },
-  materials: { pitch: "Business cards, letterheads, and presentation materials that match your brand.", includes: ["Business cards", "Letterhead", "Presentation template"], price: "from \u20A650,000" },
-  pitch_deck: { pitch: "A pitch deck that closes deals, not one that puts investors to sleep.", includes: ["Investor-ready deck", "Financial summary", "Visual storytelling"], price: "from \u20A680,000" },
-  social_setup: { pitch: "Set up your social media properly from day one. First impressions matter.", includes: ["Profile optimization", "Bio and branding", "Initial content"], price: "from \u20A650,000" },
-  social_mgmt: { pitch: "Consistent posting builds trust. We handle it so you don't have to.", includes: ["Daily posting", "Engagement management", "Monthly report"], price: "\u20A6100,000/month", value: "We create, schedule, and manage all your social media content daily so you focus on business." },
-  content: { pitch: "Professional content that builds authority and attracts the right clients.", includes: ["Photo/video content", "Copywriting", "Scheduling"], price: "from \u20A6100,000" },
-  seo: { pitch: "If clients can't find you on Google, you're invisible.", includes: ["Keyword research", "On-page optimization", "Google Business"], price: "from \u20A680,000" },
-  reputation: { pitch: "What do people see when they Google your business name?", includes: ["Review management", "Crisis response", "Trust signals"], price: "from \u20A660,000" },
-  crm: { pitch: "Stop losing leads in WhatsApp. A CRM tracks every opportunity.", includes: ["CRM setup", "Pipeline configuration", "Team training"], price: "from \u20A6180,000" },
-  automation: { pitch: "Every repeated task is time your business is wasting.", includes: ["Workflow automation", "Email sequences", "Task automation"], price: "from \u20A6120,000", value: "We build workflows that handle follow-ups, invoicing, and lead tracking without your team doing it manually." },
-  dashboard: { pitch: "See your business performance at a glance. No more guessing.", includes: ["Custom dashboard", "Real-time data", "KPI tracking"], price: "from \u20A6200,000", value: "See your entire business performance in one screen -- revenue, clients, tasks, team -- updated in real time." },
-  ai_agent: { pitch: "An AI that handles customer queries, bookings, or follow-ups 24/7.", includes: ["Custom AI bot", "Integration setup", "Training data"], price: "from \u20A6150,000", value: "A custom AI that answers client questions, books appointments, or handles support 24/7 while you sleep." },
-  research: { pitch: "Know your market before your competitors do.", includes: ["Market research", "Competitor analysis", "Trend report"], price: "from \u20A680,000" },
-  founder: { pitch: "Build your idea, offer, and first revenue path using AI tools.", includes: ["12-week program", "AI tools training", "Capstone project"], price: "\u20A675,000" },
-  team: { pitch: "Your systems are only as good as the people using them.", includes: ["Custom curriculum", "Practical exercises", "Certification"], price: "Custom pricing" },
-  ai_skills: { pitch: "AI is changing business. Learn how to use it before your competitors do.", includes: ["AI tools mastery", "Prompt engineering", "Business application"], price: "\u20A655,000" },
-  growth: { pitch: "Scaling without structure breaks businesses. We help you grow right.", includes: ["Growth strategy", "Expansion planning", "Management systems"], price: "Custom pricing" },
-  nda: { pitch: "Protect your business relationships with proper non-disclosure agreements.", includes: ["NDA drafting", "Customization", "Legal review"], price: "from \u20A630,000" },
-  board_res: { pitch: "Board resolutions formalize your company's major decisions.", includes: ["Resolution drafting", "Minutes template", "Filing support"], price: "from \u20A625,000" },
-  ip: { pitch: "Your brand name and ideas are assets. Protect them before someone else takes them.", includes: ["Trademark search", "Application filing", "Certificate delivery"], price: "\u20A675,000" },
-  workspace: { pitch: "Set up your team's digital workspace -- email, cloud storage, collaboration tools.", includes: ["Google Workspace or Microsoft 365", "Email setup", "Team onboarding"], price: "from \u20A650,000" },
-  monthly_filing: { pitch: "We file your taxes every month so you never miss a deadline or face penalties.", includes: ["Monthly FIRS filing", "VAT returns", "PAYE processing"], price: "Included in \u20A6150,000/year", value: "We handle every filing so you never think about tax deadlines again." },
-  renewal_dates: { pitch: "Your licences and registrations have expiry dates. We track every one.", includes: ["CAC annual returns date", "Licence renewal dates", "Permit expiry alerts"], price: "Included" },
-  tcc_cert: { pitch: "Tax Clearance Certificate -- proof your business is compliant. Delivered annually.", includes: ["3-year tax review", "FIRS submission", "Certificate delivery"], price: "Included" },
-  financial_report: { pitch: "Monthly and annual financial reports showing your compliance status.", includes: ["Monthly filing summary", "Annual financial statement", "Tax position report"], price: "Included" },
-  acknowledgement: { pitch: "Every filing comes with an official acknowledgement document from FIRS.", includes: ["Filing receipt", "Submission confirmation", "Record keeping"], price: "Included" },
-  online_always: { pitch: "Learn at your own pace. Our online programs are always open.", includes: ["Self-paced modules", "HALS access", "Certificate on completion"], price: "from \u20A645,000", value: "Start learning today -- no waiting for a cohort." },
-  physical_cohort: { pitch: "Limited seats. Next cohort filling fast. In-person training in Abuja.", includes: ["3-week intensive", "Hands-on projects", "Networking", "Certificate"], price: "from \u20A655,000", value: "Only 25 seats per cohort. Early registration recommended." },
+/* ── Service detail type ── */
+type ServiceDetail = {
+  pitch: string;
+  why: string;
+  how: string;
+  what: string;
+  includes: string[];
+  price: string;
+  value?: string;
+};
+
+/* ── Service detail cards (Sinek: Why / How / What) ── */
+const SERVICE_DETAILS: Record<string, ServiceDetail> = {
+  cac: {
+    pitch: "Without CAC, your business doesn't legally exist.",
+    why: "Every serious business needs legal recognition. Without it, you cannot open a bank account, sign contracts, or bid for tenders.",
+    how: "We handle name reservation, document preparation, and CAC filing. You never visit any office.",
+    what: "CAC Certificate, Business Registration Number, Bank Introduction Letter.",
+    includes: ["Name reservation", "Incorporation filing", "Certificate delivery"],
+    price: "from\u20A650,000", value: "We handle the entire filing process so you never visit CAC yourself." },
+  tin: {
+    pitch: "No TIN means no tax clearance.",
+    why: "Tax compliance is not optional. Without TIN, you face penalties and cannot access government contracts.",
+    how: "We register your business with FIRS, set up VAT, and handle the first filing.",
+    what: "TIN Number, VAT Registration, First Filing Acknowledgement.",
+    includes: ["TIN registration with FIRS", "VAT setup", "First filing support"], price: "from\u20A660,000", value: "We register, file, and manage your tax ID so you stay compliant without stress." },
+  tcc: {
+    pitch: "Tax Clearance is your proof of good standing.",
+    why: "Banks and government agencies require TCC. Without it, you cannot bid for contracts or prove compliance.",
+    how: "We review your 3-year tax history, file everything with FIRS, and collect your certificate.",
+    what: "Tax Clearance Certificate, Filing Confirmation, Compliance Report.",
+    includes: ["3-year tax review", "Filing and submission", "Certificate collection"], price: "from\u20A660,000" },
+  licence: {
+    pitch: "Operating without the right permit risks shutdown.",
+    why: "Your sector has rules. Non-compliance means fines, shutdowns, or legal action against your business.",
+    how: "We assess your sector requirements, prepare all applications, and handle the filing process.",
+    what: "Sector-Specific Licence, Application Filing Confirmation, Compliance Guidance.",
+    includes: ["Sector assessment", "Application filing", "Licence collection"], price: "from\u20A680,000" },
+  contracts: {
+    pitch: "If a partner or staff betrays you, are your agreements protecting you?",
+    why: "Without proper contracts, you have no legal recourse when things go wrong with staff, partners, or clients.",
+    how: "We draft legally sound contracts tailored to your business relationships and Nigerian law.",
+    what: "Employment Contracts, NDAs, Partnership Agreements, Service Agreements.",
+    includes: ["Employment contracts", "NDAs", "Partnership agreements"], price: "from\u20A640,000" },
+  templates: {
+    pitch: "Professional document templates save you time and protect your business.",
+    why: "Unprofessional documents lose you deals. Every invoice, proposal, and contract should reflect your brand.",
+    how: "We create branded, legally reviewed templates you can reuse across your business operations.",
+    what: "Contract Templates, Invoice Templates, Agreement Packs, Proposal Templates.",
+    includes: ["Contract templates", "Invoice templates", "Agreement packs"], price: "from\u20A615,000" },
+  annual: {
+    pitch: "Miss your annual returns and CAC can strike off your company.",
+    why: "Annual returns are mandatory. Missing them means your company can be dissolved without notice.",
+    how: "We prepare and file your annual returns with CAC, including any back-filing needed.",
+    what: "Annual Return Filing, Status Letter, Back-Filing (if needed).",
+    includes: ["Annual return filing", "Status letter", "Back-filing if needed"], price: "\u20A630,000" },
+  management: {
+    pitch: "We handle all your renewals, filings, and compliance calendar.",
+    why: "Compliance deadlines never stop. Missing one costs more than hiring someone to track them all.",
+    how: "We collect your records monthly, file taxes, deliver reports, and track every deadline automatically.",
+    what: "Monthly Compliance Check, Renewal Management, Deadline Tracking, Filing Reports.",
+    includes: ["Monthly compliance check", "Renewal management", "Deadline tracking"], price: "\u20A650,000/month", value: "Every month we collect your records, file your taxes, deliver your report, and track your deadlines automatically." },
+  brand_id: {
+    pitch: "Your brand is your first impression.",
+    why: "Premium clients judge your business in 3 seconds. A weak brand loses them before you speak.",
+    how: "We design your complete brand identity -- logo, colors, typography, and brand guidelines.",
+    what: "Logo, Color Palette, Typography, Brand Guidelines Document.",
+    includes: ["Logo design", "Color palette", "Brand guidelines"], price: "from \u20A6150,000" },
+  positioning: {
+    pitch: "Positioning is how premium clients choose you over competitors.",
+    why: "If you look like everyone else, clients choose on price. Positioning makes you the obvious choice.",
+    how: "We analyze your market, define your value proposition, and build a messaging framework.",
+    what: "Market Analysis, Value Proposition, Messaging Framework, Competitor Map.",
+    includes: ["Market analysis", "Value proposition", "Messaging framework"], price: "from \u20A6100,000" },
+  website: {
+    pitch: "Your website works while you sleep.",
+    why: "If clients cannot find you online or your website looks amateur, you lose business every day.",
+    how: "We build a professional, mobile-responsive website that converts visitors into clients.",
+    what: "Landing Page, About, Services, Contact, Mobile View, SEO, Hosting.",
+    includes: ["Professional website", "Mobile responsive", "SEO basics"], price: "from \u20A6200,000" },
+  content_strategy: {
+    pitch: "Content without strategy is noise.",
+    why: "Posting without a plan wastes time and confuses your audience. Strategy turns content into revenue.",
+    how: "We build a content calendar, choose your platforms, and create an engagement plan that grows your brand.",
+    what: "Content Calendar, Platform Strategy, Engagement Plan, Brand Voice Guide.",
+    includes: ["Content calendar", "Platform strategy", "Engagement plan"], price: "from \u20A6100,000" },
+  materials: {
+    pitch: "Business materials that match your brand.",
+    why: "Inconsistent materials make your business look disorganized. Every touchpoint should build trust.",
+    how: "We design branded print and digital materials that align with your identity.",
+    what: "Business Cards, Letterhead, Presentation Template, Email Signature.",
+    includes: ["Business cards", "Letterhead", "Presentation template"], price: "from \u20A650,000" },
+  pitch_deck: {
+    pitch: "A pitch deck that closes deals, not one that puts investors to sleep.",
+    why: "Investors decide in minutes. A weak deck means you lose funding before you finish speaking.",
+    how: "We design an investor-ready deck with compelling visuals, clear financials, and a strong narrative.",
+    what: "Investor-Ready Deck, Financial Summary, Visual Storytelling, Market Opportunity.",
+    includes: ["Investor-ready deck", "Financial summary", "Visual storytelling"], price: "from \u20A680,000" },
+  social_setup: {
+    pitch: "Set up your social media properly from day one.",
+    why: "A poorly set up profile tells premium clients you are not serious. First impressions are permanent online.",
+    how: "We optimize your profiles, apply your branding, and publish initial content across all platforms.",
+    what: "Profile Optimization, Bio & Branding, Initial Content, Platform Configuration.",
+    includes: ["Profile optimization", "Bio and branding", "Initial content"], price: "from \u20A650,000" },
+  social_mgmt: {
+    pitch: "Consistent posting builds trust. We handle it so you don't have to.",
+    why: "Irregular posting kills trust. Your audience needs to see you consistently to remember and buy from you.",
+    how: "We create, schedule, and manage all your social media content daily across all platforms.",
+    what: "Daily Posting, Engagement Management, Monthly Content Calendar, Performance Report.",
+    includes: ["Daily posting", "Engagement management", "Monthly report"], price: "\u20A6100,000/month", value: "We create, schedule, and manage all your social media content daily so you focus on business." },
+  content: {
+    pitch: "Professional content that builds authority.",
+    why: "Amateur content repels premium clients. Professional content positions you as the expert in your field.",
+    how: "We produce photo/video content, write compelling copy, and schedule it for maximum reach.",
+    what: "Photo/Video Content, Copywriting, Scheduling, Platform Optimization.",
+    includes: ["Photo/video content", "Copywriting", "Scheduling"], price: "from \u20A6100,000" },
+  seo: {
+    pitch: "If clients can't find you on Google, you're invisible.",
+    why: "90% of buyers search Google before calling. If you are not on page 1, your competitors get the business.",
+    how: "We research your keywords, optimize your pages, and set up your Google Business profile.",
+    what: "Keyword Research, On-Page Optimization, Google Business Profile, Monthly SEO Report.",
+    includes: ["Keyword research", "On-page optimization", "Google Business"], price: "from \u20A680,000" },
+  reputation: {
+    pitch: "What do people see when they Google your business name?",
+    why: "One bad review or no reviews at all can cost you clients. Reputation is your silent salesperson.",
+    how: "We manage your reviews, build trust signals, and prepare a crisis response plan.",
+    what: "Review Management, Crisis Response Plan, Trust Signals, Online Reputation Report.",
+    includes: ["Review management", "Crisis response", "Trust signals"], price: "from \u20A660,000" },
+  crm: {
+    pitch: "Stop losing leads in WhatsApp.",
+    why: "Every lead you forget is revenue lost. Without a system, your team drops opportunities daily.",
+    how: "We set up a CRM, configure your pipeline, and train your team to track every lead to conversion.",
+    what: "CRM Setup, Pipeline Configuration, Team Training, Conversion Reports.",
+    includes: ["CRM setup", "Pipeline configuration", "Team training"], price: "from \u20A6180,000" },
+  automation: {
+    pitch: "Stop doing manually what should be automated.",
+    why: "Every hour your team spends on repetitive tasks is money and opportunity lost.",
+    how: "We build automated workflows for follow-ups, invoicing, lead tracking, and communications.",
+    what: "WhatsApp Automation, Email Sequences, Task Automation, Lead Follow-up Bot.",
+    includes: ["Workflow automation", "Email sequences", "Task automation"], price: "from \u20A6120,000", value: "We build workflows that handle follow-ups, invoicing, and lead tracking without your team doing it manually." },
+  dashboard: {
+    pitch: "See your business performance at a glance.",
+    why: "If you cannot see your numbers in real time, you are making decisions blind.",
+    how: "We build a custom dashboard that shows revenue, clients, tasks, and team performance in one screen.",
+    what: "Custom Dashboard, Real-Time Data, KPI Tracking, Team View.",
+    includes: ["Custom dashboard", "Real-time data", "KPI tracking"], price: "from \u20A6200,000", value: "See your entire business performance in one screen -- revenue, clients, tasks, team -- updated in real time." },
+  ai_agent: {
+    pitch: "An AI that handles customer queries 24/7.",
+    why: "Clients message at midnight. If nobody answers, they go to your competitor who does.",
+    how: "We build and train a custom AI bot integrated with your systems to handle support, bookings, and follow-ups.",
+    what: "Custom AI Bot, Integration Setup, Training Data, 24/7 Customer Support.",
+    includes: ["Custom AI bot", "Integration setup", "Training data"], price: "from \u20A6150,000", value: "A custom AI that answers client questions, books appointments, or handles support 24/7 while you sleep." },
+  research: {
+    pitch: "Know your market before your competitors do.",
+    why: "Entering a market without research is gambling. Data turns guesses into confident decisions.",
+    how: "We conduct market research, analyze competitors, and deliver a trend report with actionable insights.",
+    what: "Market Research Report, Competitor Analysis, Trend Report, Actionable Insights.",
+    includes: ["Market research", "Competitor analysis", "Trend report"], price: "from \u20A680,000" },
+  founder: {
+    pitch: "Build your idea, offer, and first revenue path.",
+    why: "Most founders waste months building the wrong thing. This program gives you structure from day one.",
+    how: "12-week program using AI tools to validate your idea, build your offer, and generate your first revenue.",
+    what: "12-Week Program, AI Tools Training, Capstone Project, Certificate.",
+    includes: ["12-week program", "AI tools training", "Capstone project"], price: "\u20A675,000" },
+  team: {
+    pitch: "Your systems are only as good as the people using them.",
+    why: "Untrained teams break systems. Every tool you buy is wasted if your people cannot use it properly.",
+    how: "We design a custom curriculum, run practical exercises, and certify your team on completion.",
+    what: "Custom Curriculum, Practical Exercises, Certification, Progress Tracking.",
+    includes: ["Custom curriculum", "Practical exercises", "Certification"], price: "Custom pricing" },
+  ai_skills: {
+    pitch: "AI is changing business. Learn it before your competitors do.",
+    why: "Businesses using AI are moving 10x faster. Every month you wait, the gap widens.",
+    how: "We teach AI tools mastery, prompt engineering, and real business applications you can use immediately.",
+    what: "AI Tools Mastery, Prompt Engineering, Business Application, Certificate.",
+    includes: ["AI tools mastery", "Prompt engineering", "Business application"], price: "\u20A655,000" },
+  growth: {
+    pitch: "Scaling without structure breaks businesses.",
+    why: "Growth without systems creates chaos. More clients without more structure means lower quality and burnout.",
+    how: "We design your growth strategy, expansion plan, and management systems to handle 10x capacity.",
+    what: "Growth Strategy, Expansion Plan, Management Systems, Capacity Blueprint.",
+    includes: ["Growth strategy", "Expansion planning", "Management systems"], price: "Custom pricing" },
+  nda: {
+    pitch: "Protect your business relationships with proper NDAs.",
+    why: "Sharing ideas without an NDA is like handing your playbook to a stranger. One leak can destroy your advantage.",
+    how: "We draft customized NDAs reviewed for Nigerian law and tailored to your business relationships.",
+    what: "NDA Drafting, Customization, Legal Review, Signed Document.",
+    includes: ["NDA drafting", "Customization", "Legal review"], price: "from \u20A630,000" },
+  board_res: {
+    pitch: "Board resolutions formalize your company's major decisions.",
+    why: "Without documented resolutions, major business decisions have no legal backing. Banks and regulators require them.",
+    how: "We draft resolutions, prepare minutes templates, and support the filing process.",
+    what: "Resolution Drafting, Minutes Template, Filing Support.",
+    includes: ["Resolution drafting", "Minutes template", "Filing support"], price: "from \u20A625,000" },
+  ip: {
+    pitch: "Your brand name and ideas are assets. Protect them.",
+    why: "If someone registers your brand name before you, you lose the right to use it. Trademarks are first-come, first-served.",
+    how: "We search for conflicts, file your trademark application, and deliver your certificate.",
+    what: "Trademark Search, Application Filing, Certificate Delivery.",
+    includes: ["Trademark search", "Application filing", "Certificate delivery"], price: "\u20A675,000" },
+  workspace: {
+    pitch: "Set up your team's digital workspace.",
+    why: "Scattered tools and personal emails make your business look unprofessional and hard to manage.",
+    how: "We set up business email, cloud storage, collaboration tools, and onboard your entire team.",
+    what: "Business Email, Cloud Storage, Collaboration Tools, Document Management, Calendar.",
+    includes: ["Google Workspace or Microsoft 365", "Email setup", "Team onboarding"], price: "from \u20A650,000" },
+  monthly_filing: {
+    pitch: "We file your taxes every month so you never miss a deadline.",
+    why: "Late tax filing means penalties, interest, and blocked accounts. The cost of missing a deadline always exceeds the cost of filing.",
+    how: "We collect your records, review statements, complete questionnaires, file with FIRS, and deliver your report.",
+    what: "Monthly FIRS Filing, VAT Returns, PAYE Processing, Monthly Report.",
+    includes: ["Monthly FIRS filing", "VAT returns", "PAYE processing"], price: "Included in \u20A6150,000/year", value: "We handle every filing so you never think about tax deadlines again." },
+  renewal_dates: {
+    pitch: "Your licences and registrations have expiry dates. We track every one.",
+    why: "Expired permits mean fines and operational shutdowns. Most businesses discover too late.",
+    how: "We track all your renewal dates and alert you well before any deadline.",
+    what: "CAC Annual Returns Date, Licence Renewal Dates, Permit Expiry Alerts.",
+    includes: ["CAC annual returns date", "Licence renewal dates", "Permit expiry alerts"], price: "Included" },
+  scuml: {
+    pitch: "SCUML certificate is required for opening corporate bank accounts.",
+    why: "Banks will not open your corporate account without SCUML. It is a legal requirement under the EFCC Act.",
+    how: "We handle EFCC registration and SCUML certificate collection so your bank account is ready.",
+    what: "EFCC Registration, SCUML Certificate, Bank Account Readiness Letter.",
+    includes: ["EFCC registration", "SCUML certificate", "Bank account readiness"], price: "\u20A645,000" },
+  tcc_cert: {
+    pitch: "Tax Clearance Certificate -- proof your business is compliant.",
+    why: "TCC is required for government contracts, bank facilities, and proving your business is in good standing.",
+    how: "We review your 3-year tax records, submit to FIRS, and collect your certificate annually.",
+    what: "3-Year Tax Review, FIRS Submission, Certificate Delivery.",
+    includes: ["3-year tax review", "FIRS submission", "Certificate delivery"], price: "Included" },
+  financial_report: {
+    pitch: "Monthly and annual financial reports showing your compliance status.",
+    why: "Without clear financial reports, you cannot prove compliance or make informed business decisions.",
+    how: "We compile your filing summaries and deliver monthly and annual financial statements.",
+    what: "Monthly Filing Summary, Annual Financial Statement, Tax Position Report.",
+    includes: ["Monthly filing summary", "Annual financial statement", "Tax position report"], price: "Included" },
+  acknowledgement: {
+    pitch: "Every filing comes with an official acknowledgement from FIRS.",
+    why: "Without filing receipts, you have no proof of compliance. In a dispute, proof is everything.",
+    how: "We file, collect the official acknowledgement, and store it for your records.",
+    what: "Filing Receipt, Submission Confirmation, Record Keeping.",
+    includes: ["Filing receipt", "Submission confirmation", "Record keeping"], price: "Included" },
+  online_always: {
+    pitch: "Learn at your own pace. Our online programs are always open.",
+    why: "Waiting for a cohort means losing months. Start building your skills now, not later.",
+    how: "Self-paced modules on our HALS platform with full access and certificate on completion.",
+    what: "Self-Paced Modules, HALS Access, Certificate on Completion.",
+    includes: ["Self-paced modules", "HALS access", "Certificate on completion"], price: "from \u20A645,000", value: "Start learning today -- no waiting for a cohort." },
+  physical_cohort: {
+    pitch: "Limited seats. Next cohort filling fast.",
+    why: "Online learning is flexible but in-person training builds stronger skills and real connections.",
+    how: "3-week intensive in Abuja with hands-on projects, networking, and direct mentorship.",
+    what: "3-Week Intensive, Hands-On Projects, Networking, Certificate.",
+    includes: ["3-week intensive", "Hands-on projects", "Networking", "Certificate"], price: "from \u20A655,000", value: "Only 25 seats per cohort. Early registration recommended." },
 };
 
 /* ── Monthly/subscription service IDs ── */
 const MONTHLY_SERVICE_IDS = new Set(["monthly_filing", "social_mgmt"]);
+
+/* ── Service Folder Breakdown (deliverables per service) ── */
+const SERVICE_FOLDERS: Record<string, { label: string; items: string[] }> = {
+  cac: { label: "CAC Registration", items: ["Name Reservation", "Incorporation Filing", "Certificate of Incorporation", "Certified True Copy (CTC)", "Post-Incorporation Docs"] },
+  scuml: { label: "SCUML Certificate", items: ["EFCC Registration", "SCUML Certificate", "Bank Account Opening Letter"] },
+  tin: { label: "TIN Registration", items: ["FIRS TIN Application", "VAT Registration", "First Tax Filing Setup"] },
+  tcc: { label: "Tax Clearance", items: ["3-Year Tax Review", "FIRS Application", "Tax Clearance Certificate Delivery"] },
+  licence: { label: "Sector Licence", items: ["Sector Assessment", "Application Filing", "Licence Collection & Delivery"] },
+  annual: { label: "Annual Returns", items: ["Annual Return Filing", "Status Letter", "Back-Filing (if needed)"] },
+  brand_id: { label: "Complete Branding", items: ["Logo Design", "Color Palette", "Brand Guidelines", "Business Card Design", "Letterhead", "Social Media Templates"] },
+  positioning: { label: "Positioning", items: ["Market Analysis", "Value Proposition", "Messaging Framework", "Competitor Mapping"] },
+  website: { label: "Website", items: ["Landing Page / Index", "About Page", "Services Page", "Contact Page", "Mobile Responsive", "SEO Setup", "Domain & Hosting"] },
+  content_strategy: { label: "Content Strategy", items: ["Content Calendar", "Platform Strategy", "Engagement Plan", "Brand Voice Guide"] },
+  materials: { label: "Business Materials", items: ["Business Cards", "Letterhead", "Presentation Template", "Email Signature"] },
+  pitch_deck: { label: "Pitch Deck", items: ["Investor-Ready Deck", "Financial Summary", "Visual Storytelling", "Market Opportunity Slide"] },
+  social_setup: { label: "Social Media Setup", items: ["Instagram Account Setup", "Facebook Page Setup", "Twitter/X Setup", "LinkedIn Setup", "TikTok Setup", "Bio & Branding Applied"] },
+  social_mgmt: { label: "Social Media Management", items: ["Daily Content Posting", "Engagement Management", "Monthly Content Calendar", "Monthly Performance Report"] },
+  content: { label: "Content Creation", items: ["Photo/Video Content", "Copywriting", "Scheduling", "Platform Optimization"] },
+  seo: { label: "Search Visibility", items: ["Keyword Research", "On-Page Optimization", "Google Business Profile", "Monthly SEO Report"] },
+  reputation: { label: "Online Reputation", items: ["Review Management", "Crisis Response Plan", "Trust Signals Setup"] },
+  crm: { label: "Lead Generation & Management", items: ["Lead Capture Forms", "Follow-up Automation", "Pipeline Tracking", "Conversion Reports"] },
+  automation: { label: "WhatsApp Automation", items: ["WhatsApp Business Setup", "Auto-Reply Messages", "Lead Capture Bot", "Appointment Booking", "Follow-up Sequences"] },
+  dashboard: { label: "Founder Dashboard", items: ["Business Overview Panel", "Client Tracking", "Revenue Dashboard", "Task Management", "Team View"] },
+  ai_agent: { label: "AI Agent", items: ["Custom AI Bot", "Integration Setup", "Training Data", "24/7 Customer Support"] },
+  research: { label: "Research Tools", items: ["Market Research", "Competitor Analysis", "Trend Report"] },
+  workspace: { label: "Digital Workspace", items: ["Business Email Creation", "Cloud Storage Setup", "Team Collaboration Tools", "Document Management", "Calendar Setup"] },
+  contracts: { label: "Contracts & Legal", items: ["Employment Contracts", "NDAs", "Partnership Agreements", "Service Agreements"] },
+  templates: { label: "Document Templates", items: ["Contract Templates", "Invoice Templates", "Agreement Packs", "Proposal Templates"] },
+  nda: { label: "NDAs & Agreements", items: ["NDA Drafting", "Customization", "Legal Review"] },
+  board_res: { label: "Board Resolutions", items: ["Resolution Drafting", "Minutes Template", "Filing Support"] },
+  ip: { label: "IP & Trademark", items: ["Trademark Search", "Application Filing", "Certificate Delivery"] },
+  monthly_filing: { label: "Monthly Tax Filing", items: ["Login & Data Collection", "Statement of Account Review", "Questionnaire Completion", "FIRS Filing", "Monthly Report Delivery"] },
+  renewal_dates: { label: "Renewal Dates & Tracking", items: ["CAC Annual Returns Date", "Licence Renewal Dates", "Permit Expiry Alerts"] },
+  tcc_cert: { label: "TCC Certificate", items: ["3-Year Tax Review", "FIRS Application", "Certificate Collection & Delivery"] },
+  financial_report: { label: "Financial Report", items: ["Monthly Filing Summary", "Annual Financial Statement", "Tax Position Report"] },
+  acknowledgement: { label: "Filing Acknowledgement", items: ["Filing Receipt", "Submission Confirmation", "Record Keeping"] },
+  founder: { label: "Founder Program", items: ["12-Week Program", "AI Tools Training", "Capstone Project", "Certificate"] },
+  team: { label: "Team Training", items: ["Custom Curriculum", "Practical Exercises", "Certification", "Progress Tracking"] },
+  ai_skills: { label: "AI Skills", items: ["AI Tools Mastery", "Prompt Engineering", "Business Application"] },
+  online_always: { label: "Online (Always Open)", items: ["Self-Paced Modules", "HALS Access", "Certificate on Completion"] },
+  physical_cohort: { label: "Physical Cohort", items: ["3-Week Intensive", "Hands-On Projects", "Networking", "Certificate"] },
+  growth: { label: "Growth Strategy", items: ["Growth Strategy", "Expansion Planning", "Management Systems"] },
+};
 
 /* ── Tax Management Pipeline Data ── */
 const TAX_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -399,6 +655,18 @@ export default function ClientDashboard() {
   /* Message to staff */
   const [message, setMessage] = useState("");
   const [messageSent, setMessageSent] = useState(false);
+
+  /* Shopping cart */
+  const [cart, setCart] = useState<{id: string; label: string; price: string; amount: number}[]>([]);
+  const [showCart, setShowCart] = useState(false);
+  const [cartNotice, setCartNotice] = useState("");
+
+  const addToCart = (itemId: string, svc: ServiceDetail) => {
+    // Send to chat — AI handles the checkout
+    const label = svc.what?.split(",")[0] || svc.what?.split(".")[0] || itemId;
+    setMobileChatOpen(true);
+    setTimeout(() => handleChatSend(`I want to activate ${label}. ${svc.price}. Show me what is included and how to pay.`), 300);
+  };
 
   useEffect(() => {
     const s = loadClientSession();
@@ -807,6 +1075,7 @@ export default function ClientDashboard() {
                   { id: "tcc", label: "Tax Clearance", short: "TCC" },
                   { id: "licence", label: "Sector Licence", short: "Licence" },
                   { id: "annual", label: "Annual Returns", short: "Returns" },
+                  { id: "scuml", label: "SCUML Certificate", short: "SCUML" },
                 ],
               },
               {
@@ -912,19 +1181,20 @@ export default function ClientDashboard() {
               const done = status === "Completed";
               const active: Record<string, ItemState> = {};
 
-              if (s.includes("full business") || s.includes("architecture") || s.includes("scuml")) {
-                // Real Tilz Spa services
-                active.cac = done ? "delivered" : "in_progress";
+              if (s.includes("full business") || s.includes("architecture")) {
+                // Tilz Spa actual paid services
                 active.tin = "paid";
                 active.brand_id = "in_progress"; // delivering tomorrow
                 active.website = "paid";
                 active.social_setup = "paid";
                 active.social_mgmt = "paid";
                 active.dashboard = "paid";
-                active.monthly_filing = "paid";
+                active.crm = "paid"; // lead generation
+                active.automation = "paid"; // whatsapp automation
+                active.workspace = "paid"; // digital workspace
               }
               // Individual service detection
-              if (s.includes("scuml")) active.cac = done ? "delivered" : "in_progress";
+              if (s.includes("scuml")) active.scuml = done ? "delivered" : "in_progress";
               if (s.includes("tin")) active.tin = done ? "delivered" : "in_progress";
               if (s.includes("branding") || s.includes("brand")) active.brand_id = done ? "delivered" : "in_progress";
               if (s.includes("website") || s.includes("webpage")) active.website = done ? "delivered" : "in_progress";
@@ -1002,9 +1272,12 @@ export default function ClientDashboard() {
                           {paidItems.map((item, i) => (
                             <React.Fragment key={item.id}>
                               {i > 0 && <ArrowRight size={14} style={{ color: "#D1D5DB", flexShrink: 0 }} />}
-                              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 12px", borderRadius: 20, background: item.state === "delivered" ? "#22C55E10" : item.state === "in_progress" ? "#22C55E10" : "#B48C4C10" }}>
+                              <div
+                                onClick={() => setSelectedItem(selectedItem === item.id ? null : item.id)}
+                                style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 12px", borderRadius: 20, cursor: "pointer", background: selectedItem === item.id ? `${GOLD}20` : item.state === "delivered" ? "#22C55E10" : item.state === "in_progress" ? "#22C55E10" : "#B48C4C10", transition: "background 0.15s ease", boxShadow: selectedItem === item.id ? `0 0 0 2px ${GOLD}40` : "none" }}
+                              >
                                 <div style={{ width: 24, height: 24, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: item.state === "delivered" ? "#22C55E" : item.state === "in_progress" ? "#22C55E" : "#B48C4C", animation: item.state === "in_progress" ? "stagePulse 2s infinite" : "none" }}>
-                                  {item.state === "delivered" ? <CheckCircle size={12} color="white" /> : item.state === "in_progress" ? <Clock size={12} color="white" /> : <span style={{fontSize:8, color:"white"}}>₦</span>}
+                                  {item.state === "delivered" ? <CheckCircle size={12} color="white" /> : item.state === "in_progress" ? <Clock size={12} color="white" /> : <span style={{fontSize:8, color:"white"}}>N</span>}
                                 </div>
                                 <div>
                                   <p style={{ fontSize: 12, fontWeight: 500, color: "#1A1A1A" }}>{item.short}</p>
@@ -1014,6 +1287,24 @@ export default function ClientDashboard() {
                             </React.Fragment>
                           ))}
                         </div>
+                        {/* Folder breakdown for selected active service */}
+                        {selectedItem && SERVICE_FOLDERS[selectedItem] && activeItems[selectedItem] && (
+                          <div className="mt-3 rounded-xl p-3 md:p-4" style={{ backgroundColor: "#FAFAF8", border: `1px solid ${BORDER}`, animation: "fadeIn 0.2s ease-out" }}>
+                            <p style={{ fontSize: 13, fontWeight: 600, color: DARK, marginBottom: 8 }}>
+                              {SERVICE_FOLDERS[selectedItem].label}
+                            </p>
+                            {SERVICE_FOLDERS[selectedItem].items.map((fi, fIdx) => (
+                              <div key={fIdx} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0", borderBottom: fIdx < SERVICE_FOLDERS[selectedItem].items.length - 1 ? "1px solid #f0f0f0" : "none" }}>
+                                {activeItems[selectedItem] === "delivered" ? (
+                                  <CheckCircle size={14} color="#22C55E" />
+                                ) : (
+                                  <Circle size={14} color="#D1D5DB" />
+                                )}
+                                <span style={{ fontSize: 12, color: activeItems[selectedItem] === "delivered" ? DARK : "#999" }}>{fi}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
@@ -1361,29 +1652,55 @@ export default function ClientDashboard() {
                                     </p>
                                   )}
 
-                                  {/* Inactive: full curiosity card */}
+                                  {/* Folder breakdown for active/paid services */}
+                                  {state !== "inactive" && SERVICE_FOLDERS[item.id] && (
+                                    <div className="mt-3 rounded-xl p-3 md:p-4" style={{ backgroundColor: "#FAFAF8", border: `1px solid ${BORDER}` }}>
+                                      <p style={{ fontSize: 13, fontWeight: 600, color: DARK, marginBottom: 8 }}>
+                                        {SERVICE_FOLDERS[item.id].label}
+                                      </p>
+                                      {SERVICE_FOLDERS[item.id].items.map((fi, fIdx) => (
+                                        <div key={fIdx} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0", borderBottom: fIdx < SERVICE_FOLDERS[item.id].items.length - 1 ? "1px solid #f0f0f0" : "none" }}>
+                                          {state === "delivered" ? (
+                                            <CheckCircle size={14} color="#22C55E" />
+                                          ) : (
+                                            <Circle size={14} color="#D1D5DB" />
+                                          )}
+                                          <span style={{ fontSize: 12, color: state === "delivered" ? DARK : "#999" }}>{fi}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+
+                                  {/* Inactive: Sinek Why/How/What card */}
                                   {state === "inactive" && detail && (
-                                    <>
-                                      <div className="space-y-1.5 mb-3">
-                                        {detail.includes.map((inc, ii) => (
-                                          <div key={ii} className="flex items-start gap-2">
-                                            <span className="text-[11px] mt-0.5" style={{ color: GOLD }}>{"\u00b7"}</span>
-                                            <span className="text-[11px] font-light" style={{ color: DARK }}>{inc}</span>
-                                          </div>
-                                        ))}
+                                    <div className="rounded-xl p-4" style={{ backgroundColor: WHITE, border: `1px solid ${BORDER}` }}>
+                                      <p style={{ fontSize: 14, fontWeight: 600, color: DARK, marginBottom: 12 }}>{item.label}</p>
+
+                                      <div style={{ marginBottom: 12 }}>
+                                        <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: GOLD, marginBottom: 4 }}>Why</p>
+                                        <p style={{ fontSize: 13, color: DARK, lineHeight: 1.5 }}>{detail.why}</p>
                                       </div>
-                                      <p className="text-[12px] font-medium mb-4" style={{ color: DARK }}>{detail.price}</p>
-                                      <button
-                                        onClick={() => {
-                                          setMobileChatOpen(true);
-                                          setTimeout(() => handleChatSend(`I want to add ${item.label} to my plan. ${detail.price}`), 100);
-                                        }}
-                                        className="flex items-center gap-2 px-5 py-2.5 rounded-full text-[11px] font-semibold transition-all hover:opacity-90"
-                                        style={{ backgroundColor: GOLD, color: WHITE }}
-                                      >
-                                        Add to my plan <ArrowRight size={13} />
-                                      </button>
-                                    </>
+
+                                      <div style={{ marginBottom: 12 }}>
+                                        <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#666", marginBottom: 4 }}>How</p>
+                                        <p style={{ fontSize: 13, color: "#666", lineHeight: 1.5 }}>{detail.how}</p>
+                                      </div>
+
+                                      <div style={{ marginBottom: 12 }}>
+                                        <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#1B4D3E", marginBottom: 4 }}>What you get</p>
+                                        <p style={{ fontSize: 13, color: DARK, lineHeight: 1.5 }}>{detail.what}</p>
+                                      </div>
+
+                                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16 }}>
+                                        <span style={{ fontSize: 14, fontWeight: 600, color: DARK }}>{detail.price}</span>
+                                        <button
+                                          onClick={() => addToCart(item.id, detail)}
+                                          style={{ padding: "8px 20px", borderRadius: 20, background: GOLD, color: "white", border: "none", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                                        >
+                                          Activate
+                                        </button>
+                                      </div>
+                                    </div>
                                   )}
 
                                   {/* Inactive but no detail data -- fallback */}
@@ -1396,7 +1713,7 @@ export default function ClientDashboard() {
                                       className="flex items-center gap-2 px-5 py-2.5 rounded-full text-[11px] font-semibold transition-all hover:opacity-90"
                                       style={{ backgroundColor: GOLD, color: WHITE }}
                                     >
-                                      Add to my plan <ArrowRight size={13} />
+                                      Activate <ArrowRight size={13} />
                                     </button>
                                   )}
                                 </div>
@@ -1744,6 +2061,8 @@ export default function ClientDashboard() {
                   </div>
                 )}
 
+
+                {/* Cart removed — chat handles checkout */}
 
                 {/* ═══ FOUNDER QUOTE ═══ */}
                 <div
