@@ -1289,7 +1289,7 @@ export default function ClientDashboard() {
                         </div>
                         {/* Folder breakdown for selected active service */}
                         {selectedItem && SERVICE_FOLDERS[selectedItem] && activeItems[selectedItem] && (
-                          <div className="mt-3 rounded-xl p-3 md:p-4" style={{ backgroundColor: "#FAFAF8", border: `1px solid ${BORDER}`, animation: "fadeIn 0.2s ease-out" }}>
+                          <div className="mt-3 rounded-xl p-3 md:p-4" style={{ backgroundColor: "#FFFAF6", border: `1px solid ${BORDER}`, animation: "fadeIn 0.2s ease-out" }}>
                             <p style={{ fontSize: 13, fontWeight: 600, color: DARK, marginBottom: 8 }}>
                               {SERVICE_FOLDERS[selectedItem].label}
                             </p>
@@ -1654,7 +1654,7 @@ export default function ClientDashboard() {
 
                                   {/* Folder breakdown for active/paid services */}
                                   {state !== "inactive" && SERVICE_FOLDERS[item.id] && (
-                                    <div className="mt-3 rounded-xl p-3 md:p-4" style={{ backgroundColor: "#FAFAF8", border: `1px solid ${BORDER}` }}>
+                                    <div className="mt-3 rounded-xl p-3 md:p-4" style={{ backgroundColor: "#FFFAF6", border: `1px solid ${BORDER}` }}>
                                       <p style={{ fontSize: 13, fontWeight: 600, color: DARK, marginBottom: 8 }}>
                                         {SERVICE_FOLDERS[item.id].label}
                                       </p>
