@@ -167,17 +167,16 @@ export async function updateUserRole(userId: number, hamzuryRole: string, depart
  *   YYYY = last 4 digits of phone (or 4 random digits if phone missing/short)
  */
 export function generateRef(phone?: string | null): string {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let random4 = "";
-  const bytes = randomBytes(4);
-  for (let i = 0; i < 4; i++) random4 += chars[bytes[i] % chars.length];
+  const now = new Date();
+  const yy = String(now.getFullYear()).slice(-2);
+  const m = String(now.getMonth() + 1);
 
   const digits = phone ? phone.replace(/\D/g, "") : "";
   const last4 = digits.length >= 4
     ? digits.slice(-4)
     : String(Math.floor(1000 + Math.random() * 9000));
 
-  return `HAM-${random4}-${last4}`;
+  return `HMZ-${yy}/${m}-${last4}`;
 }
 
 // Backward-compat aliases

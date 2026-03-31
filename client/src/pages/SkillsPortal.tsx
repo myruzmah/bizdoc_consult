@@ -536,7 +536,7 @@ export default function SkillsPortal() {
                 setTrackSubmitted(false);
               }}
               onKeyDown={e => e.key === "Enter" && handleTrack()}
-              placeholder="Enter your reference"
+              placeholder="HMZ-26/3-XXXX"
               className="flex-1 px-5 py-3.5 rounded-full text-[14px] font-mono outline-none"
               style={{ backgroundColor: `${TEXT}05`, color: TEXT }}
             />
