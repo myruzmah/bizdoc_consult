@@ -687,7 +687,7 @@ export default function ClientDashboard() {
     setSession(s);
     setSessionLoaded(true);
     if (!s) {
-      window.location.href = "/client";
+      window.location.href = "/";
     }
   }, []);
 

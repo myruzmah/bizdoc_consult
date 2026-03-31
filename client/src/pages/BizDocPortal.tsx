@@ -85,19 +85,8 @@ export default function BizDocPortal() {
     { enabled: false, retry: false }
   );
 
-  const handleTrackInput = (val: string) => {
-    let raw = val.replace(/[^0-9]/g, "");
-    if (raw.length > 8) raw = raw.slice(0, 8);
-    let formatted = "HMZ-";
-    if (raw.length > 0) formatted += raw.slice(0, 2);
-    if (raw.length > 2) formatted += "/" + raw.slice(2, 3);
-    if (raw.length > 3) formatted += "-" + raw.slice(3);
-    setTrackCode(formatted);
-    setTrackSubmitted(false);
-  };
-
   const handleTrack = () => {
-    if (trackCode.trim().length < 8) return;
+    if (trackCode.trim().length < 4) return;
     setTrackSubmitted(true);
     trackQuery.refetch();
   };
@@ -294,19 +283,9 @@ export default function BizDocPortal() {
             <input
               type="text"
               value={trackCode}
-              onChange={(e) => {
-                let raw = e.target.value.replace(/[^0-9]/g, "");
-                if (raw.length > 8) raw = raw.slice(0, 8);
-                let formatted = "HMZ-";
-                if (raw.length > 0) formatted += raw.slice(0, 2);
-                if (raw.length > 2) formatted += "/" + raw.slice(2, 3);
-                if (raw.length > 3) formatted += "-" + raw.slice(3);
-                setTrackCode(formatted);
-                setTrackSubmitted(false);
-              }}
+              onChange={(e) => { setTrackCode(e.target.value.toUpperCase()); setTrackSubmitted(false); }}
               onKeyDown={(e) => e.key === "Enter" && handleTrack()}
-              placeholder="HMZ-26/3-XXXX"
-              maxLength={17}
+              placeholder="Enter your reference"
               className="flex-1 rounded-full px-5 py-3.5 text-[14px] outline-none font-mono"
               style={{ backgroundColor: `${G}06`, color: G }}
             />

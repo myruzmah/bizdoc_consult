@@ -365,7 +365,7 @@ export default function Home() {
           </h2>
 
           <div className="flex gap-2 mb-3">
-            <input type="text" placeholder="HMZ-26/3-XXXX"
+            <input type="text" placeholder="Enter your reference"
               className="flex-1 rounded-full px-5 h-12 text-sm outline-none font-mono"
               style={{ backgroundColor: MILK, color: CHARCOAL, border: "none" }}
               value={trackRef}
