@@ -235,7 +235,7 @@ const DEPARTMENTS: Record<string, { label: string; sections: Section[] }> = {
         items: [
           "Run TypeScript check: pnpm check. Fix all errors before deploying.",
           "Build: pnpm run build. Verify dist/ output is complete.",
-          "Push to GitHub: myruzmah/bizdoc_consult. Railway auto-deploys from main.",
+          "Push to GitHub: myruzmah/HAMZURY. Railway auto-deploys from main.",
           "Post-deploy: Verify database migrations ran. Check /api/health. Test login flow.",
         ],
       },
