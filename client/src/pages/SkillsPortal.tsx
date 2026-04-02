@@ -627,7 +627,7 @@ export default function SkillsPortal() {
         </div>
       </footer>
 
-      <MotivationalQuoteBar color="#1E3A5F" />
+      <MotivationalQuoteBar color="#1E3A5F" department="skills" />
       <div className="md:hidden h-10" />
     </div>
   );

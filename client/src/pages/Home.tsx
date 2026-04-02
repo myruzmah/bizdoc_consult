@@ -284,8 +284,8 @@ export default function Home() {
               letterSpacing: "-0.04em",
             }}>
               Structure for<br />
-              <span style={{ color: GREEN }}>businesses</span><br />
-              that last.
+              <span style={{ color: GREEN }}>ambitious</span><br />
+              businesses.
             </h1>
 
             <p className="text-base font-normal leading-relaxed max-w-md mb-12" style={{ color: CHARCOAL, opacity: 0.4 }}>

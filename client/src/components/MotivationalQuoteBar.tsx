@@ -1,19 +1,46 @@
 import { useState, useEffect } from "react";
 
-const QUOTES = [
+const SHARED_QUOTES = [
   "Structure before speed.",
-  "Compliance is freedom.",
-  "Systems scale. Hustle doesn't.",
-  "Position first. Promote second.",
-  "Build what lasts.",
   "Clarity removes chaos.",
-  "Your business deserves order.",
+  "Position first. Promote second.",
   "Growth follows structure.",
 ];
 
-type Props = { color: string };
+const DEPT_QUOTES: Record<string, string[]> = {
+  bizdoc: [
+    "Compliance that protects.",
+    "Compliance is freedom.",
+    "Your business deserves order.",
+    "Registered. Compliant. Protected.",
+    ...SHARED_QUOTES,
+  ],
+  systemise: [
+    "Systems that scale.",
+    "Systems scale. Hustle doesn't.",
+    "Build the machine, not the habit.",
+    "Your brand is your first impression.",
+    ...SHARED_QUOTES,
+  ],
+  skills: [
+    "Skills that earn.",
+    "Learn what actually works.",
+    "Knowledge without action is wasted.",
+    "Build income, not just a resume.",
+    ...SHARED_QUOTES,
+  ],
+  general: [
+    "Compliance that protects.",
+    "Systems that scale.",
+    "Skills that earn.",
+    ...SHARED_QUOTES,
+  ],
+};
 
-export default function MotivationalQuoteBar({ color }: Props) {
+type Props = { color: string; department?: string };
+
+export default function MotivationalQuoteBar({ color, department = "general" }: Props) {
+  const quotes = DEPT_QUOTES[department] || DEPT_QUOTES.general;
   const [idx, setIdx] = useState(0);
   const [visible, setVisible] = useState(true);
 
@@ -21,12 +48,12 @@ export default function MotivationalQuoteBar({ color }: Props) {
     const interval = setInterval(() => {
       setVisible(false);
       setTimeout(() => {
-        setIdx((i) => (i + 1) % QUOTES.length);
+        setIdx((i) => (i + 1) % quotes.length);
         setVisible(true);
       }, 400);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [quotes.length]);
 
   return (
     <div
@@ -41,7 +68,7 @@ export default function MotivationalQuoteBar({ color }: Props) {
         className="text-[11px] font-light tracking-widest uppercase text-white/90 transition-opacity duration-300"
         style={{ opacity: visible ? 1 : 0 }}
       >
-        {QUOTES[idx]}
+        {quotes[idx]}
       </p>
     </div>
   );

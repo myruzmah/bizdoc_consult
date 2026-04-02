@@ -371,7 +371,7 @@ export default function BizDocPortal() {
         </div>
       </footer>
 
-      <MotivationalQuoteBar color="#1B4D3E" />
+      <MotivationalQuoteBar color="#1B4D3E" department="bizdoc" />
       <div className="md:hidden h-10" />
     </>
   );

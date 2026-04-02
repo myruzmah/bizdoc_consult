@@ -503,11 +503,11 @@ function calculateBusinessHealth(service: string, status: string): HealthArea[] 
 /* ── Founder quotes ── */
 const FOUNDER_QUOTES = [
   "Businesses deserve more than consultants who disappear after the invoice. We stay until the work is done.",
-  "Structure is what separates businesses that last from businesses that don't.",
+  "Structure is what separates businesses that scale from businesses that stall.",
   "If your business can't run without you, you don't have a business. You have a job.",
   "Compliance is not a cost. It is the price of being taken seriously.",
   "The businesses that win are the ones that got structured early.",
-  "Every document, every system, every skill -- it all adds up to a business that lasts.",
+  "Every document, every system, every skill — it compounds into a business worth defending.",
   "We don't just register businesses. We prepare them to operate, compete, and scale.",
 ];
 

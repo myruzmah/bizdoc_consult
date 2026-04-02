@@ -363,7 +363,7 @@ export default function SystemizePortal() {
         </div>
       </footer>
 
-      <MotivationalQuoteBar color="#2563EB" />
+      <MotivationalQuoteBar color="#2563EB" department="systemise" />
       <div className="md:hidden h-10" />
     </div>
   );

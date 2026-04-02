@@ -499,7 +499,7 @@ const DARK = "#1A1A1A";
 const DEPT_BRAND: Record<Department, { header: string; accent: string; name: string }> = {
   general:   { header: "#0A1F1C", accent: "#C9A97E", name: "HAMZURY" },
   bizdoc:    { header: "#1B4D3E", accent: "#C9A97E", name: "BizDoc" },
-  systemise: { header: "#0A1F1C", accent: "#C9A97E", name: "Systemise" },
+  systemise: { header: "#2563EB", accent: "#C9A97E", name: "Systemise" },
   skills:    { header: "#1B2A4A", accent: "#C9A97E", name: "Skills" },
 };
 
@@ -1626,6 +1626,22 @@ export default function ChatWidget({ department = "general", open: externalOpen,
     </div>
   );
 
+  // Chat bubble notification popups
+  const [bubbleNotes, setBubbleNotes] = useState<string[]>([]);
+  useEffect(() => {
+    if (isOpen || isControlled) return;
+    const NOTES = [
+      "Hi! Need help with anything? 👋",
+      department === "bizdoc" ? "Ask about our compliance packages" :
+      department === "systemise" ? "Ask about our digital packages" :
+      department === "skills" ? "Browse our programs" : "We're here to help",
+    ];
+    const t1 = setTimeout(() => setBubbleNotes([NOTES[0]]), 2000);
+    const t2 = setTimeout(() => setBubbleNotes([NOTES[0], NOTES[1]]), 3500);
+    const t3 = setTimeout(() => setBubbleNotes([]), 6500);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, [isOpen, isControlled, department]);
+
   // Feedback
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [feedbackRating, setFeedbackRating] = useState(0);
@@ -1634,6 +1650,27 @@ export default function ChatWidget({ department = "general", open: externalOpen,
   return (
     <>
       {isOpen && chatPanel}
+
+      {/* Notification popups above bubble */}
+      {!isControlled && !isOpen && bubbleNotes.length > 0 && (
+        <div className="fixed bottom-[88px] right-4 z-[60] flex flex-col items-end gap-1.5 animate-in fade-in slide-in-from-bottom-2">
+          {bubbleNotes.map((note, i) => (
+            <div
+              key={i}
+              className="px-4 py-2.5 rounded-2xl rounded-br-sm shadow-lg text-[13px] font-medium max-w-[220px]"
+              style={{
+                backgroundColor: DEPT_BRAND[department].header,
+                color: "#fff",
+                opacity: 1,
+                animation: "fadeSlideIn 0.3s ease-out",
+              }}
+              onClick={() => { setBubbleNotes([]); setInternalOpen(true); setShowBadge(false); }}
+            >
+              {note}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Floating buttons */}
       {!isControlled && (
@@ -1649,6 +1686,7 @@ export default function ChatWidget({ department = "general", open: externalOpen,
           <button
             data-chat-trigger
             onClick={() => {
+              setBubbleNotes([]);
               if (isOpen) close();
               else { setInternalOpen(true); setShowBadge(false); }
             }}

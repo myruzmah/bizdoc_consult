@@ -97,7 +97,7 @@ const generalSlides: SlideData[] = [
         <div style={{ fontSize: 13, letterSpacing: "0.2em", textTransform: "uppercase", color: GOLD, marginBottom: 40, fontWeight: 500 }}>HAMZURY</div>
         <div style={{ width: 24, height: 1, background: GOLD, marginBottom: 32 }} />
         <div style={{ fontSize: 20, fontWeight: 300, lineHeight: 1.6, fontStyle: "italic", marginBottom: 32, color: MILK }}>
-          "We do not build businesses for people. We build the systems that let people build businesses that last."
+          "We don't build businesses for people. We build the systems that let people build businesses worth keeping."
         </div>
         <div style={{ fontSize: 13, color: GOLD, fontWeight: 500, letterSpacing: "0.05em" }}>
           Muhammad Hamzury, Founder
