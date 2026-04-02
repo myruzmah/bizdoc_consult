@@ -16,8 +16,6 @@ import SystemisePortal from "./pages/SystemisePortal";
 import SkillsPortal from "./pages/SkillsPortal";
 import SkillsPrograms from "./pages/SkillsPrograms";
 import SkillsBlueprint from "./pages/SkillsBlueprint";
-import BizDocBlueprint from "./pages/BizDocBlueprint";
-import SystemiseBlueprint from "./pages/SystemiseBlueprint";
 import SkillsStudent from "./pages/SkillsStudent";
 import SkillsAdmin from "./pages/SkillsAdmin";
 import FounderPage from "./pages/FounderPage";
@@ -102,7 +100,6 @@ function Router() {
 
       {/* BizDoc Department Portal */}
       <Route path={"/bizdoc"} component={BizDocPortal} />
-      <Route path={"/bizdoc/blueprint"} component={BizDocBlueprint} />
       <Route path={"/bizdoc/dashboard"}>
         <RoleGuard allowedRoles={ROLE_ACCESS["/bizdoc/dashboard"]}>
           <BizDocLeadDashboard />
@@ -111,7 +108,6 @@ function Router() {
 
       {/* Systemise Department Portal */}
       <Route path={"/systemise"} component={SystemisePortal} />
-      <Route path={"/systemise/blueprint"} component={SystemiseBlueprint} />
       <Route path={"/systemise/dashboard"}>
         <RoleGuard allowedRoles={ROLE_ACCESS["/systemise/dashboard"]}>
           <SystemiseLeadDashboard />

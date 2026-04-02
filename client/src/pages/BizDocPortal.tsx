@@ -288,26 +288,27 @@ export default function BizDocPortal() {
 
           <div ref={bpScrollRef} className="flex gap-4 overflow-x-auto pl-6 pr-6 pb-2 snap-x snap-mandatory hide-scroll">
             {BLUEPRINTS.map((bp) => (
-              <Link key={bp.id} href="/bizdoc/blueprint">
-                <div className="snap-start shrink-0 w-[200px] md:w-[220px] group cursor-pointer">
-                  {/* Card */}
-                  <div
-                    className="rounded-2xl p-5 md:p-6 transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg mb-3"
-                    style={{ backgroundColor: W, boxShadow: "0 1px 8px rgba(0,0,0,0.03)" }}
-                  >
-                    <span className="text-[22px] mb-3 block">{bp.emoji}</span>
-                    <span className="text-[8px] md:text-[9px] font-bold tracking-[0.2em] uppercase block mb-2" style={{ color: Au }}>
-                      {bp.badge}
-                    </span>
-                    <h3 className="text-[13px] md:text-[14px] font-semibold leading-snug" style={{ color: G }}>
-                      {bp.label}
-                    </h3>
-                  </div>
-                  <span className="text-[11px] font-medium flex items-center gap-1 pl-1 transition-all group-hover:gap-2" style={{ color: Au }}>
-                    View Roadmap <ArrowRight size={11} />
+              <div
+                key={bp.id}
+                className="snap-start shrink-0 w-[200px] md:w-[220px] group cursor-pointer"
+                onClick={() => openChat(`I want the ${bp.label} positioning blueprint. Show me the roadmap — legal, financial, marketing, sales, operations, and team.`)}
+              >
+                <div
+                  className="rounded-2xl p-5 md:p-6 transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg mb-3"
+                  style={{ backgroundColor: W, boxShadow: "0 1px 8px rgba(0,0,0,0.03)" }}
+                >
+                  <span className="text-[22px] mb-3 block">{bp.emoji}</span>
+                  <span className="text-[8px] md:text-[9px] font-bold tracking-[0.2em] uppercase block mb-2" style={{ color: Au }}>
+                    {bp.badge}
                   </span>
+                  <h3 className="text-[13px] md:text-[14px] font-semibold leading-snug" style={{ color: G }}>
+                    {bp.label}
+                  </h3>
                 </div>
-              </Link>
+                <span className="text-[11px] font-medium flex items-center gap-1 pl-1 transition-all group-hover:gap-2" style={{ color: Au }}>
+                  View Roadmap <ArrowRight size={11} />
+                </span>
+              </div>
             ))}
             {/* Spacer for edge scroll */}
             <div className="shrink-0 w-1" />
