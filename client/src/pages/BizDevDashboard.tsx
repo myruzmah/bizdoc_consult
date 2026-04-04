@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 // ─── Brand ──────────────────────────────────────────────────────────────────
-const GREEN = "#2D2D2D";   // Apple grey — general departments
+const GREEN = "#1B4D3E";   // HAMZURY green
 const DARK = "#1A1A1A";    // base dark
 const GOLD = "#B48C4C";    // accent
 const MILK = "#FFFAF6";    // background

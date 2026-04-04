@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 // ─── Colors (Media = general → Apple grey) ───────────────────────────────────
-const TEAL  = "#2D2D2D";   // Apple grey — general departments
+const TEAL  = "#1B4D3E";   // HAMZURY green
 const GOLD  = "#B48C4C";
 const MILK  = "#FFFAF6";
 const WHITE = "#FFFFFF";

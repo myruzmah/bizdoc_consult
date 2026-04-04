@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 // ─── Brand (HR = general → Apple grey) ───────────────────────────────────────
-const GREEN = "#2D2D2D";   // Apple grey — general departments
+const GREEN = "#1B4D3E";   // HAMZURY green
 const GOLD  = "#B48C4C";
 const MILK  = "#FFFAF6";   // Milk white
 
@@ -1118,7 +1118,7 @@ const DEPT_OPTIONS = [
 ];
 
 function ITStudentsSection() {
-  const TEAL  = "#2D2D2D";
+  const TEAL  = "#1B4D3E";
   const GOLD  = "#B48C4C";
   const DARK  = "#1A1A1A";
   const [form, setForm] = useState({ name: "", phone: "", email: "", skill: "", school: "", startDate: new Date().toISOString().split("T")[0], notes: "" });
@@ -1341,7 +1341,7 @@ const HR_DEVICE_STAFF = [
 ];
 
 function HRPolicySection() {
-  const TEAL = "#2D2D2D";
+  const TEAL = "#1B4D3E";
   const GOLD = "#B48C4C";
   const [expanded, setExpanded] = useState<number | null>(null);
   const [rollCallDate, setRollCallDate] = useState(new Date().toISOString().split("T")[0]);

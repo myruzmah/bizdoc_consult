@@ -17,7 +17,7 @@ export const BRAND = {
   border: "#E5E5E5",     // Subtle dividers
 
   // Department-specific primary colors
-  federal: "#2D2D2D",    // Charcoal — HAMZURY master brand
+  federal: "#1B4D3E",    // Deep green — HAMZURY master brand
   bizdoc: "#1B4D3E",     // Leaf green — BizDoc (NO CHANGE)
   systemise: "#2563EB",  // Authority blue — Systemise (softer)
   systemiseSoft: "#8BC3F6",

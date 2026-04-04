@@ -88,7 +88,7 @@ export default function FinanceDashboard() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
           <FinStatCard label="Total Revenue" value={formatNaira(totalRevenue)} color="#B48C4C" icon={<TrendingUp size={16} />} />
           <FinStatCard label="Staff Pool (40%)" value={formatNaira(totalPool)} color="#22C55E" icon={<DollarSign size={16} />} />
-          <FinStatCard label="Institutional (60%)" value={formatNaira(totalInstitutional)} color="#2D2D2D" icon={<PieChart size={16} />} />
+          <FinStatCard label="Institutional (60%)" value={formatNaira(totalInstitutional)} color="#1B4D3E" icon={<PieChart size={16} />} />
           <FinStatCard label="Pending" value={String(pendingCount)} color="#EAB308" icon={<Clock size={16} />} />
           <FinStatCard label="Approved" value={String(approvedCount)} color="#3B82F6" icon={<CheckCircle2 size={16} />} />
           <FinStatCard label="Paid Out" value={String(paidCount)} color="#22C55E" icon={<CheckCircle2 size={16} />} />
@@ -119,15 +119,15 @@ export default function FinanceDashboard() {
           <TabsContent value="subscriptions" className="space-y-4">
             {/* Status Filter */}
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[11px] uppercase tracking-wider font-bold opacity-40" style={{ color: "#2D2D2D" }}>Filter:</span>
+              <span className="text-[11px] uppercase tracking-wider font-bold opacity-40" style={{ color: "#1B4D3E" }}>Filter:</span>
               {(["all", "active", "paused", "cancelled", "overdue"] as const).map(f => (
                 <button
                   key={f}
                   onClick={() => setSubsFilter(f)}
                   className="text-[11px] px-3 py-1.5 rounded-full font-medium transition-colors"
                   style={{
-                    backgroundColor: subsFilter === f ? "#2D2D2D" : "#2D2D2D08",
-                    color: subsFilter === f ? "#B48C4C" : "#2D2D2D",
+                    backgroundColor: subsFilter === f ? "#1B4D3E" : "#2D2D2D08",
+                    color: subsFilter === f ? "#B48C4C" : "#1B4D3E",
                   }}
                 >
                   {f === "all" ? "All" : f.charAt(0).toUpperCase() + f.slice(1)}
@@ -138,13 +138,13 @@ export default function FinanceDashboard() {
               <table className="w-full text-[13px]">
                 <thead>
                   <tr className="border-b" style={{ backgroundColor: "#2D2D2D06", borderColor: "#2D2D2D08" }}>
-                    <th className="text-left px-4 py-3 font-medium opacity-60" style={{ color: "#2D2D2D" }}>Client</th>
-                    <th className="text-left px-4 py-3 font-medium opacity-60" style={{ color: "#2D2D2D" }}>Service</th>
-                    <th className="text-left px-4 py-3 font-medium opacity-60" style={{ color: "#2D2D2D" }}>Monthly Amount</th>
-                    <th className="text-left px-4 py-3 font-medium opacity-60" style={{ color: "#2D2D2D" }}>Status</th>
-                    <th className="text-left px-4 py-3 font-medium opacity-60" style={{ color: "#2D2D2D" }}>Next Payment Due</th>
-                    <th className="text-left px-4 py-3 font-medium opacity-60" style={{ color: "#2D2D2D" }}>Payment</th>
-                    <th className="text-left px-4 py-3 font-medium opacity-60" style={{ color: "#2D2D2D" }}>Action</th>
+                    <th className="text-left px-4 py-3 font-medium opacity-60" style={{ color: "#1B4D3E" }}>Client</th>
+                    <th className="text-left px-4 py-3 font-medium opacity-60" style={{ color: "#1B4D3E" }}>Service</th>
+                    <th className="text-left px-4 py-3 font-medium opacity-60" style={{ color: "#1B4D3E" }}>Monthly Amount</th>
+                    <th className="text-left px-4 py-3 font-medium opacity-60" style={{ color: "#1B4D3E" }}>Status</th>
+                    <th className="text-left px-4 py-3 font-medium opacity-60" style={{ color: "#1B4D3E" }}>Next Payment Due</th>
+                    <th className="text-left px-4 py-3 font-medium opacity-60" style={{ color: "#1B4D3E" }}>Payment</th>
+                    <th className="text-left px-4 py-3 font-medium opacity-60" style={{ color: "#1B4D3E" }}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -177,8 +177,8 @@ export default function FinanceDashboard() {
 
                     return (
                       <tr key={sub.id} className="border-b hover:bg-gray-50" style={{ borderColor: "#2D2D2D06" }}>
-                        <td className="px-4 py-3 font-medium" style={{ color: "#2D2D2D" }}>{sub.clientName}</td>
-                        <td className="px-4 py-3 opacity-60" style={{ color: "#2D2D2D" }}>{sub.service}</td>
+                        <td className="px-4 py-3 font-medium" style={{ color: "#1B4D3E" }}>{sub.clientName}</td>
+                        <td className="px-4 py-3 opacity-60" style={{ color: "#1B4D3E" }}>{sub.service}</td>
                         <td className="px-4 py-3" style={{ color: "#B48C4C" }}>₦{Number(sub.monthlyFee).toLocaleString()}</td>
                         <td className="px-4 py-3">
                           <span className={`text-[10px] px-2 py-1 rounded-full font-semibold uppercase ${subStatusColor}`}>
@@ -190,7 +190,7 @@ export default function FinanceDashboard() {
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-3 font-mono text-[12px] opacity-60" style={{ color: isOverdue ? "#DC2626" : "#2D2D2D" }}>
+                        <td className="px-4 py-3 font-mono text-[12px] opacity-60" style={{ color: isOverdue ? "#DC2626" : "#1B4D3E" }}>
                           {sub.status === "cancelled" ? "—" : nextDueStr}
                         </td>
                         <td className="px-4 py-3">
@@ -207,7 +207,7 @@ export default function FinanceDashboard() {
                             <button
                               onClick={() => setPayingMonth({ subscriptionId: sub.id, month: currentMonth, amountDue: Number(sub.monthlyFee) })}
                               className="text-[11px] px-3 py-1.5 rounded-lg"
-                              style={{ backgroundColor: "#2D2D2D10", color: "#2D2D2D" }}
+                              style={{ backgroundColor: "#2D2D2D10", color: "#1B4D3E" }}
                             >
                               Record Payment
                             </button>
@@ -226,7 +226,7 @@ export default function FinanceDashboard() {
             </div>
             {payingMonth && (
               <div className="rounded-2xl p-5 border space-y-3" style={{ borderColor: "#2D2D2D15", backgroundColor: "#2D2D2D04" }}>
-                <p className="text-[13px] font-semibold" style={{ color: "#2D2D2D" }}>
+                <p className="text-[13px] font-semibold" style={{ color: "#1B4D3E" }}>
                   Record payment for {(subsQuery.data || []).find(s => s.id === payingMonth.subscriptionId)?.clientName} — {payingMonth.month}
                 </p>
                 <input
@@ -241,11 +241,11 @@ export default function FinanceDashboard() {
                     onClick={() => { recordPaymentMutation.mutate({ subscriptionId: payingMonth.subscriptionId, month: payingMonth.month, amountPaid: payingMonth.amountDue, paymentRef }); setPayingMonth(null); setPaymentRef(""); }}
                     disabled={recordPaymentMutation.isPending}
                     className="px-4 py-2 rounded-xl text-[13px] font-medium"
-                    style={{ backgroundColor: "#2D2D2D", color: "#B48C4C" }}
+                    style={{ backgroundColor: "#1B4D3E", color: "#B48C4C" }}
                   >
                     Confirm ₦{payingMonth.amountDue.toLocaleString()} Received
                   </button>
-                  <button onClick={() => setPayingMonth(null)} className="px-3 py-2 rounded-xl text-[13px] opacity-40" style={{ color: "#2D2D2D" }}>
+                  <button onClick={() => setPayingMonth(null)} className="px-3 py-2 rounded-xl text-[13px] opacity-40" style={{ color: "#1B4D3E" }}>
                     Cancel
                   </button>
                 </div>
@@ -274,7 +274,7 @@ const TIER_COLORS: Record<string, { bg: string; text: string }> = {
   Elite:    { bg: "#B48C4C20", text: "#B48C4C" },
   Premier:  { bg: "#22C55E20", text: "#22C55E" },
   Standard: { bg: "#3B82F620", text: "#3B82F6" },
-  Entry:    { bg: "#2D2D2D20", text: "#2D2D2D" },
+  Entry:    { bg: "#2D2D2D20", text: "#1B4D3E" },
 };
 
 function getCurrentQuarter() {
@@ -299,7 +299,7 @@ function AllocationsTab() {
   const allocTotalPages = Math.max(1, Math.ceil(allocations.length / ALLOC_PAGE_SIZE));
   const allocPaged = allocations.slice((allocPage - 1) * ALLOC_PAGE_SIZE, allocPage * ALLOC_PAGE_SIZE);
 
-  const G = "#2D2D2D";
+  const G = "#1B4D3E";
   const GOLD = "#B48C4C";
 
   const fmtDate = (d: string | Date | null | undefined) => {
@@ -564,12 +564,12 @@ function InvoiceTab() {
       {/* Header row */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
-          <h3 className="text-sm font-bold uppercase tracking-wider" style={{ color: "#2D2D2D" }}>Invoices</h3>
+          <h3 className="text-sm font-bold uppercase tracking-wider" style={{ color: "#1B4D3E" }}>Invoices</h3>
           <select
             value={statusFilter}
             onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
             className="text-[12px] px-3 py-1.5 rounded-lg border outline-none"
-            style={{ borderColor: "#2D2D2D15", color: "#2D2D2D" }}
+            style={{ borderColor: "#2D2D2D15", color: "#1B4D3E" }}
           >
             <option value="all">All Statuses</option>
             <option value="draft">Draft</option>
@@ -584,7 +584,7 @@ function InvoiceTab() {
           onClick={() => setShowCreate(true)}
           size="sm"
           className="gap-1.5 text-[12px]"
-          style={{ backgroundColor: "#2D2D2D", color: "#B48C4C" }}
+          style={{ backgroundColor: "#1B4D3E", color: "#B48C4C" }}
         >
           <Plus size={14} /> Create Invoice
         </Button>
@@ -752,9 +752,9 @@ function CreateInvoiceModal({ onClose, onCreated }: { onClose: () => void; onCre
       >
         {/* Modal header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#2D2D2D]/10">
-          <h2 className="text-base font-bold" style={{ color: "#2D2D2D" }}>Create Invoice</h2>
+          <h2 className="text-base font-bold" style={{ color: "#1B4D3E" }}>Create Invoice</h2>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 transition-colors">
-            <X size={18} style={{ color: "#2D2D2D" }} />
+            <X size={18} style={{ color: "#1B4D3E" }} />
           </button>
         </div>
 
@@ -762,15 +762,15 @@ function CreateInvoiceModal({ onClose, onCreated }: { onClose: () => void; onCre
           {/* Client Info */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
-              <label className="text-[11px] font-medium uppercase tracking-wider opacity-50 mb-1 block" style={{ color: "#2D2D2D" }}>Client Name *</label>
+              <label className="text-[11px] font-medium uppercase tracking-wider opacity-50 mb-1 block" style={{ color: "#1B4D3E" }}>Client Name *</label>
               <Input value={clientName} onChange={e => setClientName(e.target.value)} placeholder="Client name" className="text-[13px]" />
             </div>
             <div>
-              <label className="text-[11px] font-medium uppercase tracking-wider opacity-50 mb-1 block" style={{ color: "#2D2D2D" }}>Client Email</label>
+              <label className="text-[11px] font-medium uppercase tracking-wider opacity-50 mb-1 block" style={{ color: "#1B4D3E" }}>Client Email</label>
               <Input value={clientEmail} onChange={e => setClientEmail(e.target.value)} placeholder="email@example.com" type="email" className="text-[13px]" />
             </div>
             <div>
-              <label className="text-[11px] font-medium uppercase tracking-wider opacity-50 mb-1 block" style={{ color: "#2D2D2D" }}>Client Phone</label>
+              <label className="text-[11px] font-medium uppercase tracking-wider opacity-50 mb-1 block" style={{ color: "#1B4D3E" }}>Client Phone</label>
               <Input value={clientPhone} onChange={e => setClientPhone(e.target.value)} placeholder="+234..." className="text-[13px]" />
             </div>
           </div>
@@ -778,7 +778,7 @@ function CreateInvoiceModal({ onClose, onCreated }: { onClose: () => void; onCre
           {/* Line Items */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-[11px] font-medium uppercase tracking-wider opacity-50" style={{ color: "#2D2D2D" }}>Line Items</label>
+              <label className="text-[11px] font-medium uppercase tracking-wider opacity-50" style={{ color: "#1B4D3E" }}>Line Items</label>
               <button onClick={addItem} className="text-[11px] flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors" style={{ color: "#B48C4C" }}>
                 <Plus size={12} /> Add Row
               </button>
@@ -827,22 +827,22 @@ function CreateInvoiceModal({ onClose, onCreated }: { onClose: () => void; onCre
           {/* Totals */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div>
-              <label className="text-[11px] font-medium uppercase tracking-wider opacity-50 mb-1 block" style={{ color: "#2D2D2D" }}>Subtotal</label>
-              <div className="text-[14px] font-semibold px-3 py-2 rounded-lg" style={{ backgroundColor: "#FFFAF6", color: "#2D2D2D" }}>
+              <label className="text-[11px] font-medium uppercase tracking-wider opacity-50 mb-1 block" style={{ color: "#1B4D3E" }}>Subtotal</label>
+              <div className="text-[14px] font-semibold px-3 py-2 rounded-lg" style={{ backgroundColor: "#FFFAF6", color: "#1B4D3E" }}>
                 ₦{subtotal.toLocaleString()}
               </div>
             </div>
             <div>
-              <label className="text-[11px] font-medium uppercase tracking-wider opacity-50 mb-1 block" style={{ color: "#2D2D2D" }}>Discount (₦)</label>
+              <label className="text-[11px] font-medium uppercase tracking-wider opacity-50 mb-1 block" style={{ color: "#1B4D3E" }}>Discount (₦)</label>
               <Input type="number" min={0} value={discount || ""} onChange={e => setDiscount(Math.max(0, parseFloat(e.target.value) || 0))} className="text-[13px]" placeholder="0" />
             </div>
             <div>
-              <label className="text-[11px] font-medium uppercase tracking-wider opacity-50 mb-1 block" style={{ color: "#2D2D2D" }}>Tax (₦)</label>
+              <label className="text-[11px] font-medium uppercase tracking-wider opacity-50 mb-1 block" style={{ color: "#1B4D3E" }}>Tax (₦)</label>
               <Input type="number" min={0} value={tax || ""} onChange={e => setTax(Math.max(0, parseFloat(e.target.value) || 0))} className="text-[13px]" placeholder="0" />
             </div>
             <div>
-              <label className="text-[11px] font-medium uppercase tracking-wider opacity-50 mb-1 block" style={{ color: "#2D2D2D" }}>Total</label>
-              <div className="text-[14px] font-bold px-3 py-2 rounded-lg" style={{ backgroundColor: "#2D2D2D", color: "#B48C4C" }}>
+              <label className="text-[11px] font-medium uppercase tracking-wider opacity-50 mb-1 block" style={{ color: "#1B4D3E" }}>Total</label>
+              <div className="text-[14px] font-bold px-3 py-2 rounded-lg" style={{ backgroundColor: "#1B4D3E", color: "#B48C4C" }}>
                 ₦{total.toLocaleString()}
               </div>
             </div>
@@ -851,11 +851,11 @@ function CreateInvoiceModal({ onClose, onCreated }: { onClose: () => void; onCre
           {/* Due Date + Notes */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] font-medium uppercase tracking-wider opacity-50 mb-1 block" style={{ color: "#2D2D2D" }}>Due Date</label>
+              <label className="text-[11px] font-medium uppercase tracking-wider opacity-50 mb-1 block" style={{ color: "#1B4D3E" }}>Due Date</label>
               <Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="text-[13px]" />
             </div>
             <div>
-              <label className="text-[11px] font-medium uppercase tracking-wider opacity-50 mb-1 block" style={{ color: "#2D2D2D" }}>Notes</label>
+              <label className="text-[11px] font-medium uppercase tracking-wider opacity-50 mb-1 block" style={{ color: "#1B4D3E" }}>Notes</label>
               <textarea
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
@@ -875,7 +875,7 @@ function CreateInvoiceModal({ onClose, onCreated }: { onClose: () => void; onCre
             onClick={handleSubmit}
             disabled={createMutation.isPending}
             className="gap-1.5 text-[12px]"
-            style={{ backgroundColor: "#2D2D2D", color: "#B48C4C" }}
+            style={{ backgroundColor: "#1B4D3E", color: "#B48C4C" }}
           >
             {createMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <FileText size={14} />}
             Create Invoice
@@ -896,7 +896,7 @@ function CommissionCalculator() {
     return calculateCommission(num);
   }, [price]);
 
-  const G = "#2D2D2D";
+  const G = "#1B4D3E";
   const GOLD = "#B48C4C";
 
   return (
@@ -986,14 +986,14 @@ function TierRow({ badge, label, sub, sub2, pct, amount, highlight }: { badge: s
   return (
     <div className="px-5 py-3.5 flex items-center justify-between gap-4" style={{ backgroundColor: highlight ? "#2D2D2D05" : "transparent" }}>
       <div className="flex items-start gap-3 min-w-0">
-        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 mt-0.5" style={{ backgroundColor: "#2D2D2D08", color: "#2D2D2D", opacity: 0.6 }}>{badge}</span>
+        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 mt-0.5" style={{ backgroundColor: "#2D2D2D08", color: "#1B4D3E", opacity: 0.6 }}>{badge}</span>
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[13px] font-normal" style={{ color: "#2D2D2D" }}>{label}</span>
-            <span className="text-[11px] opacity-30" style={{ color: "#2D2D2D" }}>{pct}</span>
+            <span className="text-[13px] font-normal" style={{ color: "#1B4D3E" }}>{label}</span>
+            <span className="text-[11px] opacity-30" style={{ color: "#1B4D3E" }}>{pct}</span>
           </div>
-          <p className="text-[11px] opacity-40" style={{ color: "#2D2D2D" }}>{sub}</p>
-          {sub2 && <p className="text-[11px] opacity-30 mt-0.5" style={{ color: "#2D2D2D" }}>{sub2}</p>}
+          <p className="text-[11px] opacity-40" style={{ color: "#1B4D3E" }}>{sub}</p>
+          {sub2 && <p className="text-[11px] opacity-30 mt-0.5" style={{ color: "#1B4D3E" }}>{sub2}</p>}
         </div>
       </div>
       <span className="text-[14px] font-normal shrink-0" style={{ color: "#B48C4C" }}>{formatNaira(amount)}</span>
@@ -1044,7 +1044,7 @@ function CommissionList({ commissions, onRefresh }: { commissions: any[]; onRefr
   return (
     <div className="bg-white rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
       <div className="p-4 border-b border-[#2D2D2D]/5">
-        <h3 className="text-sm font-bold uppercase tracking-wider" style={{ color: "#2D2D2D" }}>All Commissions</h3>
+        <h3 className="text-sm font-bold uppercase tracking-wider" style={{ color: "#1B4D3E" }}>All Commissions</h3>
       </div>
       {commissions.length === 0 ? (
         <div className="p-12 text-center">
@@ -1186,7 +1186,7 @@ function PayoutQueue({ commissions, onRefresh }: { commissions: any[]; onRefresh
   return (
     <div className="bg-white rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
       <div className="p-4 border-b border-[#2D2D2D]/5">
-        <h3 className="text-sm font-bold uppercase tracking-wider" style={{ color: "#2D2D2D" }}>Approved — Ready for Payout</h3>
+        <h3 className="text-sm font-bold uppercase tracking-wider" style={{ color: "#1B4D3E" }}>Approved — Ready for Payout</h3>
       </div>
       <div className="divide-y divide-[#2D2D2D]/5">
         {commissions.map(c => {
@@ -1196,7 +1196,7 @@ function PayoutQueue({ commissions, onRefresh }: { commissions: any[]; onRefresh
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <span className="text-[11px] font-bold tracking-wider px-2 py-0.5 rounded bg-[#2D2D2D]/5">{c.taskRef}</span>
-                  <span className="text-[14px] font-semibold ml-3" style={{ color: "#2D2D2D" }}>{c.clientName}</span>
+                  <span className="text-[14px] font-semibold ml-3" style={{ color: "#1B4D3E" }}>{c.clientName}</span>
                 </div>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
@@ -1245,7 +1245,7 @@ function MiniTier({ label, amount }: { label: string; amount: number }) {
   return (
     <div className="p-2 rounded-lg bg-[#FFFAF6]">
       <p className="text-[10px] uppercase tracking-wider font-bold opacity-50">{label}</p>
-      <p className="text-[13px] font-bold" style={{ color: "#2D2D2D" }}>{formatNaira(amount)}</p>
+      <p className="text-[13px] font-bold" style={{ color: "#1B4D3E" }}>{formatNaira(amount)}</p>
     </div>
   );
 }
@@ -1259,7 +1259,7 @@ function FinStatCard({ label, value, color, icon }: { label: string; value: stri
         {icon}
         <span className="text-[10px] uppercase tracking-wider font-bold opacity-60">{label}</span>
       </div>
-      <p className="text-lg font-bold" style={{ color: "#2D2D2D" }}>{value}</p>
+      <p className="text-lg font-bold" style={{ color: "#1B4D3E" }}>{value}</p>
     </div>
   );
 }

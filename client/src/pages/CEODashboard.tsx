@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 
 // ─── Brand (CEO = general → Apple grey) ──────────────────────────────────────
-const GREEN = "#2D2D2D";   // Apple grey
+const GREEN = "#1B4D3E";   // HAMZURY green
 const GOLD = "#B48C4C";
 const MILK = "#FFFAF6";    // Milk white
 

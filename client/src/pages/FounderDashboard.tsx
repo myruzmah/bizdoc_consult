@@ -35,7 +35,7 @@ import {
 } from "lucide-react";
 
 // ─── Brand ──────────────────────────────────────────────────────────────────
-const CHOCO = "#2C1A0E";
+const CHOCO = "#1B4D3E";   // HAMZURY green
 const GOLD  = "#B48C4C";
 const MILK  = "#FFFAF6";   // Milk white
 const DARK  = "#1D1D1F";

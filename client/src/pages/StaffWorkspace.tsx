@@ -8,7 +8,7 @@ import {
   Send, AlertTriangle, Star, Shield, Mic, Code, Layers,
 } from "lucide-react";
 
-const TEAL  = "#2D2D2D";   // Apple grey — general
+const TEAL  = "#1B4D3E";   // HAMZURY green
 const GOLD  = "#B48C4C";
 const CREAM = "#FFFAF6";   // Milk white
 const DARK  = "#1A1A1A";

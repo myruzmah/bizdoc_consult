@@ -2,7 +2,7 @@ import { Link } from "wouter";
 import PageMeta from "@/components/PageMeta";
 import { ArrowLeft, ArrowRight, GraduationCap, Target, Users, Lightbulb } from "lucide-react";
 
-const NAVY = "#1E3A5F";  // Skills primary — dark navy blue
+const NAVY = "#1B4D3E";  // HAMZURY green
 const GOLD = "#B48C4C";
 const BG   = "#FFFAF6";  // Milk white
 

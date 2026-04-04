@@ -19,7 +19,7 @@ import { toast } from "sonner";
 import { BRAND } from "@/lib/brand";
 
 // ─── Palette (CSO = general/federal → Apple grey) ────────────────────────────
-const TEAL  = "#2D2D2D";   // Apple grey — general departments
+const TEAL  = "#1B4D3E";   // HAMZURY green
 const GOLD  = "#B48C4C";
 const MILK  = "#FFFAF6";   // Milk white
 const WHITE = "#FFFFFF";
