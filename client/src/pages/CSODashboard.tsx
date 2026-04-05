@@ -12,7 +12,7 @@ import {
   TrendingUp, CalendarCheck, DollarSign, Wallet, UserPlus,
   Zap, ExternalLink, FileText, FolderOpen, Link2, Plus,
   Bell, CalendarDays, ChevronRight, LayoutDashboard, Target,
-  Phone, RefreshCw,
+  Phone, RefreshCw, Pencil, Save, X,
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
@@ -1069,6 +1069,8 @@ function TaskRow({ task }: { task: any }) {
 function LeadPipeline({ leads }: { leads: any[] }) {
   const [expandedLead, setExpandedLead] = useState<number | null>(null);
   const [quickDept, setQuickDept] = useState<Record<number, string>>({});
+  const [editingLead, setEditingLead] = useState<number | null>(null);
+  const [editForm, setEditForm] = useState<Record<string, string>>({});
 
   const utils = trpc.useUtils();
   const quickAssign = trpc.leads.assign.useMutation({
@@ -1080,6 +1082,39 @@ function LeadPipeline({ leads }: { leads: any[] }) {
     },
     onError: () => toast.error("Failed to assign lead"),
   });
+
+  const updateLeadMutation = trpc.leads.update.useMutation({
+    onSuccess: () => {
+      toast.success("Client info updated");
+      setEditingLead(null);
+      setEditForm({});
+      utils.leads.list.invalidate();
+    },
+    onError: (e) => toast.error(e.message || "Failed to update"),
+  });
+
+  function startEdit(lead: any) {
+    setEditingLead(lead.id);
+    setEditForm({
+      name: lead.name || "",
+      businessName: lead.businessName || "",
+      phone: lead.phone || "",
+      email: lead.email || "",
+      service: lead.service || "",
+      context: lead.context || "",
+    });
+  }
+
+  function saveEdit(leadId: number) {
+    const data: any = { id: leadId };
+    if (editForm.name) data.name = editForm.name;
+    if (editForm.businessName) data.businessName = editForm.businessName;
+    if (editForm.phone) data.phone = editForm.phone;
+    if (editForm.email) data.email = editForm.email;
+    if (editForm.service) data.service = editForm.service;
+    if (editForm.context) data.context = editForm.context;
+    updateLeadMutation.mutate(data);
+  }
 
   const groups = {
     new:       leads.filter(l => l.status === "new"),
@@ -1174,6 +1209,49 @@ function LeadPipeline({ leads }: { leads: any[] }) {
                       <span className="text-[11px] font-medium" style={{ color: TEAL }}>
                         Assigned to <span className="font-bold uppercase">{lead.assignedDepartment}</span>
                       </span>
+                    </div>
+                  )}
+
+                  {/* Edit button when expanded */}
+                  {expandedLead === lead.id && editingLead !== lead.id && (
+                    <div className="mt-2 pt-2" style={{ borderTop: `1px solid ${TEAL}08` }} onClick={e => e.stopPropagation()}>
+                      <button
+                        onClick={() => startEdit(lead)}
+                        className="flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-lg transition-all hover:opacity-80"
+                        style={{ backgroundColor: `${GOLD}15`, color: GOLD }}
+                      >
+                        <Pencil size={11} /> Edit Client Info
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Inline edit form */}
+                  {editingLead === lead.id && (
+                    <div className="mt-3 pt-3 space-y-2" style={{ borderTop: `1px solid ${TEAL}15` }} onClick={e => e.stopPropagation()}>
+                      <div className="grid grid-cols-1 gap-2">
+                        <input placeholder="Client Name" value={editForm.name || ""} onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))}
+                          className="w-full px-2.5 py-1.5 rounded-lg border text-[12px] outline-none" style={{ borderColor: `${TEAL}20`, color: TEAL }} />
+                        <input placeholder="Business Name" value={editForm.businessName || ""} onChange={e => setEditForm(p => ({ ...p, businessName: e.target.value }))}
+                          className="w-full px-2.5 py-1.5 rounded-lg border text-[12px] outline-none" style={{ borderColor: `${TEAL}20`, color: TEAL }} />
+                        <input placeholder="Phone" value={editForm.phone || ""} onChange={e => setEditForm(p => ({ ...p, phone: e.target.value }))}
+                          className="w-full px-2.5 py-1.5 rounded-lg border text-[12px] outline-none" style={{ borderColor: `${TEAL}20`, color: TEAL }} />
+                        <input placeholder="Email" value={editForm.email || ""} onChange={e => setEditForm(p => ({ ...p, email: e.target.value }))}
+                          className="w-full px-2.5 py-1.5 rounded-lg border text-[12px] outline-none" style={{ borderColor: `${TEAL}20`, color: TEAL }} />
+                        <input placeholder="Service" value={editForm.service || ""} onChange={e => setEditForm(p => ({ ...p, service: e.target.value }))}
+                          className="w-full px-2.5 py-1.5 rounded-lg border text-[12px] outline-none" style={{ borderColor: `${TEAL}20`, color: TEAL }} />
+                        <textarea placeholder="Notes / Context" value={editForm.context || ""} onChange={e => setEditForm(p => ({ ...p, context: e.target.value }))}
+                          rows={2} className="w-full px-2.5 py-1.5 rounded-lg border text-[12px] outline-none resize-none" style={{ borderColor: `${TEAL}20`, color: TEAL }} />
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={() => saveEdit(lead.id)} disabled={updateLeadMutation.isPending}
+                          className="flex items-center gap-1 text-[11px] font-bold px-3 py-1.5 rounded-lg" style={{ backgroundColor: TEAL, color: GOLD }}>
+                          <Save size={11} /> {updateLeadMutation.isPending ? "Saving..." : "Save"}
+                        </button>
+                        <button onClick={() => { setEditingLead(null); setEditForm({}); }}
+                          className="flex items-center gap-1 text-[11px] font-medium px-3 py-1.5 rounded-lg" style={{ backgroundColor: `${TEAL}08`, color: TEAL }}>
+                          <X size={11} /> Cancel
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
