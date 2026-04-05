@@ -121,14 +121,13 @@ export default function Home() {
       setTrackLoading(false);
       if (res.data?.found) {
         const d = res.data;
-        setTrackResult({
-          ref: d.ref,
-          clientName: d.clientName ?? null,
-          businessName: d.businessName ?? null,
-          service: d.service ?? null,
-          status: d.status,
-          progress: Math.round(((d.statusIndex + 1) / d.statusTotal) * 100),
-        });
+        // Go straight to client dashboard
+        localStorage.setItem("hamzury-client-session", JSON.stringify({
+          ref: d.ref, phone: trackRef, name: d.clientName,
+          businessName: d.businessName, service: d.service,
+          status: d.status, expiresAt: Date.now() + 24 * 60 * 60 * 1000
+        }));
+        window.location.href = "/client/dashboard";
       } else {
         setTrackNotFound(true);
       }

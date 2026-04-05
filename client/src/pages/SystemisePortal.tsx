@@ -142,7 +142,17 @@ export default function SystemizePortal() {
   const handleTrack = () => {
     if (trackCode.trim().length < 8) return;
     setTrackSubmitted(true);
-    trackQuery.refetch();
+    trackQuery.refetch().then(res => {
+      if (res.data?.found) {
+        const d = res.data;
+        localStorage.setItem("hamzury-client-session", JSON.stringify({
+          ref: d.ref, phone: "", name: d.clientName ?? d.businessName,
+          businessName: d.businessName, service: d.service,
+          status: d.status, expiresAt: Date.now() + 24 * 60 * 60 * 1000
+        }));
+        window.location.href = "/client/dashboard";
+      }
+    });
   };
 
   useEffect(() => {
