@@ -14,6 +14,7 @@ import { seedStaffUsers, syncStaffRoster } from "../seed-staff";
 import { runMigrations, seedTaxClients, seedMediaClients } from "../db";
 import { invokeLLMStream } from "./llm";
 import { buildSystemPrompt } from "../config/chat-config";
+import { startAgentScheduler } from "../agents/agent-runner";
 
 /** Strip HTML tags from user input to prevent XSS in stored/reflected content */
 function sanitize(str: string): string {
@@ -742,6 +743,8 @@ Sitemap: ${base}/sitemap.xml
       await syncStaffRoster();
       await seedTaxClients();
       await seedMediaClients();
+      // Start AI agent scheduler (background automation)
+      await startAgentScheduler();
     } catch (err) {
       console.log("[startup] DB init error:", String(err));
     }

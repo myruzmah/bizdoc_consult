@@ -45,8 +45,8 @@ const SERVICE_CATEGORIES = [
     items: [
       { name: "Tax & Contract Documents (TCC, ITF, NSITF, BPP)", context: "Tax Contract Documents" },
       { name: "SCUML Certificate", context: "SCUML Certificate" },
-      { name: "Licenses & Permits", context: "Licenses and Permits" },
-      { name: "Legal & Template Documents", context: "Legal Template Documents" },
+      { name: "Licenses & Permits", context: "Sector Licences" },
+      { name: "Legal & Template Documents", context: "Legal Documents" },
     ],
   },
 ];
@@ -139,7 +139,7 @@ export default function BizDocPortal() {
 
   return (
     <>
-      <SplashScreen text="BIZDOC" color={G} accent={Au} />
+      <SplashScreen text="BIZDOC" color={G} accent={Au} icon="bizdoc" departmentName="BizDoc Consult" tagline="Every filing. Every licence. Handled." />
       <PageMeta
         title="BizDoc Consult. Business Compliance, Legal & Growth"
         description="CAC registration, tax compliance, sector licences, legal documents, and managed business compliance for Nigerian businesses."
@@ -222,11 +222,11 @@ export default function BizDocPortal() {
               </button>
               <div className="h-px mx-4 my-1" style={{ backgroundColor: `${G}06` }} />
               {[
-                { label: "Home",       href: "/" },
                 { label: "Systemise",  href: "/systemise" },
                 { label: "Skills",     href: "/skills" },
-                { label: "Pricing",    href: "/pricing" },
+                { label: "Pricing",    href: "/pricing?tab=bizdoc" },
                 { label: "Consultant", href: "/consultant" },
+                { label: "Hamzury",    href: "/" },
               ].map(item => (
                 <Link key={item.href} href={item.href}>
                   <span className="block px-5 py-2.5 text-[13px] font-medium transition-colors hover:bg-gray-50/80 cursor-pointer" style={{ color: G }}>
@@ -249,42 +249,37 @@ export default function BizDocPortal() {
         </div>
 
         <div className="max-w-3xl mx-auto px-6 text-center relative z-10">
-          <div className="fade-up">
-            <span className="inline-block text-[10px] font-semibold tracking-[0.35em] uppercase mb-8 px-4 py-2 rounded-full" style={{ color: Au, backgroundColor: `${Au}10`, border: `1px solid ${Au}15` }}>
-              BUSINESS COMPLIANCE
-            </span>
-          </div>
           <h1
-            className="text-[clamp(34px,7vw,56px)] font-light leading-[1.08] mb-7 tracking-tight fade-up-d1"
+            className="text-[clamp(34px,7vw,56px)] font-light leading-[1.08] mb-7 tracking-tight fade-up"
             style={{ color: W }}
           >
             Every filing. Every licence.{" "}
             <span style={{ color: Au }}>Handled.</span>
           </h1>
-          <p className="text-[15px] leading-[1.8] mb-14 max-w-lg mx-auto fade-up-d2" style={{ color: W, opacity: 0.5 }}>
+          <p className="text-[15px] leading-[1.8] mb-14 max-w-lg mx-auto fade-up-d1" style={{ color: W, opacity: 0.45 }}>
             CAC registration. Tax compliance. Sector licences. Legal documentation. So you can operate, win contracts, and scale.
           </p>
-          <div className="flex flex-wrap gap-3 justify-center fade-up-d3">
+          <div className="flex flex-wrap gap-4 justify-center fade-up-d2">
             <button
               onClick={() => document.getElementById("services")?.scrollIntoView({ behavior: "smooth" })}
-              className="px-9 py-4 rounded-full text-[13px] font-semibold tracking-wide transition-all duration-300 hover:scale-[1.03] hover:shadow-lg"
-              style={{ backgroundColor: Au, color: G }}
+              className="px-7 py-3.5 rounded-full text-[12px] font-medium tracking-wide transition-all duration-300 hover:opacity-80"
+              style={{ color: W, border: `1px solid rgba(255,255,255,0.2)` }}
             >
               Our Services
             </button>
             <button
               onClick={() => document.getElementById("track")?.scrollIntoView({ behavior: "smooth" })}
-              className="px-9 py-4 rounded-full text-[13px] font-medium tracking-wide transition-all duration-300 hover:bg-white/10"
-              style={{ color: W, border: `1px solid rgba(255,255,255,0.15)` }}
+              className="px-7 py-3.5 rounded-full text-[12px] font-medium tracking-wide transition-all duration-300 hover:opacity-80"
+              style={{ color: W, border: `1px solid rgba(255,255,255,0.2)` }}
             >
               Track
             </button>
             <Link href="/bizdoc/blueprint">
               <span
-                className="px-9 py-4 rounded-full text-[13px] font-bold tracking-wide cursor-pointer inline-block hero-blueprint-btn"
-                style={{ color: Au, border: `1px solid ${Au}40` }}
+                className="px-7 py-3.5 rounded-full text-[12px] font-medium tracking-wide cursor-pointer inline-block transition-all duration-300 hover:opacity-80"
+                style={{ color: Au, border: `1px solid ${Au}25` }}
               >
-                Positioning Blueprint
+                Blueprint
               </span>
             </Link>
           </div>
@@ -296,113 +291,7 @@ export default function BizDocPortal() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════════════
-         SERVICES — accordion on mobile, grid on desktop
-         ═══════════════════════════════════════════════════════════════════════ */}
-      <section id="services" className="py-16 md:py-24" style={{ backgroundColor: W }}>
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="mb-8 md:mb-12">
-            <p className="text-[10px] md:text-[11px] font-semibold tracking-[0.35em] uppercase mb-3" style={{ color: Au }}>
-              OUR SERVICES
-            </p>
-            <h2 className="text-[clamp(22px,3.5vw,32px)] font-light tracking-tight leading-tight" style={{ color: G }}>
-              Every layer your business needs.
-            </h2>
-          </div>
-
-          {/* ── MOBILE: compact accordion ── */}
-          <div className="md:hidden flex flex-col gap-2">
-            {SERVICE_CATEGORIES.map((cat) => {
-              const Icon = cat.icon;
-              const isOpen = expandedCat === cat.id;
-              return (
-                <div key={cat.id} className="rounded-2xl overflow-hidden border" style={{ borderColor: isOpen ? `${G}20` : `${G}08`, backgroundColor: Cr }}>
-                  <button
-                    onClick={() => setExpandedCat(isOpen ? null : cat.id)}
-                    className="flex items-center gap-3 w-full px-4 py-3.5 text-left"
-                  >
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${G}08` }}>
-                      <Icon size={14} style={{ color: G }} strokeWidth={1.5} />
-                    </div>
-                    <span className="flex-1 text-[13px] font-semibold" style={{ color: G }}>{cat.title}</span>
-                    <span className="text-[10px] opacity-40 mr-1" style={{ color: G }}>{cat.items.length}</span>
-                    <ChevronRight
-                      size={14}
-                      style={{ color: G, opacity: 0.3, transition: "transform 0.2s", transform: isOpen ? "rotate(90deg)" : "rotate(0)" }}
-                    />
-                  </button>
-                  {isOpen && (
-                    <div className="px-3 pb-3 flex flex-col gap-0.5">
-                      <div className="h-px mb-1" style={{ backgroundColor: `${G}08` }} />
-                      {cat.items.map((item, i) => (
-                        <button
-                          key={i}
-                          onClick={() => openChat(item.context)}
-                          className="flex items-center gap-2 w-full px-3 py-2.5 rounded-xl text-left transition-colors active:bg-white"
-                        >
-                          <span className="flex-1 text-[12px] font-medium" style={{ color: G }}>{item.name}</span>
-                          {"tag" in item && item.tag && (
-                            <span className="text-[8px] font-bold tracking-wider px-2 py-0.5 rounded-full" style={{ backgroundColor: `${Au}12`, color: Au }}>
-                              {item.tag}
-                            </span>
-                          )}
-                          <ArrowRight size={10} style={{ color: Au, opacity: 0.5 }} />
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* ── DESKTOP: grid cards ── */}
-          <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-5">
-            {SERVICE_CATEGORIES.map((cat) => {
-              const Icon = cat.icon;
-              return (
-                <div
-                  key={cat.id}
-                  className="rounded-[20px] overflow-hidden transition-all duration-300 hover:-translate-y-0.5"
-                  style={{ backgroundColor: Cr, border: `1px solid ${G}08` }}
-                >
-                  <div className="flex items-center gap-3 px-5 pt-5 pb-3">
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${G}08` }}>
-                      <Icon size={16} style={{ color: G }} strokeWidth={1.5} />
-                    </div>
-                    <h3 className="text-[14px] font-semibold tracking-tight" style={{ color: G }}>{cat.title}</h3>
-                  </div>
-                  <div className="h-px mx-5" style={{ backgroundColor: `${G}08` }} />
-                  <div className="px-3 py-3 flex flex-col gap-1">
-                    {cat.items.map((item, i) => (
-                      <button
-                        key={i}
-                        onClick={() => openChat(item.context)}
-                        className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-left transition-all duration-200 hover:scale-[0.995] group/item"
-                        style={{ backgroundColor: "transparent" }}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = `${W}`)}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                      >
-                        <span className="flex-1 text-[12px] font-medium leading-snug" style={{ color: G }}>{item.name}</span>
-                        <div className="flex items-center gap-2 shrink-0">
-                          {"tag" in item && item.tag && (
-                            <span className="text-[8px] font-bold tracking-[0.12em] uppercase px-2 py-0.5 rounded-full" style={{ backgroundColor: `${Au}12`, color: Au }}>
-                              {item.tag}
-                            </span>
-                          )}
-                          <ArrowRight size={11} className="opacity-0 group-hover/item:opacity-60 transition-opacity duration-200" style={{ color: G }} />
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════════════════
-         RECOMMENDED PACKAGES — 2x2 accordion on mobile, 4-col grid on desktop
+         RECOMMENDED PACKAGES — comes first, 2x2 on mobile, 4-col on desktop
          ═══════════════════════════════════════════════════════════════════════ */}
       <section className="py-16 md:py-28" style={{ backgroundColor: `${G}04` }}>
         <div className="max-w-5xl mx-auto px-6">
@@ -532,6 +421,113 @@ export default function BizDocPortal() {
                 </div>
               </button>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+         SERVICES — accordion on mobile, grid on desktop. min-h-screen so hero
+         button scrolls to show ONLY this section filling the viewport.
+         ═══════════════════════════════════════════════════════════════════════ */}
+      <section id="services" className="min-h-screen flex flex-col justify-center py-16 md:py-24" style={{ backgroundColor: W }}>
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="mb-8 md:mb-12">
+            <p className="text-[10px] md:text-[11px] font-semibold tracking-[0.35em] uppercase mb-3" style={{ color: Au }}>
+              OUR SERVICES
+            </p>
+            <h2 className="text-[clamp(22px,3.5vw,32px)] font-light tracking-tight leading-tight" style={{ color: G }}>
+              Every layer your business needs.
+            </h2>
+          </div>
+
+          {/* ── MOBILE: compact accordion ── */}
+          <div className="md:hidden flex flex-col gap-2">
+            {SERVICE_CATEGORIES.map((cat) => {
+              const Icon = cat.icon;
+              const isOpen = expandedCat === cat.id;
+              return (
+                <div key={cat.id} className="rounded-2xl overflow-hidden border" style={{ borderColor: isOpen ? `${G}20` : `${G}08`, backgroundColor: Cr }}>
+                  <button
+                    onClick={() => setExpandedCat(isOpen ? null : cat.id)}
+                    className="flex items-center gap-3 w-full px-4 py-3.5 text-left"
+                  >
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${G}08` }}>
+                      <Icon size={14} style={{ color: G }} strokeWidth={1.5} />
+                    </div>
+                    <span className="flex-1 text-[13px] font-semibold" style={{ color: G }}>{cat.title}</span>
+                    <span className="text-[10px] opacity-40 mr-1" style={{ color: G }}>{cat.items.length}</span>
+                    <ChevronRight
+                      size={14}
+                      style={{ color: G, opacity: 0.3, transition: "transform 0.2s", transform: isOpen ? "rotate(90deg)" : "rotate(0)" }}
+                    />
+                  </button>
+                  {isOpen && (
+                    <div className="px-3 pb-3 flex flex-col gap-0.5">
+                      <div className="h-px mb-1" style={{ backgroundColor: `${G}08` }} />
+                      {cat.items.map((item, i) => (
+                        <button
+                          key={i}
+                          onClick={() => openChat(item.context)}
+                          className="flex items-center gap-2 w-full px-3 py-2.5 rounded-xl text-left transition-colors active:bg-white"
+                        >
+                          <span className="flex-1 text-[12px] font-medium" style={{ color: G }}>{item.name}</span>
+                          {"tag" in item && item.tag && (
+                            <span className="text-[8px] font-bold tracking-wider px-2 py-0.5 rounded-full" style={{ backgroundColor: `${Au}12`, color: Au }}>
+                              {item.tag}
+                            </span>
+                          )}
+                          <ArrowRight size={10} style={{ color: Au, opacity: 0.5 }} />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* ── DESKTOP: grid cards ── */}
+          <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-5">
+            {SERVICE_CATEGORIES.map((cat) => {
+              const Icon = cat.icon;
+              return (
+                <div
+                  key={cat.id}
+                  className="rounded-[20px] overflow-hidden transition-all duration-300 hover:-translate-y-0.5"
+                  style={{ backgroundColor: Cr, border: `1px solid ${G}08` }}
+                >
+                  <div className="flex items-center gap-3 px-5 pt-5 pb-3">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${G}08` }}>
+                      <Icon size={16} style={{ color: G }} strokeWidth={1.5} />
+                    </div>
+                    <h3 className="text-[14px] font-semibold tracking-tight" style={{ color: G }}>{cat.title}</h3>
+                  </div>
+                  <div className="h-px mx-5" style={{ backgroundColor: `${G}08` }} />
+                  <div className="px-3 py-3 flex flex-col gap-1">
+                    {cat.items.map((item, i) => (
+                      <button
+                        key={i}
+                        onClick={() => openChat(item.context)}
+                        className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-left transition-all duration-200 hover:scale-[0.995] group/item"
+                        style={{ backgroundColor: "transparent" }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = `${W}`)}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                      >
+                        <span className="flex-1 text-[12px] font-medium leading-snug" style={{ color: G }}>{item.name}</span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {"tag" in item && item.tag && (
+                            <span className="text-[8px] font-bold tracking-[0.12em] uppercase px-2 py-0.5 rounded-full" style={{ backgroundColor: `${Au}12`, color: Au }}>
+                              {item.tag}
+                            </span>
+                          )}
+                          <ArrowRight size={11} className="opacity-0 group-hover/item:opacity-60 transition-opacity duration-200" style={{ color: G }} />
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

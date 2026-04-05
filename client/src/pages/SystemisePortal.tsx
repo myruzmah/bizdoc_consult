@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import PageMeta from "@/components/PageMeta";
 import { trpc } from "@/lib/trpc";
 import {
-  ArrowRight, Layers, Monitor, Search,
+  ArrowRight, Layers, Monitor, Search, Share2,
   PieChart, Menu, X, Loader2, MessageSquare, Eye, EyeOff, Zap,
   ChevronRight, AlertCircle,
 } from "lucide-react";
@@ -65,6 +65,18 @@ const SERVICE_CATEGORIES = [
       { name: "Landing Pages", context: "Website Design", price: "₦120K" },
       { name: "Full Websites (5+ pages)", context: "Website Design", price: "₦350K+" },
       { name: "E-commerce", context: "Website Design", price: "₦500K+" },
+      { name: "Management Dashboard", context: "Website Design" },
+    ],
+  },
+  {
+    id: "social",
+    title: "Social Media Setup & Management",
+    icon: Share2,
+    items: [
+      { name: "Social Media Pages Setup", context: "Social Media" },
+      { name: "Content Calendar & Strategy", context: "Social Media" },
+      { name: "Monthly Management", context: "Social Media" },
+      { name: "Ads & Campaign Setup", context: "Social Media" },
     ],
   },
   {
@@ -74,7 +86,7 @@ const SERVICE_CATEGORIES = [
     items: [
       { name: "Google Ranking Setup", context: "SEO & AEO" },
       { name: "AI Answer Optimization (ChatGPT, etc.)", context: "SEO & AEO" },
-      { name: "Content Strategy", context: "Social Media" },
+      { name: "Content Strategy", context: "SEO & AEO" },
     ],
   },
   {
@@ -147,7 +159,7 @@ export default function SystemizePortal() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: Cr, color: "#2C2C2C" }}>
-      <SplashScreen text="HAMZURY" color={G} />
+      <SplashScreen text="HAMZURY" color={G} departmentName="Systemise" tagline="Systems that scale while you sleep." />
       <PageMeta
         title="Systemize. Brand, Website & Growth Systems | HAMZURY"
         description="Brand identity, website design, automation and SEO for growing businesses."
@@ -207,11 +219,11 @@ export default function SystemizePortal() {
                 <span className="text-[13px] font-medium">Chat with us</span>
               </button>
               {[
-                { label: "Home",      href: "/" },
                 { label: "BizDoc",    href: "/bizdoc" },
                 { label: "Skills",    href: "/skills" },
-                { label: "Pricing",   href: "/pricing" },
+                { label: "Pricing",   href: "/pricing?tab=systemise" },
                 { label: "CTO",       href: "/cto" },
+                { label: "Hamzury",   href: "/" },
               ].map(item => (
                 <Link key={item.href} href={item.href}>
                   <span className="block px-5 py-2.5 text-[13px] font-medium transition-colors hover:bg-gray-50 cursor-pointer" style={{ color: G }}>
@@ -252,7 +264,7 @@ export default function SystemizePortal() {
             >
               Track
             </button>
-            <Link href="/bizdoc/blueprint">
+            <Link href="/bizdoc/blueprint?from=systemise">
               <span
                 className="px-8 py-4 rounded-full text-[14px] font-bold cursor-pointer inline-block hero-blueprint-btn"
                 style={{ color: Au, border: `1px solid ${Au}40` }}
@@ -264,26 +276,21 @@ export default function SystemizePortal() {
         </div>
       </section>
 
-      {/* ── SERVICES ── packages + category grid */}
-      <section id="services" className="py-24 md:py-32" style={{ backgroundColor: Cr }}>
+      {/* ── RECOMMENDED PACKAGES — comes first ── */}
+      <section className="py-24 md:py-32" style={{ backgroundColor: Cr }}>
         <div className="max-w-5xl mx-auto px-6">
           <p className="text-[11px] font-medium tracking-[0.25em] uppercase mb-4 text-center" style={{ color: Au }}>
-            WHAT YOU GET
+            RECOMMENDED
           </p>
           <h2
-            className="text-[clamp(28px,4vw,42px)] font-light mb-20 text-center leading-tight tracking-tight"
+            className="text-[clamp(28px,4vw,42px)] font-light mb-16 text-center leading-tight tracking-tight"
             style={{ color: G }}
           >
             Five systems. One studio.
           </h2>
 
-          {/* ── Recommended Packages ── */}
-          <p className="text-[12px] font-semibold tracking-[0.15em] uppercase mb-6" style={{ color: Au }}>
-            Recommended Packages
-          </p>
-
           {/* Mobile: compact expandable cards */}
-          <div className="flex flex-col gap-2 mb-20 sm:hidden">
+          <div className="flex flex-col gap-2 sm:hidden">
             {PACKAGES.map((pkg) => {
               const Icon = pkg.icon;
               const isOpen = expandedPkg === pkg.title;
@@ -293,30 +300,20 @@ export default function SystemizePortal() {
                   className="rounded-[16px] overflow-hidden"
                   style={{ backgroundColor: W, boxShadow: "0 2px 12px rgba(0,0,0,0.04)", border: `1px solid ${Au}20` }}
                 >
-                  {/* Compact header — always visible */}
                   <button
                     onClick={() => setExpandedPkg(isOpen ? null : pkg.title)}
                     className="flex items-center gap-3 w-full px-5 py-4 text-left"
                   >
-                    <div
-                      className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: `${Au}12` }}
-                    >
+                    <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${Au}12` }}>
                       <Icon size={15} style={{ color: Au }} strokeWidth={1.5} />
                     </div>
                     <span className="flex-1 text-[14px] font-semibold" style={{ color: G }}>{pkg.title}</span>
                     <span className="text-[11px] font-semibold mr-2" style={{ color: Au }}>{pkg.price}</span>
-                    <ChevronRight
-                      size={15}
-                      style={{ color: Au, transform: isOpen ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.2s" }}
-                    />
+                    <ChevronRight size={15} style={{ color: Au, transform: isOpen ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
                   </button>
-                  {/* Expanded body */}
                   {isOpen && (
                     <div className="px-5 pb-5" style={{ borderTop: `1px solid ${Au}15` }}>
-                      <p className="text-[12px] leading-relaxed mt-3 mb-4" style={{ color: "#2C2C2C", opacity: 0.5 }}>
-                        {pkg.line}
-                      </p>
+                      <p className="text-[12px] leading-relaxed mt-3 mb-4" style={{ color: "#2C2C2C", opacity: 0.5 }}>{pkg.line}</p>
                       <button
                         onClick={() => openChat(pkg.context)}
                         className="w-full py-3 rounded-full text-[13px] font-medium transition-opacity hover:opacity-80 flex items-center justify-center gap-1"
@@ -332,7 +329,7 @@ export default function SystemizePortal() {
           </div>
 
           {/* Desktop: 3-col grid */}
-          <div className="hidden sm:grid grid-cols-3 gap-5 mb-20">
+          <div className="hidden sm:grid grid-cols-3 gap-5">
             {PACKAGES.map((pkg) => {
               const Icon = pkg.icon;
               return (
@@ -340,44 +337,35 @@ export default function SystemizePortal() {
                   key={pkg.title}
                   onClick={() => openChat(pkg.context)}
                   className="rounded-[20px] p-7 text-left transition-all duration-300 hover:-translate-y-1 group"
-                  style={{
-                    backgroundColor: W,
-                    boxShadow: "0 2px 20px rgba(0,0,0,0.04)",
-                    border: `1px solid ${Au}20`,
-                  }}
+                  style={{ backgroundColor: W, boxShadow: "0 2px 20px rgba(0,0,0,0.04)", border: `1px solid ${Au}20` }}
                 >
                   <div className="flex items-center gap-3 mb-4">
-                    <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center"
-                      style={{ backgroundColor: `${Au}12` }}
-                    >
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${Au}12` }}>
                       <Icon size={16} style={{ color: Au }} strokeWidth={1.5} />
                     </div>
-                    <span className="text-[11px] font-semibold tracking-wide uppercase" style={{ color: Au }}>
-                      {pkg.price}
-                    </span>
+                    <span className="text-[11px] font-semibold tracking-wide uppercase" style={{ color: Au }}>{pkg.price}</span>
                   </div>
-                  <h3 className="text-[15px] font-semibold mb-1.5" style={{ color: G }}>
-                    {pkg.title}
-                  </h3>
-                  <p className="text-[12px] leading-relaxed mb-4" style={{ color: "#2C2C2C", opacity: 0.5 }}>
-                    {pkg.line}
-                  </p>
-                  <span
-                    className="text-[12px] font-medium flex items-center gap-1 transition-opacity group-hover:opacity-70"
-                    style={{ color: Au }}
-                  >
+                  <h3 className="text-[15px] font-semibold mb-1.5" style={{ color: G }}>{pkg.title}</h3>
+                  <p className="text-[12px] leading-relaxed mb-4" style={{ color: "#2C2C2C", opacity: 0.5 }}>{pkg.line}</p>
+                  <span className="text-[12px] font-medium flex items-center gap-1 transition-opacity group-hover:opacity-70" style={{ color: Au }}>
                     Get Started <ArrowRight size={12} />
                   </span>
                 </button>
               );
             })}
           </div>
+        </div>
+      </section>
 
-          {/* ── Service Categories ── */}
-          <p className="text-[12px] font-semibold tracking-[0.15em] uppercase mb-6" style={{ color: G, opacity: 0.4 }}>
-            Individual Services
+      {/* ── SERVICES — full viewport so hero button shows only this section ── */}
+      <section id="services" className="min-h-screen flex flex-col justify-center py-24 md:py-32" style={{ backgroundColor: W }}>
+        <div className="max-w-5xl mx-auto px-6">
+          <p className="text-[11px] font-medium tracking-[0.25em] uppercase mb-4 text-center" style={{ color: G, opacity: 0.4 }}>
+            OUR SERVICES
           </p>
+          <h2 className="text-[clamp(24px,3.5vw,36px)] font-light mb-12 text-center leading-tight tracking-tight" style={{ color: G }}>
+            Individual Services
+          </h2>
 
           {/* Mobile accordion (md:hidden) */}
           <div className="flex flex-col gap-2 md:hidden">
@@ -388,31 +376,19 @@ export default function SystemizePortal() {
                 <div
                   key={cat.id}
                   className="rounded-[16px] overflow-hidden transition-all duration-300"
-                  style={{ backgroundColor: W, boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}
+                  style={{ backgroundColor: Cr, boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}
                 >
-                  {/* Accordion header */}
                   <button
                     onClick={() => setExpandedCat(isOpen ? null : cat.id)}
                     className="flex items-center gap-3 w-full px-5 py-4 text-left"
                   >
-                    <div
-                      className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: `${G}08` }}
-                    >
+                    <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${G}08` }}>
                       <CatIcon size={15} style={{ color: G }} strokeWidth={1.5} />
                     </div>
-                    <span className="flex-1 text-[14px] font-semibold" style={{ color: G }}>
-                      {cat.title}
-                    </span>
-                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-full mr-1" style={{ backgroundColor: `${G}08`, color: G }}>
-                      {cat.items.length}
-                    </span>
-                    <ChevronRight
-                      size={15}
-                      style={{ color: G, opacity: 0.4, transform: isOpen ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.2s" }}
-                    />
+                    <span className="flex-1 text-[14px] font-semibold" style={{ color: G }}>{cat.title}</span>
+                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-full mr-1" style={{ backgroundColor: `${G}08`, color: G }}>{cat.items.length}</span>
+                    <ChevronRight size={15} style={{ color: G, opacity: 0.4, transform: isOpen ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
                   </button>
-                  {/* Accordion body */}
                   {isOpen && (
                     <div className="px-4 pb-3 flex flex-col gap-1" style={{ borderTop: `1px solid ${G}08` }}>
                       {cat.items.map((item) => (
@@ -421,20 +397,12 @@ export default function SystemizePortal() {
                           onClick={() => openChat(item.context)}
                           className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-200 hover:bg-gray-50 group"
                         >
-                          <span className="text-[13px] leading-snug" style={{ color: "#2C2C2C", opacity: 0.75 }}>
-                            {item.name}
-                          </span>
+                          <span className="text-[13px] leading-snug" style={{ color: "#2C2C2C", opacity: 0.75 }}>{item.name}</span>
                           <span className="flex items-center gap-1.5 shrink-0">
                             {"price" in item && item.price && (
-                              <span className="text-[11px] font-medium" style={{ color: Au }}>
-                                {item.price}
-                              </span>
+                              <span className="text-[11px] font-medium" style={{ color: Au }}>{item.price}</span>
                             )}
-                            <ArrowRight
-                              size={11}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity"
-                              style={{ color: Au }}
-                            />
+                            <ArrowRight size={11} className="opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: Au }} />
                           </span>
                         </button>
                       ))}
@@ -453,25 +421,14 @@ export default function SystemizePortal() {
                 <div
                   key={cat.id}
                   className="rounded-[20px] p-7 transition-all duration-300"
-                  style={{
-                    backgroundColor: W,
-                    boxShadow: "0 2px 20px rgba(0,0,0,0.04)",
-                  }}
+                  style={{ backgroundColor: Cr, boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}
                 >
-                  {/* Category header */}
                   <div className="flex items-center gap-3 mb-5 pb-4" style={{ borderBottom: `1px solid ${G}08` }}>
-                    <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center"
-                      style={{ backgroundColor: `${G}08` }}
-                    >
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${G}08` }}>
                       <CatIcon size={16} style={{ color: G }} strokeWidth={1.5} />
                     </div>
-                    <h3 className="text-[14px] font-semibold" style={{ color: G }}>
-                      {cat.title}
-                    </h3>
+                    <h3 className="text-[14px] font-semibold" style={{ color: G }}>{cat.title}</h3>
                   </div>
-
-                  {/* Items */}
                   <div className="flex flex-col gap-1">
                     {cat.items.map((item) => (
                       <button
@@ -479,20 +436,12 @@ export default function SystemizePortal() {
                         onClick={() => openChat(item.context)}
                         className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-200 hover:bg-gray-50 group"
                       >
-                        <span className="text-[13px] leading-snug" style={{ color: "#2C2C2C", opacity: 0.75 }}>
-                          {item.name}
-                        </span>
+                        <span className="text-[13px] leading-snug" style={{ color: "#2C2C2C", opacity: 0.75 }}>{item.name}</span>
                         <span className="flex items-center gap-1.5 shrink-0">
                           {"price" in item && item.price && (
-                            <span className="text-[11px] font-medium" style={{ color: Au }}>
-                              {item.price}
-                            </span>
+                            <span className="text-[11px] font-medium" style={{ color: Au }}>{item.price}</span>
                           )}
-                          <ArrowRight
-                            size={11}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity"
-                            style={{ color: Au }}
-                          />
+                          <ArrowRight size={11} className="opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: Au }} />
                         </span>
                       </button>
                     ))}

@@ -1,6 +1,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
+
 import { Route, Switch, useLocation } from "wouter";
 import { useEffect } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -42,6 +43,10 @@ import TeamPage from "./pages/TeamPage";
 import MetFixPage from "./pages/MetFixPage";
 import SocialTemplates from "./pages/SocialTemplates";
 import TrainingPage from "./pages/TrainingPage";
+import SkillsMilestones from "./pages/SkillsMilestones";
+import SkillsStartups from "./pages/SkillsStartups";
+import SkillsAlumni from "./pages/SkillsAlumni";
+import SkillsHALS from "./pages/SkillsHALS";
 import CookieBanner from "./components/CookieBanner";
 import ChatWidget from "./components/ChatWidget";
 import { trpc } from "./lib/trpc";
@@ -121,6 +126,10 @@ function Router() {
       <Route path={"/skills/programs"} component={SkillsPrograms} />
       <Route path={"/skills/blueprint"} component={SkillsBlueprint} />
       <Route path={"/skills/student"} component={SkillsStudent} />
+      <Route path={"/skills/milestones"} component={SkillsMilestones} />
+      <Route path={"/skills/startups"} component={SkillsStartups} />
+      <Route path={"/skills/alumni"} component={SkillsAlumni} />
+      <Route path={"/skills/hals"} component={SkillsHALS} />
       <Route path={"/skills/admin"}>
         <RoleGuard allowedRoles={ROLE_ACCESS["/skills/admin"]}>
           <SkillsAdmin />
@@ -227,12 +236,19 @@ function FloatingChat() {
   // Exclude legal pages
   if (location === "/privacy" || location === "/terms") return null;
 
-  // Chat only on department portals + CSO dashboard
+  // Chat on department portals, CSO dashboard, and pages with chat CTAs
   const chatRoutes: { prefix: string; dept: "bizdoc" | "systemise" | "skills" | "general"; exact?: boolean }[] = [
     { prefix: "/bizdoc",    dept: "bizdoc" },
     { prefix: "/systemise", dept: "systemise" },
     { prefix: "/skills",    dept: "skills" },
     { prefix: "/hub/cso",   dept: "bizdoc" },
+    { prefix: "/",          dept: "general", exact: true },
+    { prefix: "/pricing",   dept: "general" },
+    { prefix: "/founder",   dept: "general" },
+    { prefix: "/team",      dept: "general" },
+    { prefix: "/ridi",      dept: "skills" },
+    { prefix: "/cto",       dept: "systemise" },
+    { prefix: "/affiliate", dept: "general" },
   ];
 
   const match = chatRoutes.find(r =>

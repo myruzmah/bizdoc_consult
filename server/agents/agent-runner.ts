@@ -8,7 +8,23 @@
 
 import { invokeLLM } from "../_core/llm";
 import type { InvokeResult } from "../_core/llm";
-import { createActivityLog, createAuditLog } from "../db";
+import {
+  createActivityLog,
+  createAuditLog,
+  loadAgentState,
+  saveAgentState,
+  createAgentSuggestion,
+  createNotification,
+  getTasksByDepartment,
+  getSystemiseLeads,
+  getSkillsApplications,
+  getStudentAssignments,
+} from "../db";
+import { executeCSOAgent } from "./cso-agent";
+import { executeFinanceAgent } from "./finance-agent";
+import { executeMarketingAgent } from "./marketing-agent";
+import { executeCEOAgent } from "./ceo-agent";
+import { executeHRFinanceAgent } from "./hr-finance-agent";
 
 // ─── Agent Interface ────────────────────────────────────────────────────────
 
@@ -78,11 +94,6 @@ export async function callAI(
 let _registry: Map<string, Agent> | null = null;
 
 function buildRegistry(): Map<string, Agent> {
-  // Import agent implementations
-  const { executeCSOAgent } = require("./cso-agent");
-  const { executeFinanceAgent } = require("./finance-agent");
-  const { executeMarketingAgent } = require("./marketing-agent");
-
   const agents: Agent[] = [
     // 1. Evelyn — General CSO Agent
     {
@@ -114,10 +125,7 @@ function buildRegistry(): Map<string, Agent> {
       successRate: 100,
       enabled: true,
       execute: async (): Promise<AgentResult> => {
-        const {
-          getTasksByDepartment,
-          createActivityLog: logAction,
-        } = require("../db");
+        const logAction = createActivityLog;
 
         const errors: string[] = [];
         let processed = 0;
@@ -143,6 +151,31 @@ function buildRegistry(): Map<string, Agent> {
                   action: "agent_checklist_generated",
                   details: `[Amara] Document checklist prepared: ${checklist.slice(0, 500)}`,
                 });
+
+                // Notify BizDoc team
+                try {
+                  await createNotification({
+                    userId: 0,
+                    type: "system",
+                    title: `Amara: Checklist for ${task.clientName}`,
+                    message: `Document checklist ready for ${task.service} (${task.ref})`,
+                    link: `/hub/bizdoc`,
+                  });
+                } catch {}
+
+                // Write structured suggestion
+                try {
+                  await createAgentSuggestion({
+                    agentId: "amara",
+                    targetDepartment: "bizdoc",
+                    targetEntityType: "task",
+                    targetEntityId: task.id,
+                    suggestionType: "checklist",
+                    title: `Checklist: ${task.clientName} — ${task.service}`,
+                    content: checklist,
+                  });
+                } catch {}
+
                 processed++;
               }
 
@@ -160,6 +193,30 @@ function buildRegistry(): Map<string, Agent> {
                     action: "agent_email_drafted",
                     details: `[Amara] Client email drafted: ${email.slice(0, 500)}`,
                   });
+
+                  // Notify BizDoc team about drafted email
+                  try {
+                    await createNotification({
+                      userId: 0,
+                      type: "system",
+                      title: `Amara: Email draft for ${task.clientName}`,
+                      message: `Client email drafted for ${task.service} (${task.ref})`,
+                      link: `/hub/bizdoc`,
+                    });
+                  } catch {}
+
+                  // Write structured suggestion for email draft
+                  try {
+                    await createAgentSuggestion({
+                      agentId: "amara",
+                      targetDepartment: "bizdoc",
+                      targetEntityType: "task",
+                      targetEntityId: task.id,
+                      suggestionType: "email_draft",
+                      title: `Email Draft: ${task.clientName} — ${task.service}`,
+                      content: email,
+                    });
+                  } catch {}
                 }
               }
             } catch (err: any) {
@@ -188,11 +245,7 @@ function buildRegistry(): Map<string, Agent> {
       successRate: 100,
       enabled: true,
       execute: async (): Promise<AgentResult> => {
-        const {
-          getTasksByDepartment,
-          getSystemiseLeads,
-          createActivityLog: logAction,
-        } = require("../db");
+        const logAction = createActivityLog;
 
         const errors: string[] = [];
         let processed = 0;
@@ -218,6 +271,31 @@ function buildRegistry(): Map<string, Agent> {
                   action: "agent_brief_created",
                   details: `[Nova] Project brief: ${brief.slice(0, 500)}`,
                 });
+
+                // Notify Systemise team
+                try {
+                  await createNotification({
+                    userId: 0,
+                    type: "system",
+                    title: `Nova: Brief for ${lead.name}`,
+                    message: `Project brief ready for ${lead.service} (${lead.ref})`,
+                    link: `/hub/systemise`,
+                  });
+                } catch {}
+
+                // Write structured suggestion for brief
+                try {
+                  await createAgentSuggestion({
+                    agentId: "nova",
+                    targetDepartment: "systemise",
+                    targetEntityType: "lead",
+                    targetEntityId: lead.id,
+                    suggestionType: "brief",
+                    title: `Brief: ${lead.name} — ${lead.service}`,
+                    content: brief,
+                  });
+                } catch {}
+
                 processed++;
               }
             } catch (err: any) {
@@ -245,6 +323,31 @@ function buildRegistry(): Map<string, Agent> {
                   action: "agent_plan_created",
                   details: `[Nova] Implementation plan: ${plan.slice(0, 500)}`,
                 });
+
+                // Notify Systemise team
+                try {
+                  await createNotification({
+                    userId: 0,
+                    type: "system",
+                    title: `Nova: Plan for ${task.clientName}`,
+                    message: `Implementation plan ready for ${task.service} (${task.ref})`,
+                    link: `/hub/systemise`,
+                  });
+                } catch {}
+
+                // Write structured suggestion for plan
+                try {
+                  await createAgentSuggestion({
+                    agentId: "nova",
+                    targetDepartment: "systemise",
+                    targetEntityType: "task",
+                    targetEntityId: task.id,
+                    suggestionType: "plan",
+                    title: `Plan: ${task.clientName} — ${task.service}`,
+                    content: plan,
+                  });
+                } catch {}
+
                 processed++;
               }
             } catch (err: any) {
@@ -273,12 +376,7 @@ function buildRegistry(): Map<string, Agent> {
       successRate: 100,
       enabled: true,
       execute: async (): Promise<AgentResult> => {
-        const {
-          getSkillsApplications,
-          getStudentAssignments,
-          createActivityLog: logAction,
-          createNotification,
-        } = require("../db");
+        const logAction = createActivityLog;
 
         const errors: string[] = [];
         let processed = 0;
@@ -301,6 +399,31 @@ function buildRegistry(): Map<string, Agent> {
                   action: "agent_welcome_drafted",
                   details: `[Zara] Welcome message for ${app.fullName} (${app.ref}): ${welcomeMsg.slice(0, 300)}`,
                 });
+
+                // Notify Skills team
+                try {
+                  await createNotification({
+                    userId: 0,
+                    type: "system",
+                    title: `Zara: Welcome for ${app.fullName}`,
+                    message: `Welcome message drafted for ${app.program} applicant (${app.ref})`,
+                    link: `/hub/skills`,
+                  });
+                } catch {}
+
+                // Write structured suggestion for welcome message
+                try {
+                  await createAgentSuggestion({
+                    agentId: "zara",
+                    targetDepartment: "skills",
+                    targetEntityType: "application",
+                    targetEntityId: app.id,
+                    suggestionType: "welcome_message",
+                    title: `Welcome: ${app.fullName} — ${app.program}`,
+                    content: welcomeMsg,
+                  });
+                } catch {}
+
                 processed++;
               }
             } catch (err: any) {
@@ -336,10 +459,7 @@ function buildRegistry(): Map<string, Agent> {
       taskCount: 0,
       successRate: 100,
       enabled: true,
-      execute: async () => {
-        const { executeFinanceAgent: execFin } = require("./finance-agent");
-        return execFin();
-      },
+      execute: executeFinanceAgent,
     },
 
     // 6. Muse — Marketing Agent
@@ -355,10 +475,44 @@ function buildRegistry(): Map<string, Agent> {
       taskCount: 0,
       successRate: 100,
       enabled: true,
+      execute: executeMarketingAgent,
+    },
+
+    // 7. Idris — CEO Meeting Prep Agent
+    {
+      id: "idris",
+      name: "Idris",
+      department: "ceo",
+      role: "Hub Meeting Prep & Weekly Summaries",
+      schedule: "Weekly (Monday) / On-demand",
+      intervalMs: 24 * 60 * 60 * 1000, // Check daily, but only runs on Mondays
+      lastRun: null,
+      status: "idle",
+      taskCount: 0,
+      successRate: 100,
+      enabled: true,
       execute: async () => {
-        const { executeMarketingAgent: execMkt } = require("./marketing-agent");
-        return execMkt();
+        // Only auto-run on Mondays (day 1), but always run if triggered manually
+        const today = new Date().getDay();
+        if (today !== 1) return { tasksProcessed: 0, errors: [] };
+        return executeCEOAgent();
       },
+    },
+
+    // 8. Ibrahim — Leave & Commission Pre-Review Agent
+    {
+      id: "ibrahim",
+      name: "Ibrahim",
+      department: "hr",
+      role: "Leave & Commission Pre-Review",
+      schedule: "Every 2 hours",
+      intervalMs: 2 * 60 * 60 * 1000,
+      lastRun: null,
+      status: "idle",
+      taskCount: 0,
+      successRate: 100,
+      enabled: true,
+      execute: executeHRFinanceAgent,
     },
   ];
 
@@ -398,6 +552,15 @@ export async function executeAgent(agentId: string): Promise<AgentResult> {
       ((total - errorCount) / total) * 100
     );
 
+    // Persist to DB
+    await saveAgentState(agent.id, {
+      lastRun: agent.lastRun,
+      taskCount: agent.taskCount,
+      successRate: agent.successRate,
+      status: agent.status,
+      lastError: result.errors.length > 0 ? result.errors.join("; ") : null,
+    });
+
     // Log to audit
     await createAuditLog({
       userId: 0, // system
@@ -411,6 +574,12 @@ export async function executeAgent(agentId: string): Promise<AgentResult> {
     return result;
   } catch (err: any) {
     agent.status = "error";
+
+    // Persist error state to DB
+    await saveAgentState(agent.id, {
+      status: "error",
+      lastError: err.message,
+    }).catch(() => {});
 
     await createAuditLog({
       userId: 0,
@@ -471,6 +640,10 @@ export function toggleAgent(agentId: string, enabled: boolean): boolean {
   agent.enabled = enabled;
   if (!enabled) agent.status = "disabled";
   else if (agent.status === "disabled") agent.status = "idle";
+
+  // Persist enabled state to DB
+  saveAgentState(agent.id, { enabled, status: agent.status }).catch(() => {});
+
   return true;
 }
 
@@ -478,12 +651,30 @@ export function toggleAgent(agentId: string, enabled: boolean): boolean {
 
 const _intervals: NodeJS.Timeout[] = [];
 
-export function startAgentScheduler(): void {
+export async function startAgentScheduler(): Promise<void> {
+  // Env guard: disable scheduler if explicitly set to "false"
+  if (process.env.AGENT_SCHEDULER_ENABLED === "false") {
+    console.log("[AgentRunner] Scheduler disabled via AGENT_SCHEDULER_ENABLED=false");
+    return;
+  }
+
   const registry = getRegistry();
 
   console.log(`[AgentRunner] Starting scheduler for ${registry.size} agents...`);
 
+  // Load persisted state for each agent from DB before scheduling
   for (const agent of Array.from(registry.values())) {
+    try {
+      const saved = await loadAgentState(agent.id);
+      if (saved) {
+        agent.enabled = saved.enabled;
+        agent.lastRun = saved.lastRun;
+        agent.taskCount = saved.taskCount;
+        agent.successRate = saved.successRate;
+        if (!saved.enabled) agent.status = "disabled";
+      }
+    } catch {}
+
     const interval = setInterval(async () => {
       if (!agent.enabled || agent.status === "running") return;
 
@@ -495,7 +686,7 @@ export function startAgentScheduler(): void {
     }, agent.intervalMs);
 
     _intervals.push(interval);
-    console.log(`[AgentRunner] Scheduled ${agent.name} (${agent.id}) — ${agent.schedule}`);
+    console.log(`[AgentRunner] Scheduled ${agent.name} (${agent.id}) — ${agent.schedule}${!agent.enabled ? " [DISABLED]" : ""}`);
   }
 }
 

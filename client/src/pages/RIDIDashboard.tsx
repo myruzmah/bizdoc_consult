@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
+import type { StaffUser } from "@/lib/types";
 import { Link } from "wouter";
 import PageMeta from "@/components/PageMeta";
 import NotificationBell from "@/components/NotificationBell";
+import DeptChatPanel from "@/components/DeptChatPanel";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,6 +84,7 @@ const MOCK_COHORT_STUDENTS = [
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function RIDIDashboard() {
   const { user, loading, logout } = useAuth({ redirectOnUnauthenticated: true });
+  const staffUser = user as StaffUser;
   const [activeSection, setActiveSection] = useState<Section>("overview");
 
   if (loading) {
@@ -92,6 +95,11 @@ export default function RIDIDashboard() {
     );
   }
   if (!user) return null;
+
+  const weeklyTargetsQuery = trpc.weeklyTargets.byDepartment.useQuery(
+    { department: "ridi" },
+    { refetchInterval: 60000 },
+  );
 
   const sidebarItems: { key: Section; icon: React.ElementType; label: string }[] = [
     { key: "overview",      icon: LayoutDashboard, label: "Overview" },
@@ -178,9 +186,39 @@ export default function RIDIDashboard() {
             {activeSection === "funding"      && <FundingTasksPanel />}
             {activeSection === "communities"  && <CommunitiesPanel />}
             {activeSection === "cohort"       && <CohortMergePanel />}
+
+            {/* ── My Weekly Targets ── */}
+            <div className="mt-6 bg-white rounded-xl border p-6" style={{ borderColor: `${TEAL}15` }}>
+              <h2 className="text-base font-semibold mb-4" style={{ color: TEAL }}>My Weekly Targets</h2>
+              {weeklyTargetsQuery.isLoading ? (
+                <div className="flex items-center gap-2 text-sm opacity-40" style={{ color: TEAL }}>
+                  <Loader2 className="animate-spin" size={16} /> Loading targets...
+                </div>
+              ) : !weeklyTargetsQuery.data?.length ? (
+                <p className="text-sm text-gray-400">No targets set for this week.</p>
+              ) : (
+                <div className="space-y-2">
+                  {weeklyTargetsQuery.data.map((target: any) => (
+                    <div key={target.id} className="flex items-center justify-between px-4 py-3 rounded-lg border" style={{ borderColor: `${TEAL}10`, backgroundColor: `${MILK}` }}>
+                      <div>
+                        <div className="text-sm font-medium" style={{ color: TEAL }}>{target.title || target.description}</div>
+                        {target.metric && <div className="text-xs text-gray-500 mt-0.5">{target.metric}</div>}
+                      </div>
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{
+                        backgroundColor: target.status === "completed" ? "#DCFCE7" : target.status === "in_progress" ? "#DBEAFE" : "#FEF3C7",
+                        color: target.status === "completed" ? "#166534" : target.status === "in_progress" ? "#1E40AF" : "#92400E",
+                      }}>
+                        {target.status === "completed" ? "Done" : target.status === "in_progress" ? "In Progress" : "Pending"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </ScrollArea>
       </div>
+      <DeptChatPanel department="ridi" staffId={staffUser.staffRef || staffUser.openId || ""} staffName={staffUser.name || "Staff"} />
     </div>
   );
 }

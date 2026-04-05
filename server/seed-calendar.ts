@@ -83,9 +83,8 @@ async function seedCalendar() {
   console.log(`[seed-calendar] Seeding ${CALENDAR_2026.length} calendar entries...`);
   for (const entry of CALENDAR_2026) {
     await db.insert(skillsCalendar).values(entry);
-    console.log(`  ✓ ${entry.quarter} — ${entry.theme}`);
   }
-  console.log("[seed-calendar] Done.");
+  console.log(`[seed-calendar] Done — ${CALENDAR_2026.length} entries seeded.`);
   process.exit(0);
 }
 

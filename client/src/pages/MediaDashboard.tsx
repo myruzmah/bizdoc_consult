@@ -1,8 +1,11 @@
 import { useState, useMemo } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
+import type { StaffUser } from "@/lib/types";
 import PageMeta from "@/components/PageMeta";
+import AgentSuggestionCard from "@/components/AgentSuggestionCard";
 import NotificationBell from "@/components/NotificationBell";
+import DeptChatPanel from "@/components/DeptChatPanel";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { Link } from "wouter";
@@ -80,6 +83,7 @@ function statusColor(status: string) {
 // ─── Main Component ────────────────────────────────────────────────────────
 export default function MediaDashboard() {
   const { user, loading, logout } = useAuth({ redirectOnUnauthenticated: true });
+  const staffUser = user as StaffUser;
   const [activeSection, setActiveSection] = useState<Section>("clients");
   const [expandedAI, setExpandedAI] = useState<number | null>(null);
   const [newTaskTitle, setNewTaskTitle] = useState("");
@@ -97,6 +101,14 @@ export default function MediaDashboard() {
   const podcastsQuery    = trpc.podcasts.list.useQuery(undefined, { refetchInterval: 30000 });
   const mediaAssetsQuery = trpc.mediaAssets.list.useQuery(undefined, { refetchInterval: 30000 });
   const socialStatsQuery = trpc.socialStats.list.useQuery(undefined, { refetchInterval: 30000 });
+  const weeklyTargetsQuery = trpc.weeklyTargets.byDepartment.useQuery(
+    { department: "media" },
+    { refetchInterval: 60000 },
+  );
+  const suggestionsQuery = trpc.agents.suggestions.useQuery({ department: "media" });
+  const reviewSuggestion = trpc.agents.reviewSuggestion.useMutation({
+    onSuccess: () => { suggestionsQuery.refetch(); },
+  });
   const utils            = trpc.useUtils();
 
   // Mutations for create/update actions
@@ -241,6 +253,14 @@ export default function MediaDashboard() {
 
     return (
       <div className="space-y-8">
+        {/* Muse's AI suggestions */}
+        <AgentSuggestionCard
+          suggestions={suggestionsQuery.data ?? []}
+          onAccept={(id) => reviewSuggestion.mutate({ id, action: "accept" })}
+          onReject={(id) => reviewSuggestion.mutate({ id, action: "reject" })}
+          isLoading={suggestionsQuery.isLoading}
+        />
+
         {/* Stat cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
@@ -1336,6 +1356,7 @@ export default function MediaDashboard() {
   const currentSection = SECTIONS.find(s => s.id === activeSection);
 
   return (
+    <>
     <div className="flex h-screen overflow-hidden" style={{ backgroundColor: MILK }}>
       <PageMeta title="Media Dashboard — HAMZURY" description="Content, AI twin and media management for HAMZURY." />
 
@@ -1430,9 +1451,43 @@ export default function MediaDashboard() {
         <ScrollArea className="flex-1">
           <div className="p-6 max-w-5xl">
             {renderSection()}
+
+            {/* ─── My Weekly Targets ──────────────────────────────── */}
+            <div style={{ marginTop: 24 }}>
+              <div style={{ backgroundColor: WHITE, borderRadius: 16, border: "1px solid #E5E7EB", padding: 24 }}>
+                <h2 style={{ fontSize: 15, fontWeight: 600, color: TEAL, margin: "0 0 16px 0" }}>My Weekly Targets</h2>
+                {weeklyTargetsQuery.isLoading ? (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#9CA3AF", fontSize: 13 }}>
+                    <Loader2 className="animate-spin" size={16} /> Loading targets...
+                  </div>
+                ) : !weeklyTargetsQuery.data?.length ? (
+                  <p style={{ color: "#9CA3AF", fontSize: 13 }}>No targets set for this week.</p>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {weeklyTargetsQuery.data.map((target: any) => (
+                      <div key={target.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderRadius: 12, border: "1px solid #F3F4F6", backgroundColor: "#FAFAFA" }}>
+                        <div>
+                          <div style={{ fontSize: 14, fontWeight: 500, color: DARK }}>{target.title || target.description}</div>
+                          {target.deadline && <div style={{ fontSize: 12, color: "#9CA3AF", marginTop: 2 }}>Due: {target.deadline}</div>}
+                        </div>
+                        <span style={{
+                          padding: "3px 10px", borderRadius: 12, fontSize: 11, fontWeight: 600,
+                          backgroundColor: target.status === "approved" ? "rgba(34,197,94,0.10)" : target.status === "in_progress" ? "rgba(59,130,246,0.10)" : target.status === "submitted" ? "rgba(139,92,246,0.10)" : "rgba(234,179,8,0.12)",
+                          color: target.status === "approved" ? "#16A34A" : target.status === "in_progress" ? "#3B82F6" : target.status === "submitted" ? "#7C3AED" : "#B45309",
+                        }}>
+                          {target.status === "approved" ? "Done" : target.status === "in_progress" ? "In Progress" : target.status === "submitted" ? "Submitted" : target.status === "revision_requested" ? "Revision" : "Issued"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </ScrollArea>
       </div>
     </div>
+    <DeptChatPanel department="media" staffId={staffUser.staffRef || ""} staffName={staffUser.name || "Staff"} />
+    </>
   );
 }

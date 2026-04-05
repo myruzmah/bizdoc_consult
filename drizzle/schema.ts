@@ -1285,3 +1285,77 @@ export const socialPlatformStats = mysqlTable("socialPlatformStats", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 export type SocialPlatformStat = typeof socialPlatformStats.$inferSelect;
+
+// ─── Weekly Targets (CEO → Departments → HR tracks) ─────────────────────────
+export const weeklyTargets = mysqlTable("weekly_targets_v2", {
+  id: int("id").autoincrement().primaryKey(),
+  weekOf: varchar("weekOf", { length: 10 }).notNull(), // YYYY-MM-DD (Monday)
+  department: varchar("department", { length: 50 }).notNull(), // bizdoc, systemise, skills, media, bizdev
+  targetType: varchar("targetType", { length: 50 }).notNull(), // client, task, learning, content, custom
+  description: text("description").notNull(),
+  assignedBy: varchar("assignedBy", { length: 255 }).notNull(), // CEO staff ref or name
+  assignedTo: varchar("assignedTo", { length: 255 }), // specific staff or dept lead
+  deadline: varchar("deadline", { length: 30 }).notNull(), // e.g. "Friday 2pm"
+  status: mysqlEnum("targetStatus", ["issued", "in_progress", "submitted", "approved", "revision_requested"]).default("issued").notNull(),
+  submissionNote: text("submissionNote"), // staff submission text
+  reviewNote: text("reviewNote"), // CEO review feedback
+  outcome: mysqlEnum("targetOutcome", ["hit", "missed", "partial"]),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type WeeklyTarget = typeof weeklyTargets.$inferSelect;
+export type InsertWeeklyTarget = typeof weeklyTargets.$inferInsert;
+
+// Inter-Department Messaging
+export const deptMessages = mysqlTable("dept_messages", {
+  id: int("id").autoincrement().primaryKey(),
+  threadId: varchar("threadId", { length: 50 }).notNull(), // group messages by thread
+  fromStaffId: varchar("fromStaffId", { length: 50 }).notNull(), // sender staff ref
+  fromName: varchar("fromName", { length: 255 }).notNull(),
+  fromDepartment: varchar("fromDepartment", { length: 50 }).notNull(),
+  toDepartment: varchar("toDepartment", { length: 50 }), // null = direct message
+  toStaffId: varchar("toStaffId", { length: 50 }), // null = department channel
+  message: text("message").notNull(),
+  messageType: mysqlEnum("messageType", ["text", "file", "task_ref", "system"]).default("text").notNull(),
+  isRead: boolean("isRead").default(false).notNull(),
+  readAt: timestamp("readAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type DeptMessage = typeof deptMessages.$inferSelect;
+export type InsertDeptMessage = typeof deptMessages.$inferInsert;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AI AGENT SYSTEM
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Persistent agent state — survives server restarts
+export const agentState = mysqlTable("agent_state", {
+  id: int("id").autoincrement().primaryKey(),
+  agentId: varchar("agentId", { length: 50 }).notNull().unique(),
+  enabled: boolean("enabled").default(true).notNull(),
+  lastRun: timestamp("lastRun"),
+  taskCount: int("taskCount").default(0).notNull(),
+  successRate: int("successRate").default(100).notNull(),
+  status: varchar("status", { length: 20 }).default("idle").notNull(),
+  lastError: text("lastError"),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type AgentStateRow = typeof agentState.$inferSelect;
+
+// Agent suggestions — structured outputs for staff to accept/reject
+export const agentSuggestions = mysqlTable("agent_suggestions", {
+  id: int("id").autoincrement().primaryKey(),
+  agentId: varchar("agentId", { length: 50 }).notNull(),
+  targetDepartment: varchar("targetDepartment", { length: 50 }).notNull(),
+  targetEntityType: varchar("targetEntityType", { length: 50 }).notNull(), // lead, task, application, commission
+  targetEntityId: int("targetEntityId").notNull(),
+  suggestionType: varchar("suggestionType", { length: 50 }).notNull(), // checklist, email_draft, brief, score, assignment, welcome_msg, meeting_prep, leave_review, commission_review, content_draft
+  title: varchar("title", { length: 255 }).notNull(),
+  content: text("content").notNull(),
+  status: mysqlEnum("suggestionStatus", ["pending", "accepted", "rejected", "expired"]).default("pending").notNull(),
+  reviewedBy: varchar("reviewedBy", { length: 255 }),
+  reviewedAt: timestamp("reviewedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type AgentSuggestion = typeof agentSuggestions.$inferSelect;
+export type InsertAgentSuggestion = typeof agentSuggestions.$inferInsert;

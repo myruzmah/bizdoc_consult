@@ -1,5 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
+import type { StaffUser } from "@/lib/types";
 import PageMeta from "@/components/PageMeta";
 import NotificationBell from "@/components/NotificationBell";
 import { Button } from "@/components/ui/button";
@@ -20,9 +21,11 @@ import { useState, useMemo, useCallback } from "react";
 import { useLocation, Link } from "wouter";
 import { toast } from "sonner";
 import { calculateCommission, formatNaira } from "@shared/commission";
+import DeptChatPanel from "@/components/DeptChatPanel";
 
 export default function FinanceDashboard() {
   const { user, loading, logout } = useAuth({ redirectOnUnauthenticated: true });
+  const staffUser = user as StaffUser;
   const [, setLocation] = useLocation();
 
   const commissionsQuery = trpc.commissions.list.useQuery(undefined, { refetchInterval: 15000 });
@@ -46,6 +49,11 @@ export default function FinanceDashboard() {
     );
   }
   if (!user) return null;
+
+  const weeklyTargetsQuery = trpc.weeklyTargets.byDepartment.useQuery(
+    { department: "finance" },
+    { refetchInterval: 60000 },
+  );
 
   const commissions = commissionsQuery.data || [];
   const stats = statsQuery.data;
@@ -261,7 +269,39 @@ export default function FinanceDashboard() {
             <AllocationsTab />
           </TabsContent>
         </Tabs>
+
+        {/* ── My Weekly Targets ── */}
+        <div className="mt-8 bg-white rounded-2xl border p-6" style={{ borderColor: "#2D2D2D10" }}>
+          <h2 className="text-base font-semibold mb-4 flex items-center gap-2" style={{ color: "#1B4D3E" }}>
+            <Trophy size={16} style={{ color: "#B48C4C" }} /> My Weekly Targets
+          </h2>
+          {weeklyTargetsQuery.isLoading ? (
+            <div className="flex items-center gap-2 text-sm opacity-40" style={{ color: "#1B4D3E" }}>
+              <Loader2 className="animate-spin" size={16} /> Loading targets...
+            </div>
+          ) : !weeklyTargetsQuery.data?.length ? (
+            <p className="text-sm text-gray-400">No targets set for this week.</p>
+          ) : (
+            <div className="space-y-2">
+              {weeklyTargetsQuery.data.map((target: any) => (
+                <div key={target.id} className="flex items-center justify-between px-4 py-3 rounded-lg border" style={{ borderColor: "#2D2D2D10", backgroundColor: "#FFFAF6" }}>
+                  <div>
+                    <div className="text-sm font-medium" style={{ color: "#1B4D3E" }}>{target.title || target.description}</div>
+                    {target.metric && <div className="text-xs text-gray-500 mt-0.5">{target.metric}</div>}
+                  </div>
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{
+                    backgroundColor: target.status === "completed" ? "#DCFCE7" : target.status === "in_progress" ? "#DBEAFE" : "#FEF3C7",
+                    color: target.status === "completed" ? "#166534" : target.status === "in_progress" ? "#1E40AF" : "#92400E",
+                  }}>
+                    {target.status === "completed" ? "Done" : target.status === "in_progress" ? "In Progress" : "Pending"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
+      <DeptChatPanel department="finance" staffId={staffUser.staffRef || ""} staffName={staffUser.name || "Finance Staff"} />
     </div>
   );
 }
@@ -287,7 +327,7 @@ function AllocationsTab() {
   const [allocPage, setAllocPage] = useState(1);
   const currentQuarter = getCurrentQuarter();
 
-  // tRPC queries — will return undefined until server routes are wired
+  // TODO: tRPC client types lag behind server — finance.allocations/aiFund/leagueTable exist in server/routers.ts
   const allocationsQuery = (trpc.finance as any).allocations?.useQuery?.() ?? { data: undefined, isLoading: false };
   const aiFundQuery = (trpc.finance as any).aiFund?.useQuery?.() ?? { data: undefined, isLoading: false };
   const leagueQuery = (trpc.finance as any).leagueTable?.useQuery?.({ quarter: currentQuarter }) ?? { data: undefined, isLoading: false };

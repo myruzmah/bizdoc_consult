@@ -19,32 +19,19 @@ import {
   CalendarDays, ClipboardCheck, FolderOpen, AlertTriangle,
   TrendingUp, Users, CheckCircle2, Clock, FileText, BookOpen,
   GraduationCap, Shield, Lock, Calculator, Loader2,
-  Coffee, Mic, Star, ChevronDown, ChevronUp, Plus, Trash2, Send,
+  Coffee, Mic, Star, ChevronDown, ChevronUp, Plus, Trash2, Send, Target,
 } from "lucide-react";
+import DeptChatPanel from "@/components/DeptChatPanel";
+import AgentSuggestionCard from "@/components/AgentSuggestionCard";
 
 // ─── Brand (CEO = general → Apple grey) ──────────────────────────────────────
 const GREEN = "#1B4D3E";   // HAMZURY green
 const GOLD = "#B48C4C";
 const MILK = "#FFFAF6";    // Milk white
 
-type Section = "overview" | "hubmeeting" | "command" | "analytics" | "calendar" | "assign" | "files";
+type Section = "overview" | "hubmeeting" | "command" | "analytics" | "calendar" | "assign" | "files" | "targets";
 
-// ─── Mock Seed Data (replace with real data at launch) ──────────────────────
-const MOCK_REVENUE = [
-  { month: "Oct", revenue: 2400000 },
-  { month: "Nov", revenue: 3100000 },
-  { month: "Dec", revenue: 2800000 },
-  { month: "Jan", revenue: 3750000 },
-  { month: "Feb", revenue: 4200000 },
-  { month: "Mar", revenue: 4850000 },
-];
-
-const MOCK_LEAD_SOURCES = [
-  { source: "Content", count: 18 },
-  { source: "Referrals", count: 12 },
-  { source: "Partners", count: 9 },
-  { source: "Events", count: 7 },
-];
+// NOTE: MOCK_REVENUE and MOCK_LEAD_SOURCES were removed — analytics now uses real tRPC data.
 
 
 const FILES = [
@@ -93,6 +80,7 @@ export default function CEODashboard() {
   const sidebarItems: { key: Section; icon: React.ElementType; label: string }[] = [
     { key: "overview",   icon: LayoutDashboard, label: "Overview" },
     { key: "hubmeeting", icon: Coffee,          label: "Hub Meeting" },
+    { key: "targets",   icon: Target,          label: "Weekly Targets" },
     { key: "command",    icon: Zap,             label: "Command Center" },
     { key: "analytics", icon: BarChart2, label: "Analytics" },
     { key: "calendar", icon: CalendarDays, label: "Calendar" },
@@ -170,12 +158,14 @@ export default function CEODashboard() {
             )}
             {activeSection === "analytics" && <AnalyticsSection revenueStats={revenueStats} deptStats={deptStats} leads={leads} />}
             {activeSection === "hubmeeting" && <HubMeetingSection />}
+            {activeSection === "targets" && <WeeklyTargetsSection />}
             {activeSection === "calendar" && <CalendarSection />}
             {activeSection === "assign" && <AssignSection />}
             {activeSection === "files" && <FilesSection />}
           </div>
         </ScrollArea>
       </div>
+      <DeptChatPanel department="ceo" staffId={user.openId || ""} staffName={user.name || "CEO"} />
     </div>
   );
 }
@@ -739,6 +729,9 @@ function HubMeetingSection() {
   const [showHistory, setShowHistory] = useState(false);
   const [savedThisWeek, setSavedThisWeek] = useState(false);
 
+  const suggestionsQuery = trpc.agents.suggestions.useQuery({ department: "ceo" });
+  const reviewSuggestion = trpc.agents.reviewSuggestion.useMutation({ onSuccess: () => suggestionsQuery.refetch(), onError: (err: any) => { toast.error(err.message || "Something went wrong"); } });
+
   const weekQuery = trpc.hubMeeting.get.useQuery({ weekOf }, { onSuccess: (data) => {
     if (!data) return;
     if (data.todoList) { try { setThisWeekTodos(JSON.parse(data.todoList)); } catch {} }
@@ -793,6 +786,14 @@ function HubMeetingSection() {
         <h2 className="text-[18px] font-semibold" style={{ color: GREEN }}>Weekly Hub Meeting</h2>
         <p className="text-[12px] opacity-50 mt-0.5" style={{ color: GREEN }}>Week of {weekLabel} · Standing agenda — every week, same structure</p>
       </div>
+
+      {/* AI Agent Suggestions */}
+      <AgentSuggestionCard
+        suggestions={suggestionsQuery.data || []}
+        onAccept={(id) => reviewSuggestion.mutate({ id, action: "accept" })}
+        onReject={(id) => reviewSuggestion.mutate({ id, action: "reject" })}
+        isLoading={suggestionsQuery.isLoading}
+      />
 
       {/* Standing Agenda */}
       <div>
@@ -1038,6 +1039,275 @@ function HubMeetingSection() {
               <p className="text-[12px] opacity-30 text-center py-4" style={{ color: GREEN }}>No history yet — save your first meeting plan above.</p>
             )}
           </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Weekly Targets Section ──────────────────────────────────────────────────
+const TARGET_TYPES = [
+  { value: "client", label: "Client Delivery" },
+  { value: "task", label: "Internal Task" },
+  { value: "learning", label: "Learning" },
+  { value: "content", label: "Content" },
+  { value: "custom", label: "Custom" },
+];
+
+const TARGET_DEPTS = [
+  { value: "bizdoc", label: "BizDoc" },
+  { value: "systemise", label: "Systemise" },
+  { value: "skills", label: "Skills" },
+  { value: "media", label: "Media" },
+  { value: "bizdev", label: "BizDev" },
+];
+
+const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
+  issued: { bg: "#EAB30815", text: "#EAB308" },
+  in_progress: { bg: "#3B82F615", text: "#3B82F6" },
+  submitted: { bg: "#22C55E15", text: "#22C55E" },
+  approved: { bg: `${GOLD}20`, text: GOLD },
+  revision_requested: { bg: "#EF444415", text: "#EF4444" },
+};
+
+const OUTCOME_COLORS: Record<string, string> = {
+  hit: "#22C55E",
+  partial: "#EAB308",
+  missed: "#EF4444",
+};
+
+function WeeklyTargetsSection() {
+  const today = new Date();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+  const weekOf = monday.toISOString().split("T")[0];
+  const weekLabel = monday.toLocaleDateString("en-NG", { day: "numeric", month: "long", year: "numeric" });
+
+  const [newDept, setNewDept] = useState("");
+  const [newType, setNewType] = useState("");
+  const [newDesc, setNewDesc] = useState("");
+  const [newDeadline, setNewDeadline] = useState("Friday 2pm");
+
+  const targetsQuery = trpc.weeklyTargets.list.useQuery({ weekOf }, { refetchInterval: 15000 });
+  const statusQuery = trpc.weeklyTargets.submissionStatus.useQuery({ weekOf }, { refetchInterval: 15000 });
+
+  const createMut = trpc.weeklyTargets.create.useMutation({
+    onSuccess: () => {
+      toast.success("Target issued");
+      setNewDept(""); setNewType(""); setNewDesc(""); setNewDeadline("Friday 2pm");
+      targetsQuery.refetch();
+      statusQuery.refetch();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const reviewMut = trpc.weeklyTargets.review.useMutation({
+    onSuccess: () => { toast.success("Target reviewed"); targetsQuery.refetch(); statusQuery.refetch(); },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const targets = targetsQuery.data || [];
+  const submissionStatus = statusQuery.data || [];
+
+  // Group targets by department
+  const grouped: Record<string, typeof targets> = {};
+  targets.forEach(t => {
+    if (!grouped[t.department]) grouped[t.department] = [];
+    grouped[t.department].push(t);
+  });
+
+  const handleCreate = () => {
+    if (!newDept || !newType || !newDesc.trim()) {
+      toast.error("Please fill department, type, and description");
+      return;
+    }
+    createMut.mutate({ weekOf, department: newDept, targetType: newType, description: newDesc.trim(), deadline: newDeadline });
+  };
+
+  const handleReview = (id: number, status: "approved" | "revision_requested", outcome?: "hit" | "missed" | "partial") => {
+    reviewMut.mutate({ id, status, outcome });
+  };
+
+  const deptLabel = (d: string) => TARGET_DEPTS.find(x => x.value === d)?.label || d.charAt(0).toUpperCase() + d.slice(1);
+  const typeLabel = (t: string) => TARGET_TYPES.find(x => x.value === t)?.label || t;
+
+  return (
+    <div className="space-y-8 max-w-4xl">
+      {/* Header */}
+      <div>
+        <h2 className="text-[18px] font-semibold" style={{ color: GREEN }}>Weekly Targets</h2>
+        <p className="text-[12px] opacity-50 mt-0.5" style={{ color: GREEN }}>
+          Week of {weekLabel} -- Issue targets Monday, staff submit by Friday, review next Monday
+        </p>
+      </div>
+
+      {/* Submission Status Summary */}
+      <div className="bg-white rounded-2xl p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+        <p className="text-[11px] uppercase tracking-widest opacity-40 mb-3" style={{ color: GREEN }}>Submission Status</p>
+        <div className="flex flex-wrap gap-3">
+          {submissionStatus.map((s: any) => {
+            const allSubmitted = s.total > 0 && s.pending === 0;
+            return (
+              <div key={s.department} className="flex items-center gap-2 px-4 py-2.5 rounded-xl" style={{
+                backgroundColor: s.total === 0 ? `${GREEN}06` : allSubmitted ? "#22C55E10" : "#EF444410",
+                border: `1px solid ${s.total === 0 ? `${GREEN}08` : allSubmitted ? "#22C55E20" : "#EF444420"}`,
+              }}>
+                <div className="w-2 h-2 rounded-full" style={{
+                  backgroundColor: s.total === 0 ? `${GREEN}30` : allSubmitted ? "#22C55E" : "#EF4444",
+                }} />
+                <span className="text-[12px] font-medium" style={{ color: GREEN }}>{deptLabel(s.department)}</span>
+                <span className="text-[10px] opacity-40" style={{ color: GREEN }}>
+                  {s.total === 0 ? "No targets" : `${s.submitted}/${s.total}`}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Issue New Target */}
+      <div className="bg-white rounded-2xl p-5 space-y-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+        <p className="text-[13px] font-semibold" style={{ color: GREEN }}>Issue New Target</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <Select value={newDept} onValueChange={setNewDept}>
+            <SelectTrigger className="border-gray-200 bg-gray-50">
+              <SelectValue placeholder="Department *" />
+            </SelectTrigger>
+            <SelectContent>
+              {TARGET_DEPTS.map(d => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={newType} onValueChange={setNewType}>
+            <SelectTrigger className="border-gray-200 bg-gray-50">
+              <SelectValue placeholder="Target type *" />
+            </SelectTrigger>
+            <SelectContent>
+              {TARGET_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Input
+            placeholder="Deadline (e.g. Friday 2pm)"
+            value={newDeadline}
+            onChange={e => setNewDeadline(e.target.value)}
+            className="border-gray-200 bg-gray-50"
+          />
+        </div>
+        <Textarea
+          placeholder="Describe the target *"
+          value={newDesc}
+          onChange={e => setNewDesc(e.target.value)}
+          className="border-gray-200 bg-gray-50 min-h-[80px]"
+        />
+        <Button
+          onClick={handleCreate}
+          disabled={createMut.isPending}
+          style={{ backgroundColor: GREEN, color: GOLD }}
+        >
+          {createMut.isPending ? <Loader2 size={14} className="animate-spin mr-2" /> : <Target size={14} className="mr-2" />}
+          Issue Target
+        </Button>
+      </div>
+
+      {/* Targets Grouped by Department */}
+      <div className="space-y-6">
+        <p className="text-[11px] uppercase tracking-widest opacity-40" style={{ color: GREEN }}>
+          Current Week Targets ({targets.length})
+        </p>
+
+        {targets.length === 0 ? (
+          <div className="bg-white rounded-2xl p-10 text-center shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+            <Target size={36} className="mx-auto mb-3 opacity-15" style={{ color: GREEN }} />
+            <p className="text-sm opacity-40" style={{ color: GREEN }}>No targets issued this week yet</p>
+          </div>
+        ) : (
+          Object.entries(grouped).map(([dept, deptTargets]) => (
+            <div key={dept}>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: GOLD }} />
+                <p className="text-sm font-medium" style={{ color: GREEN }}>{deptLabel(dept)}</p>
+                <span className="text-[10px] opacity-30" style={{ color: GREEN }}>({deptTargets.length} targets)</span>
+              </div>
+              <div className="space-y-3">
+                {deptTargets.map((t: any) => {
+                  const sc = STATUS_COLORS[t.status] || STATUS_COLORS.issued;
+                  return (
+                    <div key={t.id} className="bg-white rounded-2xl p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]" style={{ border: `1px solid ${GREEN}08` }}>
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        {/* Type badge */}
+                        <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-normal" style={{ backgroundColor: `${GOLD}15`, color: GOLD }}>
+                          {typeLabel(t.targetType)}
+                        </span>
+                        {/* Status badge */}
+                        <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-normal" style={{ backgroundColor: sc.bg, color: sc.text }}>
+                          {t.status.replace(/_/g, " ")}
+                        </span>
+                        {/* Outcome badge */}
+                        {t.outcome && (
+                          <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-normal" style={{ backgroundColor: `${OUTCOME_COLORS[t.outcome]}15`, color: OUTCOME_COLORS[t.outcome] }}>
+                            {t.outcome}
+                          </span>
+                        )}
+                        {/* Deadline */}
+                        <span className="text-[10px] opacity-30 ml-auto" style={{ color: GREEN }}>
+                          Due: {t.deadline}
+                        </span>
+                      </div>
+                      <p className="text-sm font-normal mb-1" style={{ color: GREEN }}>{t.description}</p>
+
+                      {/* Submission note */}
+                      {t.submissionNote && (
+                        <div className="mt-3 px-3 py-2 rounded-xl text-[12px]" style={{ backgroundColor: `${GREEN}04`, color: GREEN }}>
+                          <span className="font-medium">Submission:</span> {t.submissionNote}
+                        </div>
+                      )}
+
+                      {/* Review note */}
+                      {t.reviewNote && (
+                        <div className="mt-2 px-3 py-2 rounded-xl text-[12px]" style={{ backgroundColor: `${GOLD}10`, color: GREEN }}>
+                          <span className="font-medium">CEO Review:</span> {t.reviewNote}
+                        </div>
+                      )}
+
+                      {/* Review actions — only for submitted targets */}
+                      {t.status === "submitted" && (
+                        <div className="mt-3 flex items-center gap-2 flex-wrap">
+                          <Button
+                            size="sm"
+                            className="text-xs"
+                            style={{ backgroundColor: "#22C55E", color: "white" }}
+                            disabled={reviewMut.isPending}
+                            onClick={() => handleReview(t.id, "approved", "hit")}
+                          >
+                            <CheckCircle2 size={12} className="mr-1" /> Approve (Hit)
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs"
+                            style={{ borderColor: `${GOLD}40`, color: GOLD }}
+                            disabled={reviewMut.isPending}
+                            onClick={() => handleReview(t.id, "approved", "partial")}
+                          >
+                            Approve (Partial)
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs"
+                            style={{ borderColor: "#EF444440", color: "#EF4444" }}
+                            disabled={reviewMut.isPending}
+                            onClick={() => handleReview(t.id, "revision_requested")}
+                          >
+                            Request Revision
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))
         )}
       </div>
     </div>

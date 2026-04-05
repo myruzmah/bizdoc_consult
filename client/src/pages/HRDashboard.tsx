@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
+import type { StaffUser } from "@/lib/types";
 import { Link } from "wouter";
 import PageMeta from "@/components/PageMeta";
+import DeptChatPanel from "@/components/DeptChatPanel";
+import AgentSuggestionCard from "@/components/AgentSuggestionCard";
 import { FINANCE_SUMMARY, formatNaira } from "@/lib/dashboardStore";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -64,6 +67,7 @@ const KPIS = [
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function HRDashboard() {
   const { user, loading, logout } = useAuth({ redirectOnUnauthenticated: true });
+  const staffUser = user as StaffUser;
   const [activeSection, setActiveSection] = useState<Section>("overview");
 
   const statsQuery       = trpc.institutional.stats.useQuery(undefined, { refetchInterval: 30000 });
@@ -81,6 +85,11 @@ export default function HRDashboard() {
   const trainingQuery      = trpc.trainingSessions.list.useQuery(undefined, { refetchInterval: 30000 });
   const devPlansQuery      = trpc.devPlans.list.useQuery(undefined, { refetchInterval: 30000 });
   const perfCyclesQuery    = trpc.perfCycles.list.useQuery(undefined, { refetchInterval: 30000 });
+
+  // Weekly targets queries
+  const hrTargetsQuery     = trpc.weeklyTargets.byDepartment.useQuery({ department: "hr" }, { refetchInterval: 30000 });
+  const currentMonday = (() => { const d = new Date(); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.toISOString().slice(0, 10); })();
+  const submissionStatusQuery = trpc.weeklyTargets.submissionStatus.useQuery({ weekOf: currentMonday }, { refetchInterval: 30000 });
 
   if (loading) {
     return (
@@ -103,6 +112,8 @@ export default function HRDashboard() {
   const trainingSessions = trainingQuery.data || [];
   const devPlans        = devPlansQuery.data || [];
   const perfCycles      = perfCyclesQuery.data || [];
+  const hrTargets       = hrTargetsQuery.data || [];
+  const submissionStatus = submissionStatusQuery.data || [];
 
   // Use real staff from DB — no mock fallback
   const staffList = realStaff;
@@ -205,9 +216,107 @@ export default function HRDashboard() {
             {activeSection === "policy"      && <HRPolicySection />}
             {activeSection === "commissions" && <CommissionsSection staffList={staffList} />}
             {activeSection === "reports"     && <ReportsSection />}
+
+            {/* ── My Weekly Targets ── */}
+            {activeSection === "overview" && (
+              <div className="mt-8">
+                <h2 className="text-sm uppercase tracking-wider mb-4 opacity-40 font-normal" style={{ color: GREEN }}>My Weekly Targets</h2>
+                {hrTargetsQuery.isLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="animate-spin" size={20} style={{ color: GOLD }} />
+                  </div>
+                ) : hrTargets.length === 0 ? (
+                  <div className="bg-white rounded-2xl p-10 text-center shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                    <p className="text-sm opacity-30" style={{ color: GREEN }}>No weekly targets assigned to HR yet.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {hrTargets.map((t: any) => {
+                      const statusColors: Record<string, { bg: string; text: string }> = {
+                        issued:      { bg: "#6B728015", text: "#6B7280" },
+                        in_progress: { bg: "#3B82F615", text: "#3B82F6" },
+                        submitted:   { bg: `${GOLD}20`, text: GOLD },
+                        approved:    { bg: "#22C55E15", text: "#22C55E" },
+                        rejected:    { bg: "#EF444415", text: "#EF4444" },
+                      };
+                      const sc = statusColors[t.status] || statusColors.issued;
+                      return (
+                        <div key={t.id} className="bg-white rounded-2xl p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium" style={{ color: GREEN }}>{t.title || t.description || "Target"}</p>
+                              {t.description && t.title && (
+                                <p className="text-xs opacity-50 mt-0.5" style={{ color: GREEN }}>{t.description}</p>
+                              )}
+                              <p className="text-[10px] opacity-30 mt-1" style={{ color: GREEN }}>
+                                Week of {t.weekStart ? new Date(t.weekStart).toLocaleDateString("en-NG") : "—"}
+                                {t.dueDate && ` · Due: ${new Date(t.dueDate).toLocaleDateString("en-NG")}`}
+                              </p>
+                            </div>
+                            <span className="text-[11px] px-2.5 py-0.5 rounded-full font-normal shrink-0 ml-3 capitalize"
+                              style={{ backgroundColor: sc.bg, color: sc.text }}>
+                              {(t.status || "issued").replace(/_/g, " ")}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── Target Submission Tracking (All Departments) ── */}
+            {activeSection === "overview" && (
+              <div className="mt-8">
+                <h2 className="text-sm uppercase tracking-wider mb-4 opacity-40 font-normal" style={{ color: GREEN }}>Target Submission Tracking</h2>
+                {submissionStatusQuery.isLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="animate-spin" size={20} style={{ color: GOLD }} />
+                  </div>
+                ) : submissionStatus.length === 0 ? (
+                  <div className="bg-white rounded-2xl p-10 text-center shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                    <p className="text-sm opacity-30" style={{ color: GREEN }}>No department target data available yet.</p>
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden">
+                    {/* Table header */}
+                    <div className="hidden md:grid grid-cols-[1fr_80px_80px_80px_80px] gap-4 px-5 py-3 border-b" style={{ borderColor: `${GREEN}06`, backgroundColor: `${GREEN}04` }}>
+                      {["Department", "Issued", "In Progress", "Submitted", "Approved"].map(h => (
+                        <p key={h} className="text-[10px] uppercase tracking-wider opacity-40 font-normal" style={{ color: GREEN }}>{h}</p>
+                      ))}
+                    </div>
+                    {submissionStatus.map((dept: any, i: number) => (
+                      <div key={dept.department || i}
+                        className="grid grid-cols-1 md:grid-cols-[1fr_80px_80px_80px_80px] gap-4 px-5 py-4 border-b last:border-0 items-center"
+                        style={{ borderColor: `${GREEN}06`, backgroundColor: i % 2 === 0 ? "white" : `${GREEN}02` }}>
+                        <p className="text-sm font-medium capitalize" style={{ color: GREEN }}>{dept.department}</p>
+                        <span className="text-[11px] px-2.5 py-0.5 rounded-full font-normal w-fit text-center"
+                          style={{ backgroundColor: "#6B728015", color: "#6B7280" }}>
+                          {dept.issued ?? 0}
+                        </span>
+                        <span className="text-[11px] px-2.5 py-0.5 rounded-full font-normal w-fit text-center"
+                          style={{ backgroundColor: "#3B82F615", color: "#3B82F6" }}>
+                          {dept.in_progress ?? dept.inProgress ?? 0}
+                        </span>
+                        <span className="text-[11px] px-2.5 py-0.5 rounded-full font-normal w-fit text-center"
+                          style={{ backgroundColor: `${GOLD}20`, color: GOLD }}>
+                          {dept.submitted ?? 0}
+                        </span>
+                        <span className="text-[11px] px-2.5 py-0.5 rounded-full font-normal w-fit text-center"
+                          style={{ backgroundColor: "#22C55E15", color: "#22C55E" }}>
+                          {dept.approved ?? 0}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </ScrollArea>
       </div>
+      <DeptChatPanel department="hr" staffId={staffUser?.staffRef || staffUser?.openId || ""} staffName={staffUser?.name || "HR Staff"} />
     </div>
   );
 }
@@ -956,6 +1065,8 @@ function TrainingSection({ sessions, devPlans, loadingSessions, loadingPlans, re
 // ─── Leave Section ────────────────────────────────────────────────────────────
 function LeaveSection({ leaveRequests, refetch }: { leaveRequests: any[]; refetch: () => void }) {
   const reviewMutation = trpc.leave.review.useMutation({ onSuccess: () => { refetch(); toast.success("Leave request updated"); } });
+  const suggestionsQuery = trpc.agents.suggestions.useQuery({ department: "hr" });
+  const reviewSuggestion = trpc.agents.reviewSuggestion.useMutation({ onSuccess: () => suggestionsQuery.refetch() });
   const [form, setForm] = useState({ staffEmail: "", staffName: "", startDate: "", endDate: "", reason: "", replacementName: "" });
   const [showForm, setShowForm] = useState(false);
   const submitMutation = trpc.leave.submit.useMutation({ onSuccess: () => { refetch(); setShowForm(false); setForm({ staffEmail: "", staffName: "", startDate: "", endDate: "", reason: "", replacementName: "" }); toast.success("Leave request submitted"); } });
@@ -968,6 +1079,14 @@ function LeaveSection({ leaveRequests, refetch }: { leaveRequests: any[]; refetc
 
   return (
     <div className="space-y-6">
+      {/* AI Agent Suggestions */}
+      <AgentSuggestionCard
+        suggestions={suggestionsQuery.data || []}
+        onAccept={(id) => reviewSuggestion.mutate({ id, action: "accept" })}
+        onReject={(id) => reviewSuggestion.mutate({ id, action: "reject" })}
+        isLoading={suggestionsQuery.isLoading}
+      />
+
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-[18px] font-semibold" style={{ color: GREEN }}>Leave Requests</h2>

@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
+import type { StaffUser } from "@/lib/types";
 import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
 import PageMeta from "@/components/PageMeta";
+import DeptChatPanel from "@/components/DeptChatPanel";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -43,12 +45,17 @@ const FILES_LIST = [
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function BizDevDashboard() {
   const { user, loading, logout } = useAuth({ redirectOnUnauthenticated: true });
+  const staffUser = user as StaffUser;
   const [activeSection, setActiveSection] = useState<Section>("overview");
 
   const leadsQuery        = trpc.leads.list.useQuery(undefined, { refetchInterval: 20000 });
   const affiliatesQuery   = trpc.affiliate.listAll.useQuery(undefined, { refetchInterval: 30000 });
   const partnershipsQuery = trpc.partnerships.list.useQuery(undefined, { refetchInterval: 30000 });
   const brandQaQuery      = trpc.brandQa.list.useQuery(undefined, { refetchInterval: 30000 });
+  const weeklyTargetsQuery = trpc.weeklyTargets.byDepartment.useQuery(
+    { department: "bizdev" },
+    { refetchInterval: 60000 },
+  );
 
   if (loading) {
     return (
@@ -100,6 +107,7 @@ export default function BizDevDashboard() {
   ];
 
   return (
+    <>
     <div className="flex h-screen overflow-hidden" style={{ backgroundColor: MILK }}>
       <PageMeta title="BizDev Dashboard — HAMZURY" description="Business development and growth operations for HAMZURY." />
       {/* ── Sidebar ── */}
@@ -163,12 +171,46 @@ export default function BizDevDashboard() {
                 {activeSection === "brandqa" && <BrandQASection brandQaItems={realBrandQa} isLoading={brandQaQuery.isLoading} />}
                 {activeSection === "affiliates" && <AffiliatesSection affiliatesList={affiliatesList} />}
                 {activeSection === "files" && <FilesSection />}
+
+                {/* ─── My Weekly Targets ──────────────────────────────── */}
+                <div style={{ marginTop: 24 }}>
+                  <div className="bg-white rounded-2xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                    <h2 className="text-sm font-medium mb-4" style={{ color: GREEN }}>My Weekly Targets</h2>
+                    {weeklyTargetsQuery.isLoading ? (
+                      <div className="flex items-center gap-2 text-xs opacity-40" style={{ color: DARK }}>
+                        <Loader2 className="animate-spin" size={16} /> Loading targets...
+                      </div>
+                    ) : !weeklyTargetsQuery.data?.length ? (
+                      <p className="text-xs opacity-40" style={{ color: DARK }}>No targets set for this week.</p>
+                    ) : (
+                      <div className="flex flex-col gap-2.5">
+                        {weeklyTargetsQuery.data.map((target: any) => (
+                          <div key={target.id} className="flex items-center justify-between p-3 rounded-xl" style={{ border: "1px solid #F3F4F6", backgroundColor: "#FAFAFA" }}>
+                            <div>
+                              <div className="text-sm font-normal" style={{ color: DARK }}>{target.title || target.description}</div>
+                              {target.deadline && <div className="text-xs mt-0.5" style={{ color: "#9CA3AF" }}>Due: {target.deadline}</div>}
+                            </div>
+                            <span style={{
+                              padding: "3px 10px", borderRadius: 12, fontSize: 11, fontWeight: 600,
+                              backgroundColor: target.status === "approved" ? "rgba(34,197,94,0.10)" : target.status === "in_progress" ? "rgba(59,130,246,0.10)" : target.status === "submitted" ? "rgba(139,92,246,0.10)" : "rgba(234,179,8,0.12)",
+                              color: target.status === "approved" ? "#16A34A" : target.status === "in_progress" ? "#3B82F6" : target.status === "submitted" ? "#7C3AED" : "#B45309",
+                            }}>
+                              {target.status === "approved" ? "Done" : target.status === "in_progress" ? "In Progress" : target.status === "submitted" ? "Submitted" : target.status === "revision_requested" ? "Revision" : "Issued"}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </>
             )}
           </div>
         </ScrollArea>
       </div>
     </div>
+    <DeptChatPanel department="bizdev" staffId={staffUser.staffRef || ""} staffName={staffUser.name || "Staff"} />
+    </>
   );
 }
 

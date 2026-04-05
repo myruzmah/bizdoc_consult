@@ -1,7 +1,10 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
+import type { StaffUser } from "@/lib/types";
 import PageMeta from "@/components/PageMeta";
 import NotificationBell from "@/components/NotificationBell";
+import DeptChatPanel from "@/components/DeptChatPanel";
+import AgentSuggestionCard from "@/components/AgentSuggestionCard";
 import {
   Loader2, LogOut, Briefcase, CalendarDays, Users, BarChart3,
   Clock, CheckCircle2, AlertCircle, Send, ArrowRight,
@@ -51,6 +54,7 @@ function daysSince(dateStr: string | null | undefined): number {
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function SystemiseLeadDashboard() {
   const { user, loading, logout } = useAuth({ redirectOnUnauthenticated: true });
+  const staffUser = user as StaffUser;
   const [activeTab, setActiveTab] = useState<Tab>("projects");
 
   // Data queries
@@ -63,6 +67,17 @@ export default function SystemiseLeadDashboard() {
   });
   const joinAppsQuery = trpc.systemise.joinApplications.useQuery(undefined, {
     refetchInterval: 30000,
+  });
+
+  const weeklyTargetsQuery = trpc.weeklyTargets.byDepartment.useQuery(
+    { department: "systemise" },
+    { refetchInterval: 60000 },
+  );
+
+  // Agent suggestions
+  const suggestionsQuery = trpc.agents.suggestions.useQuery({ department: "systemise" });
+  const reviewMutation = trpc.agents.reviewSuggestion.useMutation({
+    onSuccess: () => suggestionsQuery.refetch(),
   });
 
   const updateStatusMutation = trpc.tasks.updateStatus.useMutation({
@@ -97,7 +112,7 @@ export default function SystemiseLeadDashboard() {
               Systemise Operations
             </h1>
             <span style={{ fontSize: 13, opacity: 0.7 }}>
-              Welcome, {(user as any).name || (user as any).displayName || "Lead"}
+              Welcome, {staffUser.name || staffUser.displayName || "Lead"}
             </span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -133,14 +148,54 @@ export default function SystemiseLeadDashboard() {
 
         {/* ─── Content ─────────────────────────────────────────────────────── */}
         <main style={{ padding: 24, maxWidth: 1400, margin: "0 auto" }}>
+          {/* Agent Suggestions */}
+          <AgentSuggestionCard
+            suggestions={suggestionsQuery.data || []}
+            onAccept={(id) => reviewMutation.mutate({ id, action: "accepted" })}
+            onReject={(id) => reviewMutation.mutate({ id, action: "rejected" })}
+            isLoading={suggestionsQuery.isLoading}
+          />
+
           {activeTab === "projects" && (
             <ProjectsBoard tasks={tasks} onStatusChange={(id, status) => updateStatusMutation.mutate({ id, status: status as any })} />
           )}
           {activeTab === "appointments" && <AppointmentsTable appointments={appointments} />}
           {activeTab === "applications" && <ApplicationsTable applications={joinApps} />}
           {activeTab === "stats" && <StatsOverview tasks={tasks} appointments={appointments} />}
+          {/* ─── My Weekly Targets ─────────────────────────────────────── */}
+          <div style={{ marginTop: 24 }}>
+            <div style={{ backgroundColor: WHITE, borderRadius: 12, border: "1px solid #E5E7EB", padding: 24 }}>
+              <h2 style={{ fontSize: 16, fontWeight: 600, color: TEAL, margin: "0 0 16px 0" }}>My Weekly Targets</h2>
+              {weeklyTargetsQuery.isLoading ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#9CA3AF", fontSize: 13 }}>
+                  <Loader2 className="animate-spin" size={16} /> Loading targets...
+                </div>
+              ) : !weeklyTargetsQuery.data?.length ? (
+                <p style={{ color: "#9CA3AF", fontSize: 13 }}>No targets set for this week.</p>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {weeklyTargetsQuery.data.map((target: any) => (
+                    <div key={target.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderRadius: 8, border: "1px solid #F3F4F6", backgroundColor: "#FAFAFA" }}>
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 500, color: "#1A1A1A" }}>{target.title || target.description}</div>
+                        {target.metric && <div style={{ fontSize: 12, color: "#6B7280", marginTop: 2 }}>{target.metric}</div>}
+                      </div>
+                      <span style={{
+                        padding: "3px 10px", borderRadius: 12, fontSize: 11, fontWeight: 600,
+                        backgroundColor: target.status === "completed" ? "rgba(34,197,94,0.10)" : target.status === "in_progress" ? "rgba(59,130,246,0.10)" : "rgba(234,179,8,0.12)",
+                        color: target.status === "completed" ? "#16A34A" : target.status === "in_progress" ? "#3B82F6" : "#B45309",
+                      }}>
+                        {target.status === "completed" ? "Done" : target.status === "in_progress" ? "In Progress" : "Pending"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </main>
       </div>
+      <DeptChatPanel department="systemise" staffId={staffUser.staffRef || ""} staffName={staffUser.name || "Staff"} />
     </>
   );
 }

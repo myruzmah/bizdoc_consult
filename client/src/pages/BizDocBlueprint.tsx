@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from "react";
-import { Link } from "wouter";
+import { Link, useSearch } from "wouter";
 import PageMeta from "@/components/PageMeta";
-import { Button } from "@/components/ui/button";
 import { ArrowLeft, MessageCircle, Search, Youtube, ChevronDown, ChevronUp, Palette, BarChart2, Monitor, Bot } from "lucide-react";
 
 const G = "#1B4D3E";
@@ -360,9 +359,18 @@ const CATEGORIES: { key: CategoryKey; label: string; icon: React.ReactNode; colo
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function BizDocBlueprint() {
+  const searchString = useSearch();
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<CategoryKey>("branding");
+
+  const { backHref, backLabel } = useMemo(() => {
+    const params = new URLSearchParams(searchString);
+    const from = params.get("from");
+    if (from === "systemise") return { backHref: "/systemise", backLabel: "Back to Systemise" };
+    if (from === "skills") return { backHref: "/skills", backLabel: "Back to Skills" };
+    return { backHref: "/bizdoc", backLabel: "Back to BizDoc" };
+  }, [searchString]);
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim();
@@ -392,6 +400,10 @@ export default function BizDocBlueprint() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: Cr }}>
+      <style>{`
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { scrollbar-width: none; -ms-overflow-style: none; }
+      `}</style>
       <PageMeta
         title="Business Positioning Blueprint — HAMZURY BizDoc"
         description="Find your business type and discover every document, digital tool, and AI system you need to run it professionally in Nigeria."
@@ -403,9 +415,9 @@ export default function BizDocBlueprint() {
         style={{ backgroundColor: `${Cr}ee`, borderColor: `${G}10` }}
       >
         <div className="max-w-5xl mx-auto px-5 h-14 flex items-center gap-3">
-          <Link href="/bizdoc" className="flex items-center gap-2 text-sm" style={{ color: G }}>
+          <Link href={backHref} className="flex items-center gap-2 text-sm" style={{ color: G }}>
             <ArrowLeft size={16} />
-            Back to BizDoc
+            {backLabel}
           </Link>
           <div className="flex-1" />
           <span className="text-xs font-medium tracking-wider uppercase" style={{ color: Au }}>
@@ -456,45 +468,118 @@ export default function BizDocBlueprint() {
           </p>
         )}
 
-        {/* Business Grid */}
+        {/* Business Grid — cards expand inline */}
         {filtered.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-10">
             {filtered.map(biz => {
               const isActive = selected === biz.id;
               return (
-                <button
+                <div
                   key={biz.id}
-                  onClick={() => handleCardClick(biz.id)}
-                  className="relative text-left rounded-2xl border p-4 transition-all hover:shadow-sm group"
+                  className={`rounded-2xl border transition-all duration-300 overflow-hidden ${isActive ? "col-span-2 sm:col-span-3 md:col-span-4 lg:col-span-5 shadow-lg" : "hover:shadow-md hover:-translate-y-0.5 cursor-pointer"}`}
                   style={{
-                    backgroundColor: isActive ? `${G}08` : "#fff",
-                    borderColor: isActive ? `${G}35` : `${G}10`,
+                    backgroundColor: isActive ? "#fff" : "#fff",
+                    borderColor: isActive ? `${G}25` : `${G}08`,
                   }}
                 >
-                  {/* Video link */}
-                  <a
-                    href={biz.videoUrl}
-                    onClick={e => e.stopPropagation()}
-                    className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-[10px] font-medium rounded-full px-2 py-0.5"
-                    style={{ backgroundColor: `${Au}15`, color: Au }}
-                    target="_blank"
-                    rel="noreferrer"
+                  {/* Card Header — always visible */}
+                  <button
+                    onClick={() => handleCardClick(biz.id)}
+                    className="w-full text-left p-4 flex items-center gap-3"
                   >
-                    <Youtube size={10} />
-                    Watch
-                  </a>
+                    <div className={`${isActive ? "text-3xl" : "text-2xl"} transition-all`}>{biz.emoji}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className={`${isActive ? "text-sm" : "text-xs"} font-semibold leading-tight`} style={{ color: G }}>
+                        {biz.name}
+                      </div>
+                      {!isActive && (
+                        <div className="mt-1.5 flex items-center gap-3">
+                          {CATEGORIES.map(cat => (
+                            <span key={cat.key} className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: cat.color, opacity: 0.5 }} />
+                          ))}
+                          <span className="text-[9px] font-medium opacity-40" style={{ color: G }}>4 categories</span>
+                        </div>
+                      )}
+                    </div>
+                    {!isActive && (
+                      <div className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: `${Au}10` }}>
+                        <ChevronDown size={12} style={{ color: Au }} />
+                      </div>
+                    )}
+                    {isActive && (
+                      <div className="flex items-center gap-2 shrink-0">
+                        <a
+                          href={biz.videoUrl}
+                          onClick={e => e.stopPropagation()}
+                          className="flex items-center gap-1 text-[10px] font-medium rounded-full px-2.5 py-1 border"
+                          style={{ borderColor: `${Au}30`, color: Au }}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <Youtube size={10} /> Video
+                        </a>
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: `${G}08` }}>
+                          <ChevronUp size={12} style={{ color: G }} />
+                        </div>
+                      </div>
+                    )}
+                  </button>
 
-                  <div className="text-2xl mb-2">{biz.emoji}</div>
-                  <div className="text-xs font-medium leading-tight" style={{ color: G }}>
-                    {biz.name}
-                  </div>
+                  {/* Expanded Content — inline */}
+                  {isActive && (
+                    <div className="px-4 pb-5">
+                      {/* Category tabs */}
+                      <div className="flex gap-1.5 mb-4 overflow-x-auto hide-scroll pb-1">
+                        {CATEGORIES.map(cat => (
+                          <button
+                            key={cat.key}
+                            onClick={() => setActiveTab(cat.key)}
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-medium whitespace-nowrap transition-all shrink-0"
+                            style={{
+                              backgroundColor: activeTab === cat.key ? `${cat.color}12` : `${G}04`,
+                              color: activeTab === cat.key ? cat.color : `${G}50`,
+                              border: activeTab === cat.key ? `1px solid ${cat.color}25` : `1px solid transparent`,
+                            }}
+                          >
+                            <span>{cat.icon}</span>
+                            {cat.label}
+                          </button>
+                        ))}
+                      </div>
 
-                  {/* Expand indicator */}
-                  <div className="mt-2 flex items-center gap-1 text-[10px] opacity-40" style={{ color: G }}>
-                    {isActive ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
-                    {isActive ? "Collapse" : "Explore"}
-                  </div>
-                </button>
+                      {/* Items grid */}
+                      {CATEGORIES.filter(c => c.key === activeTab).map(cat => {
+                        const items = biz[cat.key];
+                        return (
+                          <div key={cat.key}>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
+                              {items.map((item, idx) => (
+                                <button
+                                  key={idx}
+                                  onClick={() => openChat(`I need help with "${item}" for my ${biz.name} business. This falls under ${cat.label}. Please tell me more and how HAMZURY can help.`)}
+                                  className="flex items-center gap-2.5 rounded-xl px-3.5 py-3 text-left transition-all hover:shadow-sm group/item"
+                                  style={{ backgroundColor: `${cat.color}06`, border: `1px solid ${cat.color}10` }}
+                                >
+                                  <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
+                                  <span className="flex-1 text-[12px] leading-tight" style={{ color: G }}>{item}</span>
+                                  <ArrowLeft size={10} className="rotate-180 opacity-0 group-hover/item:opacity-50 transition-opacity shrink-0" style={{ color: cat.color }} />
+                                </button>
+                              ))}
+                            </div>
+                            <button
+                              onClick={() => openChat(`I want to discuss ${cat.label} for my ${biz.name} business. Can you help me understand what I need?`)}
+                              className="flex items-center gap-2 text-[11px] font-medium px-4 py-2 rounded-xl transition-all hover:opacity-80"
+                              style={{ backgroundColor: G, color: "#fff" }}
+                            >
+                              <MessageCircle size={12} />
+                              Discuss {cat.label} with Us
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
@@ -502,135 +587,6 @@ export default function BizDocBlueprint() {
           <div className="text-center py-12 opacity-40">
             <Search size={32} className="mx-auto mb-3" style={{ color: G }} />
             <p className="text-sm" style={{ color: G }}>No businesses match "{query}"</p>
-          </div>
-        )}
-
-        {/* Expanded Detail Panel */}
-        {selectedBiz && (
-          <div
-            className="rounded-3xl border mb-10 overflow-hidden"
-            style={{ backgroundColor: "#fff", borderColor: `${G}15` }}
-          >
-            {/* Panel Header */}
-            <div
-              className="px-6 py-5 border-b flex items-center justify-between"
-              style={{ borderColor: `${G}10`, backgroundColor: `${G}04` }}
-            >
-              <div className="flex items-center gap-3">
-                <span className="text-3xl">{selectedBiz.emoji}</span>
-                <div>
-                  <h2 className="text-base font-semibold" style={{ color: G }}>
-                    {selectedBiz.name}
-                  </h2>
-                  <p className="text-xs opacity-50" style={{ color: G }}>
-                    Select a category to explore
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <a
-                  href={selectedBiz.videoUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-1.5 text-xs font-medium rounded-xl px-3 py-2 border transition-all hover:opacity-80"
-                  style={{ borderColor: `${Au}30`, color: Au, backgroundColor: `${Au}08` }}
-                >
-                  <Youtube size={13} />
-                  Watch Video
-                </a>
-                <button
-                  onClick={() => setSelected(null)}
-                  className="text-xs opacity-40 hover:opacity-70 px-3 py-2"
-                  style={{ color: G }}
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-
-            {/* Category Tabs */}
-            <div className="flex overflow-x-auto border-b" style={{ borderColor: `${G}08` }}>
-              {CATEGORIES.map(cat => (
-                <button
-                  key={cat.key}
-                  onClick={() => setActiveTab(cat.key)}
-                  className="flex items-center gap-2 px-5 py-3.5 text-xs font-medium whitespace-nowrap border-b-2 transition-all shrink-0"
-                  style={{
-                    borderBottomColor: activeTab === cat.key ? cat.color : "transparent",
-                    color: activeTab === cat.key ? cat.color : `${G}60`,
-                    backgroundColor: activeTab === cat.key ? `${cat.color}06` : "transparent",
-                  }}
-                >
-                  <span style={{ color: activeTab === cat.key ? cat.color : `${G}50` }}>
-                    {cat.icon}
-                  </span>
-                  {cat.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Category Items */}
-            <div className="p-6">
-              {CATEGORIES.filter(c => c.key === activeTab).map(cat => {
-                const items = selectedBiz[cat.key];
-                return (
-                  <div key={cat.key}>
-                    <div className="flex items-center gap-2 mb-4">
-                      <span style={{ color: cat.color }}>{cat.icon}</span>
-                      <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: cat.color }}>
-                        {cat.label}
-                      </span>
-                    </div>
-                    <div className="space-y-2">
-                      {items.map((item, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center justify-between rounded-xl px-4 py-3 border"
-                          style={{ borderColor: `${G}08`, backgroundColor: `${G}02` }}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div
-                              className="w-1.5 h-1.5 rounded-full shrink-0"
-                              style={{ backgroundColor: cat.color }}
-                            />
-                            <span className="text-sm" style={{ color: G }}>
-                              {item}
-                            </span>
-                          </div>
-                          <button
-                            onClick={() =>
-                              openChat(
-                                `I need help with "${item}" for my ${selectedBiz.name} business. This falls under ${cat.label}. Please tell me more about this and how HAMZURY can help.`
-                              )
-                            }
-                            className="text-[11px] font-medium shrink-0 ml-4 px-3 py-1.5 rounded-lg transition-all hover:opacity-80"
-                            style={{ backgroundColor: `${cat.color}12`, color: cat.color }}
-                          >
-                            Learn More
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* CTA at bottom of category */}
-                    <div className="mt-5 pt-4 border-t" style={{ borderColor: `${G}08` }}>
-                      <Button
-                        className="rounded-xl px-5 py-2.5 text-sm font-medium"
-                        style={{ backgroundColor: G, color: "#fff" }}
-                        onClick={() =>
-                          openChat(
-                            `I want to discuss ${cat.label} for my ${selectedBiz.name} business. Can you help me understand what I need and how HAMZURY can support me?`
-                          )
-                        }
-                      >
-                        <MessageCircle size={14} className="mr-2 inline" />
-                        Discuss {cat.label} with Us
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
           </div>
         )}
 
@@ -647,8 +603,8 @@ export default function BizDocBlueprint() {
               Tell us your vision and goals — we'll help you figure out the right business structure, documents, and digital setup from scratch.
             </p>
           </div>
-          <Button
-            className="rounded-xl px-6 py-3 text-sm font-medium shrink-0"
+          <button
+            className="rounded-xl px-6 py-3 text-sm font-medium shrink-0 hover:opacity-90 transition-opacity"
             style={{ backgroundColor: G, color: "#fff" }}
             onClick={() =>
               openChat(
@@ -658,7 +614,7 @@ export default function BizDocBlueprint() {
           >
             <MessageCircle size={15} className="mr-2 inline" />
             Talk to Us
-          </Button>
+          </button>
         </div>
       </div>
     </div>

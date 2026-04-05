@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 
 /**
- * Splash screen — milk background, text logo with color-fill animation.
- * No images — pure CSS text for fast load.
+ * Splash screen — milk background, inline SVG icon with department color.
+ * No images — pure SVG + CSS for instant load.
  *
  * Brand colors:
  *  - Home (HAMZURY): charcoal #1A1A1A
@@ -10,15 +10,22 @@ import { useState, useEffect } from "react";
  *  - Systemise (HAMZURY): blue #2563EB
  *  - Skills (HAMZURY): navy #1E3A5F
  */
+
 type SplashProps = {
   text: string;
   color: string;
   /** Optional accent color shown as a bar beneath the text (BizDoc gold) */
   accent?: string;
+  /** Which icon to show (kept for API compat, all use same logo now) */
+  icon?: "bizdoc" | "hamzury";
+  /** Department name shown below icon */
+  departmentName?: string;
+  /** Tagline / slogan shown below department name */
+  tagline?: string;
   duration?: number;
 };
 
-export default function SplashScreen({ text, color, accent, duration = 1600 }: SplashProps) {
+export default function SplashScreen({ text, color, accent, icon = "hamzury", departmentName, tagline, duration = 1600 }: SplashProps) {
   const [phase, setPhase] = useState<"fill" | "fadeout" | "done">("fill");
 
   useEffect(() => {
@@ -40,39 +47,54 @@ export default function SplashScreen({ text, color, accent, duration = 1600 }: S
       }}
     >
       <style>{`
-        @keyframes splash-fill {
-          0%   { background-size: 0% 100%; }
-          100% { background-size: 100% 100%; }
+        @keyframes splash-icon-in {
+          0%   { opacity: 0; transform: scale(0.85); }
+          100% { opacity: 1; transform: scale(1); }
         }
         @keyframes accent-grow {
           0%   { width: 0; opacity: 0; }
           40%  { opacity: 1; }
           100% { width: 60px; opacity: 1; }
         }
-        .splash-logo {
-          font-size: clamp(28px, 8vw, 48px);
-          font-weight: 600;
-          letter-spacing: 0.35em;
-          text-transform: uppercase;
-          background: linear-gradient(90deg, ${color} 50%, ${color}18 50%);
-          background-size: 0% 100%;
-          background-repeat: no-repeat;
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
-          animation: splash-fill ${duration * 0.8}ms ease-out forwards;
-        }
-        .splash-accent {
-          height: 4px;
-          border-radius: 2px;
-          margin-top: 10px;
-          animation: accent-grow ${duration * 0.7}ms ease-out ${duration * 0.2}ms forwards;
+        @keyframes splash-text-up {
+          0%   { opacity: 0; transform: translateY(8px); }
+          100% { opacity: 1; transform: translateY(0); }
         }
       `}</style>
       <div className="flex flex-col items-center">
-        <span className="splash-logo">{text}</span>
+        <div style={{ opacity: 0, animation: `splash-icon-in 0.8s ease-out forwards` }}>
+          <div style={{ width: 90, height: 90, borderRadius: "50%", backgroundColor: "#FFFAF6", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+            <img
+              src={icon === "bizdoc" ? "/bizdoc-logo.svg" : "/hamzury%20logo.jpeg"}
+              alt={icon === "bizdoc" ? "BizDoc" : "Hamzury"}
+              width={80}
+              height={80}
+              className="object-contain"
+              style={{ width: 80, height: 80, mixBlendMode: "multiply", filter: "contrast(1.15)" }}
+            />
+          </div>
+        </div>
         {accent && (
-          <div className="splash-accent" style={{ backgroundColor: accent, width: 0 }} />
+          <div
+            className="rounded-full"
+            style={{ height: 4, backgroundColor: accent, width: 0, marginTop: 6, animation: `accent-grow ${duration * 0.7}ms ease-out ${duration * 0.2}ms forwards` }}
+          />
+        )}
+        {departmentName && (
+          <p
+            className="mt-4 text-[11px] md:text-[13px] font-semibold tracking-[0.3em] uppercase"
+            style={{ color, opacity: 0, animation: `splash-text-up 0.6s ease-out ${duration * 0.3}ms forwards` }}
+          >
+            {departmentName}
+          </p>
+        )}
+        {tagline && (
+          <p
+            className="mt-2 text-[11px] md:text-[12px] font-light tracking-wide max-w-xs text-center"
+            style={{ color: `${color}88`, opacity: 0, animation: `splash-text-up 0.6s ease-out ${duration * 0.45}ms forwards` }}
+          >
+            {tagline}
+          </p>
         )}
       </div>
     </div>

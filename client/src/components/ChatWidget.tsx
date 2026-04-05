@@ -4,7 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
 /* ═══════════════════════════════════════════════════════════════════════
-   HAMZURY v7 CHAT WIDGET
+   HAMZURY v9 CHAT WIDGET
    One calm, human, premium advisor. Not a menu machine. Not three bots.
    ═══════════════════════════════════════════════════════════════════════ */
 
@@ -325,9 +325,17 @@ const SERVICE_PITCH_MAP: Record<string, { dept: Department; pitch: string; items
   "Tax Compliance": { dept: "bizdoc", pitch: "Tax Compliance keeps your business penalty-free and contract-ready. Without it, you risk fines and cannot bid for tenders.", items: [
     { name: "TIN Registration", price: "₦30,000", amount: 30000 }, { name: "Annual Tax Filing", price: "₦80,000", amount: 80000 }, { name: "Tax Clearance Certificate", price: "₦100,000", amount: 100000 }, { name: "Tax Pro Max (Annual Subscription)", price: "₦150,000/yr", amount: 150000 }] },
   "Sector Licences": { dept: "bizdoc", pitch: "Sector Licences ensure you can legally operate in your industry. Operating without the right permit risks shutdown.", items: [
-    { name: "NAFDAC Registration", price: "₦250,000+", amount: 250000 }, { name: "SCUML Certificate", price: "₦50,000", amount: 50000 }, { name: "NEPC Export Licence", price: "₦120,000", amount: 120000 }, { name: "Other Sector Permits", price: "From ₦60,000", amount: 60000 }] },
-  "Foreign Business": { dept: "bizdoc", pitch: "Foreign Business services help non-Nigerians set up legally in Nigeria. CAMA 2020 compliance, residence permits, and business permits.", items: [
-    { name: "Expatriate Quota", price: "₦350,000+", amount: 350000 }, { name: "CERPAC Residence Permit", price: "₦200,000+", amount: 200000 }, { name: "Business Permit", price: "₦250,000+", amount: 250000 }, { name: "Full Foreign Setup Pack", price: "₦800,000+", amount: 800000 }] },
+    { name: "NAFDAC Registration", price: "₦250,000+", amount: 250000 }, { name: "SCUML Certificate (Standard)", price: "₦60,000", amount: 60000 }, { name: "SCUML Certificate (Mining/Oil & Gas)", price: "₦100,000", amount: 100000 }, { name: "NEPC Export Licence", price: "₦120,000", amount: 120000 }, { name: "Other Sector Permits", price: "From ₦60,000", amount: 60000 }] },
+  "Foreign Business": { dept: "bizdoc", pitch: "Foreign Business Setup — for non-Nigerians registering a company in Nigeria.\n\nIMPORTANT: If any director or shareholder is a foreigner, CAMA 2020 requires minimum share capital of ₦100,000,000 (100 million naira).\n\nShare Capital Filing Fees (CAC):\n₦1M share capital — ₦20,000 filing\n₦5M — ₦25,000\n₦10M — ₦30,000\n₦50M — ₦50,000\n₦100M (minimum for foreigners) — ₦100,000\n₦500M — ₦200,000\n₦1B — ₦300,000\n\nThese are government filing fees ON TOP of our service fee.\n\nSelect the services you need:", items: [
+    { name: "CAC Ltd Registration (Foreign — ₦100M min capital)", price: "₦250,000", amount: 250000 },
+    { name: "CAC Filing Fee (₦100M share capital)", price: "₦100,000", amount: 100000 },
+    { name: "CAC Filing Fee (₦500M share capital)", price: "₦200,000", amount: 200000 },
+    { name: "CAC Filing Fee (₦1B share capital)", price: "₦300,000", amount: 300000 },
+    { name: "Expatriate Quota", price: "₦350,000", amount: 350000 },
+    { name: "CERPAC Residence Permit", price: "₦200,000", amount: 200000 },
+    { name: "Business Permit", price: "₦250,000", amount: 250000 },
+    { name: "Full Foreign Setup Pack (CAC + Quota + CERPAC + Permit)", price: "₦950,000", amount: 950000 },
+  ] },
   "Legal Documents": { dept: "bizdoc", pitch: "Legal Documents protect your business relationships and operations. Without proper contracts, you have no legal recourse.", items: [
     { name: "Contract Templates", price: "₦40,000", amount: 40000 }, { name: "Custom Legal Drafting", price: "₦80,000+", amount: 80000 }, { name: "NDA Pack", price: "₦35,000", amount: 35000 }, { name: "Full Document Pack", price: "₦60,000", amount: 60000 }] },
   /* ═══════════════════════════════════════════════════════════
@@ -495,9 +503,10 @@ const SERVICE_PITCH_MAP: Record<string, { dept: Department; pitch: string; items
   },
   "SCUML Certificate": {
     dept: "bizdoc" as Department,
-    pitch: "🛡️ SCUML CERTIFICATE\n\nSCUML (Special Control Unit against Money Laundering) certificate is FREE from EFCC — it proves your business is not involved in money laundering.\n\nHowever, the PROCESSING and documentation requires professional handling:\n\n• We handle the full application process\n• You receive the official SCUML certificate\n• We provide training documentation on how SCUML compliance works for your business\n• You'll understand your reporting obligations going forward\n\nSCUML is increasingly required for:\n✅ Opening corporate bank accounts\n✅ High-value transactions\n✅ Financial institution dealings\n✅ Government contract compliance\n\nWould you like us to process your SCUML certificate? Let me know your business name and type.",
+    pitch: "🛡️ SCUML CERTIFICATE\n\nSCUML (Special Control Unit against Money Laundering) certificate is FREE from EFCC — it proves your business is not involved in money laundering.\n\nHowever, the PROCESSING and documentation requires professional handling:\n\n• We handle the full application process\n• You receive the official SCUML certificate\n• We provide training documentation on how SCUML compliance works for your business\n• You'll understand your reporting obligations going forward\n\nSCUML is increasingly required for:\n✅ Opening corporate bank accounts\n✅ High-value transactions\n✅ Financial institution dealings\n✅ Government contract compliance\n\n💰 Pricing:\n• Standard businesses — ₦60,000\n• Mining & Oil/Gas businesses — ₦100,000\n\nWould you like us to process your SCUML certificate? Select your business type below.",
     items: [
-      { name: "SCUML Certificate Processing", price: "Get Started", amount: 50000 },
+      { name: "SCUML Certificate (Standard)", price: "₦60,000", amount: 60000 },
+      { name: "SCUML Certificate (Mining/Oil & Gas)", price: "₦100,000", amount: 100000 },
     ],
   },
   "Tax CAC SCUML Management": {
@@ -630,60 +639,54 @@ function isRenewalContext(text: string): boolean {
   return ["renewal", "renew", "upgrade", "annual return", "expiring", "expired", "re-registration", "reregist"].some(k => lower.includes(k));
 }
 
-function getSuggestedSteps(aiResponse: string, dept: Department, exchangeCount: number): { label: string; value: string }[] {
+/** Generate dynamic suggestion chips based on AI response context */
+function generateChips(aiResponse: string, dept: Department, exchangeCount: number, lang: string): string[] {
   const lower = aiResponse.toLowerCase();
-  const suggestions: { label: string; value: string }[] = [];
+  const chips: string[] = [];
 
-  // Price-related
-  if (lower.includes("₦") || lower.includes("price") || lower.includes("cost") || lower.includes("from"))
-    suggestions.push({ label: "How do I pay?", value: "How do I make payment?" });
-  // Timeline
+  // Context-aware chips — pick the most relevant 2-3
+  if (lower.includes("₦") || lower.includes("price") || lower.includes("cost"))
+    chips.push(lang === "Hausa" ? "Ta yaya zan biya?" : lang === "Yoruba" ? "Bawo ni mo ṣe le san?" : "How do I pay?");
   if (lower.includes("days") || lower.includes("week") || lower.includes("timeline"))
-    suggestions.push({ label: "Can it be faster?", value: "Can the timeline be shorter if I pay now?" });
-  // Documents
+    chips.push(lang === "Hausa" ? "Za a iya yi da sauri?" : lang === "Yoruba" ? "Ṣe o le yara ju?" : "Can it be faster?");
   if (lower.includes("document") || lower.includes("registration") || lower.includes("cac"))
-    suggestions.push({ label: "What do I need to start?", value: "What documents or info do I need to get started?" });
-  // Website/brand
+    chips.push(lang === "Hausa" ? "Me nake bukata?" : lang === "Yoruba" ? "Kini mo nilo lati bẹrẹ?" : "What do I need to start?");
   if (lower.includes("website") || lower.includes("brand") || lower.includes("design"))
-    suggestions.push({ label: "Can I see examples?", value: "Can you show me examples of your work?" });
-  // Programs
-  if (lower.includes("program") || lower.includes("cohort") || lower.includes("training"))
-    suggestions.push({ label: "When does it start?", value: "When does the next cohort start and how do I apply?" });
-  // Tax
-  if (lower.includes("tax") || lower.includes("tin") || lower.includes("tcc"))
-    suggestions.push({ label: "Am I owing penalties?", value: "How do I know if my business has tax penalties?" });
+    chips.push(lang === "Hausa" ? "Zan iya ganin misali?" : lang === "Yoruba" ? "Ṣe mo le ri apẹẹrẹ?" : "Can I see examples?");
+  if (lower.includes("program") || lower.includes("cohort") || lower.includes("training") || lower.includes("course"))
+    chips.push(lang === "Hausa" ? "Yaushe zai fara?" : lang === "Yoruba" ? "Nigbawo ni yoo bẹrẹ?" : "When does it start?");
+  if (lower.includes("tax") || lower.includes("tin") || lower.includes("tcc") || lower.includes("penalty"))
+    chips.push(lang === "Hausa" ? "Ina da tara?" : lang === "Yoruba" ? "Ṣe mo jẹ owo iya?" : "Am I owing penalties?");
+  if (lower.includes("pack") || lower.includes("bundle") || lower.includes("save"))
+    chips.push(lang !== "English" ? t(lang, "tellMeMore") : "Tell me more about it");
+  if (lower.includes("licence") || lower.includes("permit") || lower.includes("sector"))
+    chips.push("Which licence do I need?");
 
-  // Package suggestions — always try to upsell to a package
-  if (suggestions.length < 2 && !lower.includes("pack") && !lower.includes("bundle")) {
-    if (dept === "bizdoc") suggestions.push({ label: "See BizDoc Packages", value: "What packages do you have for BizDoc? I want to save money by bundling." });
-    else if (dept === "systemise") suggestions.push({ label: "See Systemise Packages", value: "What packages do you have for digital services? I want to save money by bundling." });
-    else if (dept === "skills") suggestions.push({ label: "See Skills Bundles", value: "What program bundles do you have? I want to save money." });
+  // If nothing matched, add contextual defaults
+  if (chips.length === 0) {
+    if (dept === "bizdoc") chips.push("What does my business need?");
+    else if (dept === "systemise") chips.push("What systems do I need?");
+    else if (dept === "skills") chips.push("Which program fits me?");
+    else chips.push("Tell me more");
   }
 
-  // General fallbacks if no specific match
-  if (suggestions.length === 0) {
-    if (dept === "bizdoc") suggestions.push({ label: "What does my business need?", value: "Based on my business type, what compliance package do I need?" });
-    else if (dept === "systemise") suggestions.push({ label: "What systems do I need?", value: "What digital package would benefit my business most?" });
-    else if (dept === "skills") suggestions.push({ label: "Which program fits me?", value: "Based on my goals, which program bundle should I join?" });
-    else suggestions.push({ label: "Tell me more", value: "Can you explain that in more detail?" });
-  }
-
-  // After 2+ exchanges: show service checklist button OR renewal route
+  // After 2+ exchanges, add a closing chip
   if (exchangeCount >= 2) {
     if (isRenewalContext(aiResponse)) {
-      suggestions.push({ label: "Talk to team about renewal", value: "AI_RENEWAL" });
+      chips.push(lang !== "English" ? t(lang, "talkSupport") : "Talk to team about renewal");
     } else {
-      suggestions.push({ label: "Let's get started", value: "AI_CLOSE_YES" });
+      chips.push(lang !== "English" ? t(lang, "letsGetStarted") : "Let's get started");
     }
   }
 
-  return suggestions.slice(0, 3);
+  return chips.slice(0, 3);
 }
 
 type ChatMessage = {
   sender: "bot" | "user";
   text?: string;
   buttons?: { label: string; value: string }[];
+  chips?: string[]; // AI-generated suggestion chips that fill the input
 };
 
 type ChatState =
@@ -754,10 +757,11 @@ const DEPT_BRAND: Record<Department, { header: string; accent: string; name: str
 /* ── Service catalog with pricing (Packages first, then individual) ── */
 const SERVICES: Record<string, { label: string; value: string; price: string; amount: number }[]> = {
   bizdoc: [
-    // Packages — shown first
-    { label: "⭐ BizDoc Starter Pack (CAC Ltd + TIN + Bank + Seal)", value: "BizDocStarter", price: "₦250,000", amount: 250000 },
-    { label: "⭐ BizDoc Pro Pack (Starter + Tax + Compliance)", value: "BizDocPro", price: "₦400,000", amount: 400000 },
-    { label: "⭐ BizDoc Complete (Pro + Legal + Licence)", value: "BizDocComplete", price: "₦600,000", amount: 600000 },
+    // Packages — shown first (prices match website)
+    { label: "Starter Package (CAC Ltd + EFCC + Tax ProMax)", value: "StarterPkg", price: "₦200,000", amount: 200000 },
+    { label: "Growth Package (+ Branding + Business Plan)", value: "GrowthPkg", price: "₦450,000", amount: 450000 },
+    { label: "Pro Package (+ 1yr Tax Mgmt + Contracts)", value: "ProPkg", price: "₦570,000", amount: 570000 },
+    { label: "Enterprise Package (+ ITF/NSITF/PENCOM/BPP)", value: "EnterprisePkg", price: "₦1,000,000", amount: 1000000 },
     // Individual
     { label: "CAC Registration", value: "CAC", price: "from ₦50,000", amount: 50000 },
     { label: "Tax Compliance (TIN/TCC)", value: "Tax", price: "from ₦30,000", amount: 30000 },
@@ -765,6 +769,7 @@ const SERVICES: Record<string, { label: string; value: string; price: string; am
     { label: "Industry License or Permit", value: "License", price: "from ₦60,000", amount: 60000 },
     { label: "Legal Documentation", value: "Legal", price: "from ₦40,000", amount: 40000 },
     { label: "Foreign Business Setup", value: "Foreign", price: "from ₦350,000", amount: 350000 },
+    { label: "SCUML Certificate", value: "SCUML", price: "from ₦60,000", amount: 60000 },
     { label: "Compliance Management Sub", value: "ComplianceMgmt", price: "₦50,000/mo", amount: 50000 },
   ],
   systemise: [
@@ -1046,11 +1051,12 @@ export default function ChatWidget({ department = "general", open: externalOpen,
       });
       setAiMessages(prev => [...prev, { role: "assistant", content: answer }]);
 
-      // After every AI response, show contextual suggested next steps
+      // After every AI response, generate dynamic suggestion chips
+      // These are contextual follow-up prompts the user can tap to fill input
       const userCount = newHistory.filter(m => m.role === "user").length;
       const lower = answer.toLowerCase();
       setTimeout(() => {
-        // If AI is clearly ready to close, show closing buttons
+        // If AI is closing, show action buttons
         if (userCount >= 2 && (lower.includes("want me to") || lower.includes("ready to") || lower.includes("set this up") || lower.includes("get started") || lower.includes("proceed") || lower.includes("open a file"))) {
           addBotButtons([
             { label: t(userLang, "letsStart"), value: "AI_CLOSE_YES" },
@@ -1058,22 +1064,11 @@ export default function ChatWidget({ department = "general", open: externalOpen,
             { label: t(userLang, "bookCall"), value: "SCHEDULE" },
           ]);
         } else {
-          // Show smart contextual suggestions (translated)
-          const steps = getSuggestedSteps(answer, department, userCount);
-          const translatedSteps = steps.map(s => {
-            // Map known suggestion labels to translation keys
-            const keyMap: Record<string, string> = {
-              "How do I pay?": "howToPay", "Can it be faster?": "canBeFaster",
-              "What do I need to start?": "whatDoINeed", "Can I see examples?": "seeExamples",
-              "When does it start?": "whenStart", "Am I owing penalties?": "taxPenalties",
-              "What does my business need?": "whatBusinessNeeds", "What systems do I need?": "whatSystems",
-              "Which program fits me?": "whichProgram", "Tell me more": "tellMeMore",
-              "Let's get started": "letsGetStarted",
-            };
-            const tKey = keyMap[s.label];
-            return tKey ? { label: t(userLang, tKey), value: s.value } : s;
-          });
-          if (translatedSteps.length > 0) addBotButtons(translatedSteps);
+          // Generate contextual chips from AI response content
+          const chips = generateChips(answer, department, userCount, userLang);
+          if (chips.length > 0) {
+            setMessages(prev => [...prev, { sender: "bot", chips }]);
+          }
         }
       }, 600);
     } catch {
@@ -1157,6 +1152,7 @@ export default function ChatWidget({ department = "general", open: externalOpen,
               { label: "Compliance & Registration (BizDoc)", value: "DEPT_BIZDOC" },
               { label: "Brand, Website & Systems (Systemise)", value: "DEPT_SYSTEMISE" },
               { label: "Training & Programs (Skills)", value: "DEPT_SKILLS" },
+              { label: "← Back", value: "BACK_TO_MENU" },
             ]);
           }, 400);
           setChatState("SERVICES_DEPT");
@@ -1204,6 +1200,25 @@ export default function ChatWidget({ department = "general", open: externalOpen,
       return;
     }
 
+    // ── Back navigation
+    if (val === "BACK_TO_MENU") {
+      showMainMenu();
+      return;
+    }
+    if (val === "BACK_TO_DEPT") {
+      setTimeout(() => {
+        addBotMsg("Which area are you interested in?");
+        addBotButtons([
+          { label: "Compliance & Registration (BizDoc)", value: "DEPT_BIZDOC" },
+          { label: "Brand, Website & Systems (Systemise)", value: "DEPT_SYSTEMISE" },
+          { label: "Training & Programs (Skills)", value: "DEPT_SKILLS" },
+          { label: "← Back", value: "BACK_TO_MENU" },
+        ]);
+      }, 200);
+      setChatState("SERVICES_DEPT");
+      return;
+    }
+
     // ── Our Services: department selection
     if (chatState === "SERVICES_DEPT") {
       const deptMap: Record<string, string> = { DEPT_BIZDOC: "bizdoc", DEPT_SYSTEMISE: "systemise", DEPT_SKILLS: "skills" };
@@ -1213,7 +1228,10 @@ export default function ChatWidget({ department = "general", open: externalOpen,
         const catalog = SERVICES[dept] || [];
         setTimeout(() => {
           addBotMsg("Here is what we offer. Tap any service to learn more.");
-          addBotButtons(catalog.map(s => ({ label: s.label, value: `SVC_${s.value}` })));
+          addBotButtons([
+            ...catalog.map(s => ({ label: `${s.label} — ${s.price}`, value: `SVC_${s.value}` })),
+            { label: "← Back", value: "BACK_TO_DEPT" },
+          ]);
         }, 400);
         setChatState("SERVICES_LIST");
         return;
@@ -1233,11 +1251,19 @@ export default function ChatWidget({ department = "general", open: externalOpen,
         const item = catalog.find(s => s.value === svcValue);
         if (item) {
           setLeadData(prev => ({ ...prev, service: item.label, selectedServices: [svcValue] }));
-          // Find a detailed pitch for this service
-          const pitchKey = Object.keys(SERVICE_PITCH_MAP).find(k =>
-            SERVICE_PITCH_MAP[k].items?.some((pi) => pi.name.toLowerCase().includes(item.label.toLowerCase().split(" ")[0])) ||
-            k.toLowerCase().includes(item.label.toLowerCase().split(" ")[0])
-          );
+          // Find a detailed pitch for this service — match by value or label keywords
+          const labelLower = item.label.toLowerCase();
+          const valueLower = item.value.toLowerCase();
+          const pitchKey = Object.keys(SERVICE_PITCH_MAP).find(k => {
+            const kl = k.toLowerCase();
+            // Direct key match
+            if (labelLower.includes(kl) || kl.includes(valueLower)) return true;
+            // Match by first meaningful word (skip symbols)
+            const firstWord = labelLower.match(/[a-z]+/)?.[0] || "";
+            if (firstWord && kl.includes(firstWord)) return true;
+            // Match pitch items
+            return SERVICE_PITCH_MAP[k].items?.some(pi => pi.name.toLowerCase().includes(firstWord));
+          });
           const pitch = pitchKey ? SERVICE_PITCH_MAP[pitchKey] : null;
           setCurrentPitchKey(pitchKey || "");
           setCheckedPitchItems(new Set());
@@ -1248,6 +1274,7 @@ export default function ChatWidget({ department = "general", open: externalOpen,
               // Show checklist items as buttons
               addBotButtons([
                 ...pitch.items.map(pi => ({ label: `☐ ${pi.name} — ${pi.price}`, value: `CHECK_${pi.name}` })),
+                ...(pitch.items.length > 1 ? [{ label: "☑ Select All", value: "CHECK_ALL" }] : []),
                 { label: "✓ Proceed to Pay", value: "PITCH_CHECKOUT" },
                 { label: "← Back to Services", value: "PITCH_BACK" },
               ]);
@@ -1272,6 +1299,27 @@ export default function ChatWidget({ department = "general", open: externalOpen,
 
     // ── Service pitch: checklist selection + checkout
     if (chatState === "SERVICE_PITCH") {
+      // Select All / Deselect All
+      if (val === "CHECK_ALL" || val === "CHECK_NONE") {
+        const pitch = SERVICE_PITCH_MAP[currentPitchKey];
+        if (!pitch) return;
+        const allSelected = val === "CHECK_ALL";
+        const newChecked = allSelected ? new Set(pitch.items.map(pi => pi.name)) : new Set<string>();
+        checkedPitchRef.current = newChecked;
+        setCheckedPitchItems(newChecked);
+        const total = allSelected ? pitch.items.reduce((sum, pi) => sum + pi.amount, 0) : 0;
+        const selectedNames = allSelected ? pitch.items.map(pi => pi.name) : [];
+        addBotMsg(allSelected
+          ? `All selected: ${selectedNames.join(", ")}\nRunning total: ₦${total.toLocaleString()}`
+          : "No items selected yet. Tap to select.");
+        addBotButtons([
+          ...pitch.items.map(pi => ({ label: `${newChecked.has(pi.name) ? "☑" : "☐"} ${pi.name} — ${pi.price}`, value: `CHECK_${pi.name}` })),
+          ...(pitch.items.length > 1 ? [{ label: allSelected ? "☐ Deselect All" : "☑ Select All", value: allSelected ? "CHECK_NONE" : "CHECK_ALL" }] : []),
+          ...(newChecked.size > 0 ? [{ label: `✓ Proceed to Pay (₦${total.toLocaleString()})`, value: "PITCH_CHECKOUT" }] : []),
+          { label: "← Back to Services", value: "PITCH_BACK" },
+        ]);
+        return;
+      }
       // Checklist item toggled
       if (val.startsWith("CHECK_")) {
         const itemName = val.slice(6);
@@ -1285,12 +1333,14 @@ export default function ChatWidget({ department = "general", open: externalOpen,
         // Calculate running total
         const total = pitch.items.filter(pi => newChecked.has(pi.name)).reduce((sum, pi) => sum + pi.amount, 0);
         const selectedNames = pitch.items.filter(pi => newChecked.has(pi.name)).map(pi => pi.name);
+        const allAreSelected = newChecked.size === pitch.items.length;
         // Re-show the checklist with updated checks
         addBotMsg(selectedNames.length > 0
           ? `Selected: ${selectedNames.join(", ")}\nRunning total: ₦${total.toLocaleString()}`
           : "No items selected yet. Tap to select.");
         addBotButtons([
           ...pitch.items.map(pi => ({ label: `${newChecked.has(pi.name) ? "☑" : "☐"} ${pi.name} — ${pi.price}`, value: `CHECK_${pi.name}` })),
+          ...(pitch.items.length > 1 ? [{ label: allAreSelected ? "☐ Deselect All" : "☑ Select All", value: allAreSelected ? "CHECK_NONE" : "CHECK_ALL" }] : []),
           ...(newChecked.size > 0 ? [{ label: `✓ Proceed to Pay (₦${total.toLocaleString()})`, value: "PITCH_CHECKOUT" }] : []),
           { label: "← Back to Services", value: "PITCH_BACK" },
         ]);
@@ -1567,6 +1617,7 @@ export default function ChatWidget({ department = "general", open: externalOpen,
           addBotMsg(pitch.pitch + "\n\nSelect what you need:");
           addBotButtons([
             ...pitch.items.map(pi => ({ label: `☐ ${pi.name} — ${pi.price}`, value: `CHECK_${pi.name}` })),
+            ...(pitch.items.length > 1 ? [{ label: "☑ Select All", value: "CHECK_ALL" }] : []),
             { label: "✓ Proceed to Pay", value: "PITCH_CHECKOUT" },
             { label: "← Back", value: "PITCH_BACK_TO_CHAT" },
           ]);
@@ -1739,7 +1790,7 @@ export default function ChatWidget({ department = "general", open: externalOpen,
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, `<a href="$2" style="color:${GOLD};text-decoration:underline;">$1</a>`)
       .replace(/\n/g, "<br/>");
 
-  const inputDisabled = chatState === "SUCCESS" || chatState === "SCHEDULE_TIME" || chatState === "SERVICES_LIST" || chatState === "SERVICES_DEPT";
+  const inputDisabled = chatState === "SUCCESS" || chatState === "SCHEDULE_TIME";
   const hasInteracted = messages.some(m => m.sender === "user");
 
   /* ═══════════════════════════════════════════════════════════════
@@ -1849,12 +1900,32 @@ export default function ChatWidget({ department = "general", open: externalOpen,
                   <button
                     key={j}
                     onClick={() => handleButtonClick(btn.value, btn.label)}
-                    className="w-full text-left px-4 py-2.5 text-[13px] border rounded-full hover:bg-[#FFFAF6] transition-all"
+                    className="w-full text-left px-4 py-2.5 text-[13px] border rounded-full hover:bg-[#FFFAF6] transition-all truncate"
                     style={{ borderColor: "rgba(45,45,45,0.12)", color: CHARCOAL }}
                     onMouseEnter={e => (e.currentTarget.style.borderColor = GOLD)}
                     onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(45,45,45,0.12)")}
                   >
                     {btn.label}
+                  </button>
+                ))}
+              </div>
+            )}
+            {msg.chips && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {msg.chips.map((chip, j) => (
+                  <button
+                    key={j}
+                    onClick={() => { setInput(chip); }}
+                    className="px-3 py-1.5 text-[12px] rounded-full border transition-all hover:shadow-sm"
+                    style={{
+                      borderColor: "rgba(45,45,45,0.12)",
+                      color: CHARCOAL,
+                      backgroundColor: "#FAFAFA",
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = GOLD; e.currentTarget.style.backgroundColor = "#FFFAF6"; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(45,45,45,0.12)"; e.currentTarget.style.backgroundColor = "#FAFAFA"; }}
+                  >
+                    {chip}
                   </button>
                 ))}
               </div>

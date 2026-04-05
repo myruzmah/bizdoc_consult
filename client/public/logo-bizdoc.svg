@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 100">
-  <!-- Arabic ba letter ب in BizDoc green -->
-  <text x="60" y="65" font-family="'Noto Naskh Arabic', 'Arabic Typesetting', 'Traditional Arabic', serif"
-    font-size="72" font-weight="700" fill="#1B4D3E" text-anchor="middle">ب</text>
-  <!-- Gold square dot (replaces the standard round dot) -->
-  <rect x="52" y="74" width="16" height="16" rx="2" fill="#C9A97E"/>
-</svg>

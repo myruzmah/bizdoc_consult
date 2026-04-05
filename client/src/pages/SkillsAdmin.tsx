@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
+import type { StaffUser } from "@/lib/types";
 import PageMeta from "@/components/PageMeta";
+import AgentSuggestionCard from "@/components/AgentSuggestionCard";
 import NotificationBell from "@/components/NotificationBell";
+import DeptChatPanel from "@/components/DeptChatPanel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -68,9 +71,14 @@ function PayBadge({ status }: { status: string }) {
 // ─── Main Export ──────────────────────────────────────────────────────────────
 export default function SkillsAdmin() {
   const { user, loading } = useAuth();
+  const staffUser = user as StaffUser;
   const { data: cohorts } = trpc.skills.listCohorts.useQuery();
   const { data: stats } = trpc.skills.adminStats.useQuery();
   const [activeSection, setActiveSection] = useState<"overview" | "cohorts" | "students" | "facilitators" | "milestones" | "competition" | "ridi">("overview");
+  const weeklyTargetsQuery = trpc.weeklyTargets.byDepartment.useQuery(
+    { department: "skills" },
+    { refetchInterval: 60000 },
+  );
 
   if (loading) {
     return (
@@ -158,8 +166,44 @@ export default function SkillsAdmin() {
           {activeSection === "milestones" && <MilestonesPanel />}
           {activeSection === "competition" && <CompetitionPanel />}
           {activeSection === "ridi" && <RidiPanel stats={stats} />}
+
+          {/* ── My Weekly Targets ── */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold text-gray-800">My Weekly Targets</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {weeklyTargetsQuery.isLoading ? (
+                <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <Loader2 className="animate-spin" size={16} /> Loading targets...
+                </div>
+              ) : !weeklyTargetsQuery.data?.length ? (
+                <p className="text-sm text-gray-400">No targets set for this week.</p>
+              ) : (
+                <div className="space-y-2">
+                  {weeklyTargetsQuery.data.map((target: any) => (
+                    <div key={target.id} className="flex items-center justify-between px-4 py-3 rounded-lg border border-gray-100 bg-gray-50">
+                      <div>
+                        <div className="text-sm font-medium text-gray-800">{target.title || target.description}</div>
+                        {target.metric && <div className="text-xs text-gray-500 mt-0.5">{target.metric}</div>}
+                      </div>
+                      <Badge variant={target.status === "completed" ? "default" : target.status === "in_progress" ? "secondary" : "outline"}
+                        className={
+                          target.status === "completed" ? "bg-green-100 text-green-700" :
+                          target.status === "in_progress" ? "bg-blue-100 text-blue-700" :
+                          "bg-yellow-50 text-yellow-700 border-yellow-200"
+                        }>
+                        {target.status === "completed" ? "Done" : target.status === "in_progress" ? "In Progress" : "Pending"}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
+      <DeptChatPanel department="skills" staffId={staffUser?.staffRef || staffUser?.openId || ""} staffName={staffUser?.name || "Staff"} />
     </div>
   );
 }
@@ -335,6 +379,11 @@ function StudentsPanel() {
     onError: () => toast.error("Update failed"),
   });
 
+  const suggestionsQuery = trpc.agents.suggestions.useQuery({ department: "skills" });
+  const reviewSuggestion = trpc.agents.reviewSuggestion.useMutation({
+    onSuccess: () => { suggestionsQuery.refetch(); },
+  });
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | AppStatus>("all");
   const [typeFilter, setTypeFilter] = useState<"all" | "physical" | "online" | "nitda">("all");
@@ -369,6 +418,14 @@ function StudentsPanel() {
 
   return (
     <div className="space-y-6">
+      {/* Zara's AI suggestions */}
+      <AgentSuggestionCard
+        suggestions={suggestionsQuery.data ?? []}
+        onAccept={(id) => reviewSuggestion.mutate({ id, action: "accept" })}
+        onReject={(id) => reviewSuggestion.mutate({ id, action: "reject" })}
+        isLoading={suggestionsQuery.isLoading}
+      />
+
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {[

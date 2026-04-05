@@ -126,7 +126,11 @@ function ServiceCard({ service }: { service: Service }) {
 /* ── Page ───────────────────────────────────────────────────────────────── */
 
 export default function PricingPage() {
-  const [activeTab, setActiveTab] = useState<string>("bizdoc");
+  const params = new URLSearchParams(window.location.search);
+  const initialTab = params.get("tab") || "bizdoc";
+  const [activeTab, setActiveTab] = useState<string>(
+    ["bizdoc", "systemise", "skills"].includes(initialTab) ? initialTab : "bizdoc"
+  );
   const [navMenuOpen, setNavMenuOpen] = useState(false);
   const currentTab = TABS.find((t) => t.key === activeTab) || TABS[0];
 

@@ -1,4 +1,4 @@
-import { eq, desc, sql, and, gte, lte, ne, like } from "drizzle-orm";
+import { eq, desc, sql, and, gte, lte, ne, like, or, not, count } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { migrate } from "drizzle-orm/mysql2/migrator";
 import { createHash, randomBytes, timingSafeEqual, scrypt } from "crypto";
@@ -66,6 +66,10 @@ import {
   podcastEpisodes, PodcastEpisode,
   mediaAssets, MediaAsset,
   socialPlatformStats, SocialPlatformStat,
+  weeklyTargets, InsertWeeklyTarget, WeeklyTarget,
+  deptMessages, InsertDeptMessage, DeptMessage,
+  agentState,
+  agentSuggestions,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -2260,4 +2264,212 @@ export async function createSocialPlatformStat(data: Omit<SocialPlatformStat, "i
   const db = await getDb();
   if (!db) return;
   await db.insert(socialPlatformStats).values(data);
+}
+
+// ─── Weekly Targets (CEO → Departments → HR tracks) ─────────────────────────
+
+export async function createWeeklyTarget(data: Omit<InsertWeeklyTarget, "id" | "createdAt" | "updatedAt">) {
+  const db = await getDb();
+  if (!db) return { id: 0 };
+  const result = await db.insert(weeklyTargets).values(data);
+  return { id: result[0].insertId };
+}
+
+export async function getWeeklyTargets(weekOf?: string): Promise<WeeklyTarget[]> {
+  const db = await getDb();
+  if (!db) return [];
+  if (weekOf) {
+    return db.select().from(weeklyTargets).where(eq(weeklyTargets.weekOf, weekOf)).orderBy(desc(weeklyTargets.createdAt));
+  }
+  return db.select().from(weeklyTargets).orderBy(desc(weeklyTargets.createdAt)).limit(50);
+}
+
+export async function getWeeklyTargetsByDepartment(department: string, weekOf?: string): Promise<WeeklyTarget[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const conditions = [eq(weeklyTargets.department, department)];
+  if (weekOf) conditions.push(eq(weeklyTargets.weekOf, weekOf));
+  return db.select().from(weeklyTargets).where(and(...conditions)).orderBy(desc(weeklyTargets.createdAt));
+}
+
+export async function updateWeeklyTarget(id: number, data: Partial<InsertWeeklyTarget>) {
+  const db = await getDb();
+  if (!db) return null;
+  await db.update(weeklyTargets).set(data).where(eq(weeklyTargets.id, id));
+  return db.select().from(weeklyTargets).where(eq(weeklyTargets.id, id)).then(r => r[0]);
+}
+
+export async function getTargetSubmissionStatus(weekOf: string) {
+  const db = await getDb();
+  if (!db) return [];
+  const targets = await db.select().from(weeklyTargets).where(eq(weeklyTargets.weekOf, weekOf));
+  const depts = ["bizdoc", "systemise", "skills", "media", "bizdev"];
+  return depts.map(d => ({
+    department: d,
+    total: targets.filter(t => t.department === d).length,
+    submitted: targets.filter(t => t.department === d && (t.status === "submitted" || t.status === "approved")).length,
+    approved: targets.filter(t => t.department === d && t.status === "approved").length,
+    pending: targets.filter(t => t.department === d && (t.status === "issued" || t.status === "in_progress")).length,
+  }));
+}
+
+// ── Inter-Department Chat ──
+
+export async function createDeptMessage(data: Omit<InsertDeptMessage, "id" | "createdAt">) {
+  const db = await getDb();
+  if (!db) return { id: 0 };
+  const result = await db.insert(deptMessages).values(data);
+  return { id: result[0].insertId };
+}
+
+export async function getDeptMessages(filters: { threadId?: string; toDepartment?: string; toStaffId?: string; limit?: number }) {
+  const db = await getDb();
+  if (!db) return [];
+  const conditions = [];
+  if (filters.threadId) conditions.push(eq(deptMessages.threadId, filters.threadId));
+  if (filters.toDepartment) conditions.push(eq(deptMessages.toDepartment, filters.toDepartment));
+  if (filters.toStaffId) conditions.push(eq(deptMessages.toStaffId, filters.toStaffId));
+
+  const query = conditions.length > 0
+    ? db.select().from(deptMessages).where(or(...conditions)).orderBy(desc(deptMessages.createdAt)).limit(filters.limit || 50)
+    : db.select().from(deptMessages).orderBy(desc(deptMessages.createdAt)).limit(filters.limit || 50);
+  return query;
+}
+
+export async function getDeptThreads(department: string) {
+  const db = await getDb();
+  if (!db) return [];
+  // Get latest message per thread for a department
+  const messages = await db.select().from(deptMessages)
+    .where(or(
+      eq(deptMessages.toDepartment, department),
+      eq(deptMessages.fromDepartment, department)
+    ))
+    .orderBy(desc(deptMessages.createdAt))
+    .limit(100);
+
+  // Group by threadId, return latest per thread
+  const threadMap = new Map<string, typeof messages[0]>();
+  for (const msg of messages) {
+    if (!threadMap.has(msg.threadId)) threadMap.set(msg.threadId, msg);
+  }
+  return Array.from(threadMap.values());
+}
+
+export async function getUnreadDeptMessageCount(department: string, staffId?: string) {
+  const db = await getDb();
+  if (!db) return 0;
+  const conditions = [eq(deptMessages.isRead, false)];
+  if (staffId) {
+    conditions.push(or(
+      eq(deptMessages.toDepartment, department),
+      eq(deptMessages.toStaffId, staffId)
+    )!);
+  } else {
+    conditions.push(eq(deptMessages.toDepartment, department));
+  }
+  const result = await db.select({ count: count() }).from(deptMessages).where(and(...conditions));
+  return result[0]?.count || 0;
+}
+
+export async function markDeptMessagesRead(threadId: string, readerStaffId: string) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(deptMessages)
+    .set({ isRead: true, readAt: new Date() })
+    .where(and(
+      eq(deptMessages.threadId, threadId),
+      not(eq(deptMessages.fromStaffId, readerStaffId)),
+      eq(deptMessages.isRead, false)
+    ));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AI AGENT STATE & SUGGESTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/** Load persisted agent state from DB. Returns null if not yet stored. */
+export async function loadAgentState(agentId: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(agentState).where(eq(agentState.agentId, agentId)).limit(1);
+  return rows[0] || null;
+}
+
+/** Upsert agent state after each run or toggle. */
+export async function saveAgentState(agentId: string, patch: {
+  enabled?: boolean;
+  lastRun?: Date | null;
+  taskCount?: number;
+  successRate?: number;
+  status?: string;
+  lastError?: string | null;
+}) {
+  const db = await getDb();
+  if (!db) return;
+  const existing = await loadAgentState(agentId);
+  if (existing) {
+    await db.update(agentState).set(patch).where(eq(agentState.agentId, agentId));
+  } else {
+    await db.insert(agentState).values({ agentId, ...patch } as any);
+  }
+}
+
+/** Create an agent suggestion. */
+export async function createAgentSuggestion(data: {
+  agentId: string;
+  targetDepartment: string;
+  targetEntityType: string;
+  targetEntityId: number;
+  suggestionType: string;
+  title: string;
+  content: string;
+}) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.insert(agentSuggestions).values(data);
+  return { id: result[0].insertId, ...data, status: "pending" as const };
+}
+
+/** Get pending suggestions for a department. */
+export async function getAgentSuggestions(department: string) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(agentSuggestions)
+    .where(and(
+      eq(agentSuggestions.targetDepartment, department),
+      eq(agentSuggestions.status, "pending")
+    ))
+    .orderBy(agentSuggestions.createdAt);
+}
+
+/** Get a single suggestion by ID. */
+export async function getAgentSuggestionById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(agentSuggestions).where(eq(agentSuggestions.id, id)).limit(1);
+  return rows[0] || null;
+}
+
+/** Review (accept/reject) a suggestion. */
+export async function reviewAgentSuggestion(id: number, action: "accepted" | "rejected", reviewedBy: string) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(agentSuggestions).set({
+    status: action,
+    reviewedBy,
+    reviewedAt: new Date(),
+  }).where(eq(agentSuggestions.id, id));
+}
+
+/** Expire old pending suggestions (older than 7 days). */
+export async function expireOldSuggestions() {
+  const db = await getDb();
+  if (!db) return;
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  await db.update(agentSuggestions).set({ status: "expired" })
+    .where(and(
+      eq(agentSuggestions.status, "pending"),
+      sql`${agentSuggestions.createdAt} < ${sevenDaysAgo}`
+    ));
 }

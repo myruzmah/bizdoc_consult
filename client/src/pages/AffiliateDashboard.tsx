@@ -1,4 +1,4 @@
-import React, { useEffect, useState, Fragment } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Trophy, Copy, Check, ExternalLink } from "lucide-react";
 import { trpc } from "@/lib/trpc";
@@ -418,280 +418,7 @@ function MarketingAssets({ affiliate }: { affiliate: AffiliateSession }) {
   );
 }
 
-// ─── League Table ─────────────────────────────────────────────────────────────
-
-const TIER_CONFIG = [
-  { name: "Elite",        min: 1,  max: 10, rate: 15, color: "#B48C4C", bg: "#FDF8F0" },
-  { name: "Premier",      min: 11, max: 20, rate: 12, color: "#3B82F6", bg: "#EFF6FF" },
-  { name: "Standard",     min: 21, max: 30, rate: 10, color: "#16A34A", bg: "#F0FDF4" },
-  { name: "Entry",        min: 31, max: 40, rate: 8,  color: "#6B7280", bg: "#F9FAFB" },
-  { name: "Waiting Pool", min: 41, max: 50, rate: 0,  color: "#94A3B8", bg: "#F8FAFC" },
-];
-
-function getTierForRank(rank: number) {
-  return TIER_CONFIG.find((t) => rank >= t.min && rank <= t.max) ?? TIER_CONFIG[4];
-}
-
-function getLeagueStatus(rank: number): { label: string; color: string } {
-  // Bottom 10 of active (41-50 are Waiting Pool)
-  if (rank >= 41) return { label: "Danger ⚠️", color: "#EF4444" };
-  // Danger zone: last 3 in each tier (positions 8-10, 18-20, 28-30, 38-40)
-  const posInTier = ((rank - 1) % 10) + 1;
-  if (posInTier >= 8) return { label: "Danger ⚠️", color: "#EF4444" };
-  // Top 10 of waiting pool promoted
-  if (rank <= 5) return { label: "Promoted ↑", color: "#16A34A" };
-  return { label: "Stable", color: "#6B7280" };
-}
-
-// Generate 50 mock affiliates; current user placed at rank 14
-function buildLeagueTable(userName: string, userEarnings: number) {
-  const mockNames = [
-    "Chukwuemeka A.", "Ngozi B.", "Taiwo F.", "Babatunde O.", "Amina S.",
-    "Oluwaseun K.", "Fatima M.", "Emeka D.", "Chisom N.", "Kelechi I.",
-    "Aisha R.", "Segun T.", "Yetunde L.", "Mustapha G.", "Blessing E.",
-    "Adaeze U.", "Damilola H.", "Uche P.", "Sade W.", "Ibrahim C.",
-    "Temitope A.", "Nkechi V.", "Biodun J.", "Zainab Q.", "Rotimi X.",
-    "Chidinma Y.", "Kehinde Z.", "Folake B.", "Tunde M.", "Esther K.",
-    "Onyeka R.", "Gbemisola T.", "Chidi S.", "Hauwa D.", "Lola F.",
-    "Victor E.", "Nnamdi L.", "Adunola C.", "Samuel O.", "Patience N.",
-    "Chukwudi A.", "Rashida B.", "Ope T.", "Funmi G.", "Okechukwu S.",
-    "Miriam E.", "Tayo D.", "Bola H.", "Nora P.", "Emeka W.",
-  ];
-
-  const USER_RANK = 14;
-  const userPoints = Math.max(Math.round(userEarnings / 1000), 5);
-
-  // Build base points: rank 1 highest, descending
-  const rows: Array<{
-    rank: number;
-    name: string;
-    points: number;
-    isUser: boolean;
-  }> = [];
-
-  let mockIdx = 0;
-  for (let rank = 1; rank <= 50; rank++) {
-    if (rank === USER_RANK) {
-      rows.push({ rank, name: userName, points: userPoints, isUser: true });
-    } else {
-      // Points: roughly 200 at rank 1, decrement by ~3 per rank, add jitter
-      const base = Math.max(200 - rank * 3, 2);
-      const jitter = Math.floor((rank * 7 + mockIdx * 13) % 20) - 10;
-      const pts = Math.max(base + jitter, 1);
-      rows.push({ rank, name: mockNames[mockIdx % mockNames.length], points: pts, isUser: false });
-      mockIdx++;
-    }
-  }
-  return rows;
-}
-
-function LeagueTable({
-  affiliate,
-  totalEarnings,
-}: {
-  affiliate: AffiliateSession;
-  totalEarnings: number;
-}) {
-  const USER_RANK = 14;
-  const userTier = getTierForRank(USER_RANK);
-  const posInTier = ((USER_RANK - 1) % 10) + 1;
-  const isDangerZone = posInTier >= 8;
-  const userPoints = Math.max(Math.round(totalEarnings / 1000), 5);
-  const table = buildLeagueTable(affiliate.name, totalEarnings);
-
-  return (
-    <div className="space-y-6">
-      {/* User position card */}
-      <div
-        className="rounded-2xl p-5 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between"
-        style={{
-          background: userTier.bg,
-          border: `2px solid ${userTier.color}40`,
-        }}
-      >
-        <div className="flex items-center gap-4">
-          <div
-            className="w-14 h-14 rounded-full flex items-center justify-center font-bold text-lg shrink-0"
-            style={{ background: userTier.color, color: "#fff" }}
-          >
-            #{USER_RANK}
-          </div>
-          <div>
-            <p className="font-bold text-base" style={{ color: BRAND.text }}>
-              {affiliate.name}
-            </p>
-            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-              <span
-                className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                style={{ background: userTier.color + "22", color: userTier.color }}
-              >
-                {userTier.name} Tier
-              </span>
-              <span className="text-xs" style={{ color: "#888" }}>
-                {userTier.rate === 0 ? "₦1,000 flat/referral" : `${userTier.rate}% commission`}
-              </span>
-            </div>
-          </div>
-        </div>
-        <div className="flex gap-6 sm:text-right">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wide" style={{ color: "#999" }}>
-              Points
-            </p>
-            <p className="text-2xl font-bold" style={{ color: userTier.color }}>
-              {userPoints}
-            </p>
-          </div>
-          {isDangerZone && (
-            <div
-              className="rounded-xl px-4 py-2 flex flex-col justify-center"
-              style={{ background: "#FEF2F2", border: "1px solid #FECACA" }}
-            >
-              <p className="text-xs font-bold text-red-600">Danger Zone</p>
-              <p className="text-xs text-red-500 mt-0.5">Risk of relegation</p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Full league table */}
-      <div
-        className="rounded-2xl overflow-hidden"
-        style={{ border: "1px solid #E8E3DC", background: BRAND.white }}
-      >
-        <div className="px-5 py-4 flex items-center gap-2" style={{ borderBottom: "1px solid #E8E3DC" }}>
-          <Trophy size={16} style={{ color: "#B48C4C" }} />
-          <p className="text-sm font-semibold" style={{ color: BRAND.text }}>
-            Affiliate League Table — Q2 2026
-          </p>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr style={{ background: "#FFFAF6", borderBottom: "1px solid #E8E3DC" }}>
-                <th className="text-left px-4 py-3 text-xs font-semibold w-16" style={{ color: "#888" }}>Rank</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold" style={{ color: "#888" }}>Affiliate</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold hidden sm:table-cell" style={{ color: "#888" }}>Tier</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold" style={{ color: "#888" }}>Points</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold hidden md:table-cell" style={{ color: "#888" }}>Rate</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold" style={{ color: "#888" }}>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {table.map((row, idx) => {
-                const tier = getTierForRank(row.rank);
-                const status = getLeagueStatus(row.rank);
-                // Add tier divider before first row of each tier
-                const isFirstInTier =
-                  idx === 0 || getTierForRank(table[idx - 1].rank).name !== tier.name;
-
-                return (
-                  <Fragment key={row.rank}>
-                    {isFirstInTier && (
-                      <tr>
-                        <td
-                          colSpan={6}
-                          className="px-4 py-2 text-xs font-bold uppercase tracking-widest"
-                          style={{ background: tier.color + "18", color: tier.color, borderBottom: `1px solid ${tier.color}30` }}
-                        >
-                          {tier.name} — {tier.rate === 0 ? "₦1,000 flat/referral" : `${tier.rate}% commission`}
-                        </td>
-                      </tr>
-                    )}
-                    <tr
-                      style={{
-                        borderBottom: "1px solid #F0EDE8",
-                        background: row.isUser ? tier.color + "10" : undefined,
-                      }}
-                    >
-                      <td className="px-4 py-3">
-                        <span
-                          className="inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold"
-                          style={{
-                            background: tier.color + (row.isUser ? "33" : "18"),
-                            color: tier.color,
-                          }}
-                        >
-                          {row.rank}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className="font-medium text-sm"
-                          style={{ color: row.isUser ? BRAND.federal : BRAND.text }}
-                        >
-                          {row.name}
-                        </span>
-                        {row.isUser && (
-                          <span
-                            className="ml-2 text-xs px-1.5 py-0.5 rounded-full font-semibold"
-                            style={{ background: BRAND.federal + "18", color: BRAND.federal }}
-                          >
-                            You
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 hidden sm:table-cell">
-                        <span
-                          className="text-xs font-medium px-2 py-0.5 rounded-full"
-                          style={{ background: tier.color + "18", color: tier.color }}
-                        >
-                          {tier.name}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 font-semibold" style={{ color: BRAND.text }}>
-                        {row.points}
-                      </td>
-                      <td className="px-4 py-3 hidden md:table-cell text-xs" style={{ color: "#666" }}>
-                        {tier.rate === 0 ? "₦1k flat" : `${tier.rate}%`}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="text-xs font-medium" style={{ color: status.color }}>
-                          {status.label}
-                        </span>
-                      </td>
-                    </tr>
-                  </Fragment>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Relegation info card */}
-      <div
-        className="rounded-2xl p-5 grid sm:grid-cols-3 gap-4"
-        style={{ background: BRAND.federal + "06", border: `1px solid ${BRAND.federal}20` }}
-      >
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: BRAND.federal }}>
-            Next Review
-          </p>
-          <p className="text-sm font-bold" style={{ color: BRAND.text }}>End of Q2 2026</p>
-          <p className="text-xs mt-0.5" style={{ color: "#888" }}>30 June 2026</p>
-        </div>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "#EF4444" }}>
-            Relegation
-          </p>
-          <p className="text-xs" style={{ color: "#555" }}>
-            Bottom 10 active affiliates this quarter will move to the Waiting Pool.
-          </p>
-        </div>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "#16A34A" }}>
-            Promotion
-          </p>
-          <p className="text-xs" style={{ color: "#555" }}>
-            Top 10 in the Waiting Pool will be promoted to Entry tier active slots.
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
+// ─── League Placeholder ───────────────────────────────────────────────────────
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 
@@ -1296,22 +1023,19 @@ export default function AffiliateDashboard() {
           </div>
         )}
 
-        {/* LEAGUE TABLE */}
+        {/* LEAGUE — COMING SOON */}
         {activeTab === "league" && (
-          <div className="space-y-4">
-            <div>
-              <h2 className="text-base font-semibold flex items-center gap-2" style={{ color: BRAND.text }}>
-                <Trophy size={18} style={{ color: "#B48C4C" }} />
-                Affiliate League Table
-              </h2>
-              <p className="text-sm mt-0.5" style={{ color: "#888" }}>
-                50 active affiliate slots ranked by quarterly performance. Bottom 10 are relegated each quarter.
-              </p>
-            </div>
-            <LeagueTable
-              affiliate={affiliate}
-              totalEarnings={pendingEarnings + totalPaid}
-            />
+          <div
+            className="rounded-2xl flex flex-col items-center justify-center text-center py-16 px-6"
+            style={{ background: BRAND.white, border: "1px solid #E8E3DC" }}
+          >
+            <Trophy size={40} style={{ color: "#B48C4C" }} />
+            <h2 className="text-lg font-bold mt-4" style={{ color: BRAND.text }}>
+              Affiliate Premier League
+            </h2>
+            <p className="text-sm mt-2 max-w-md" style={{ color: "#888" }}>
+              Coming Q3 2026 — Quarterly rankings, promotion/relegation, and rewards.
+            </p>
           </div>
         )}
       </main>

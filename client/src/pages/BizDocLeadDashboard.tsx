@@ -1,7 +1,10 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
+import type { StaffUser } from "@/lib/types";
 import PageMeta from "@/components/PageMeta";
 import NotificationBell from "@/components/NotificationBell";
+import DeptChatPanel from "@/components/DeptChatPanel";
+import AgentSuggestionCard from "@/components/AgentSuggestionCard";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -68,6 +71,7 @@ function PriorityBadge({ score }: { score: number | null | undefined }) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function BizDocLeadDashboard() {
   const { user, loading, logout } = useAuth({ redirectOnUnauthenticated: true });
+  const staffUser = user as StaffUser;
   const [activeTab, setActiveTab] = useState<Tab>("queue");
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [reworkNotes, setReworkNotes] = useState<Record<number, string>>({});
@@ -78,8 +82,11 @@ export default function BizDocLeadDashboard() {
     { refetchInterval: 15000 },
   );
   const pendingQuery = trpc.tasks.pending.useQuery(undefined, { refetchInterval: 15000 });
-  const checklistQueries = (trpc.tasks as any).checklist?.useQuery as any; // checklist per task loaded inline
   const subsQuery = trpc.subscriptions.list.useQuery(undefined, { refetchInterval: 30000 });
+  const weeklyTargetsQuery = trpc.weeklyTargets.byDepartment.useQuery(
+    { department: "bizdoc" },
+    { refetchInterval: 60000 },
+  );
 
   // ─── Mutations ────────────────────────────────────────────────────────────
   const updateStatus = trpc.tasks.updateStatus.useMutation({
@@ -97,6 +104,12 @@ export default function BizDocLeadDashboard() {
   const reworkMutation = trpc.tasks.flagRework.useMutation({
     onSuccess: () => { toast.success("Task flagged for rework"); tasksQuery.refetch(); pendingQuery.refetch(); },
     onError: () => toast.error("Failed to flag task"),
+  });
+
+  // ─── Agent Suggestions ────────────────────────────────────────────────────
+  const suggestionsQuery = trpc.agents.suggestions.useQuery({ department: "bizdoc" });
+  const reviewMutation = trpc.agents.reviewSuggestion.useMutation({
+    onSuccess: () => suggestionsQuery.refetch(),
   });
 
   // ─── Derived data ─────────────────────────────────────────────────────────
@@ -136,6 +149,7 @@ export default function BizDocLeadDashboard() {
 
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
+    <>
     <div style={{ minHeight: "100vh", background: MILK }}>
       <PageMeta title="BizDoc Operations" description="BizDoc department lead dashboard" />
 
@@ -197,6 +211,14 @@ export default function BizDocLeadDashboard() {
 
       {/* ── Content ────────────────────────────────────────────────────────── */}
       <main style={{ maxWidth: 1100, margin: "0 auto", padding: "24px 20px" }}>
+        {/* Agent Suggestions */}
+        <AgentSuggestionCard
+          suggestions={suggestionsQuery.data || []}
+          onAccept={(id) => reviewMutation.mutate({ id, action: "accepted" })}
+          onReject={(id) => reviewMutation.mutate({ id, action: "rejected" })}
+          isLoading={suggestionsQuery.isLoading}
+        />
+
         {activeTab === "queue" && (
           <TaskQueueTab
             tasks={allTasks}
@@ -231,8 +253,58 @@ export default function BizDocLeadDashboard() {
         {activeTab === "projects" && (
           <TilzSpaProjectBoard />
         )}
+
+        {/* ── My Weekly Targets ─────────────────────────────────────────── */}
+        <div style={{
+          marginTop: 28, background: WHITE, borderRadius: 10,
+          border: "1px solid #E5E7EB", padding: "20px 24px",
+        }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: GREEN, marginBottom: 16 }}>
+            My Weekly Targets
+          </div>
+          {weeklyTargetsQuery.isLoading ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#9CA3AF" }}>
+              <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /> Loading targets...
+            </div>
+          ) : !weeklyTargetsQuery.data?.length ? (
+            <div style={{ fontSize: 13, color: "#9CA3AF" }}>No targets set for this week.</div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {weeklyTargetsQuery.data.map((target: any) => (
+                <div key={target.id} style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "10px 14px", borderRadius: 8,
+                  border: "1px solid #F3F4F6", background: MILK,
+                }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: GREEN }}>
+                      {target.title || target.description}
+                    </div>
+                    {target.metric && (
+                      <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 2 }}>{target.metric}</div>
+                    )}
+                  </div>
+                  <span style={{
+                    display: "inline-block", padding: "2px 10px", borderRadius: 999,
+                    fontSize: 11, fontWeight: 600,
+                    background: target.status === "completed" ? "rgba(34,197,94,0.10)"
+                      : target.status === "in_progress" ? "rgba(59,130,246,0.10)"
+                      : "rgba(234,179,8,0.12)",
+                    color: target.status === "completed" ? "#16A34A"
+                      : target.status === "in_progress" ? "#3B82F6"
+                      : "#B45309",
+                  }}>
+                    {target.status === "completed" ? "Done" : target.status === "in_progress" ? "In Progress" : "Pending"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </main>
     </div>
+    <DeptChatPanel department="bizdoc" staffId={staffUser?.staffRef || ""} staffName={staffUser?.name || "BizDoc Staff"} />
+    </>
   );
 }
 

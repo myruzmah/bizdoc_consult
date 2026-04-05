@@ -31,9 +31,24 @@ export default function AffiliatePage() {
   const [regAudienceSize, setRegAudienceSize] = useState("");
   const [regHoursPerWeek, setRegHoursPerWeek] = useState("");
   const [regWhyAffiliate, setRegWhyAffiliate] = useState("");
+  const [regPassword, setRegPassword] = useState("");
   const [regSuccess, setRegSuccess] = useState(false);
   const [regError, setRegError] = useState("");
   const [regStep, setRegStep] = useState<1 | 2 | 3>(1);
+  const [regLoading, setRegLoading] = useState(false);
+  const [regCode, setRegCode] = useState("");
+
+  const applyMutation = trpc.affiliate.selfRegister.useMutation({
+    onSuccess: (data: any) => {
+      setRegCode(data.code || "");
+      setRegSuccess(true);
+      setRegLoading(false);
+    },
+    onError: (err: { message?: string }) => {
+      setRegError(err.message || "Something went wrong. Please try again.");
+      setRegLoading(false);
+    },
+  });
 
   // Tab
   const [tab, setTab] = useState<"login" | "register">("login");
@@ -74,6 +89,7 @@ export default function AffiliatePage() {
     setRegError("");
     if (regStep === 1) {
       if (!regName.trim() || !regEmail.trim() || !regPhone.trim()) { setRegError("Name, email and phone are required."); return; }
+      if (!regPassword.trim() || regPassword.length < 8) { setRegError("Password must be at least 8 characters."); return; }
       setRegStep(2);
       return;
     }
@@ -81,9 +97,23 @@ export default function AffiliatePage() {
       setRegStep(3);
       return;
     }
-    // Step 3 — submit
+    // Step 3 — submit to backend
     if (!regMarketingPlan.trim() || !regWhyAffiliate.trim()) { setRegError("Please fill in all required fields."); return; }
-    setRegSuccess(true);
+    setRegLoading(true);
+    applyMutation.mutate({
+      name: regName.trim(),
+      email: regEmail.trim(),
+      phone: regPhone.trim(),
+      password: regPassword,
+      state: regState.trim() || undefined,
+      instagram: regInstagram.trim() || undefined,
+      linkedin: regLinkedin.trim() || undefined,
+      twitter: regTwitter.trim() || undefined,
+      marketingPlan: regMarketingPlan.trim() || undefined,
+      audienceSize: regAudienceSize.trim() || undefined,
+      hoursPerWeek: regHoursPerWeek.trim() || undefined,
+      whyAffiliate: regWhyAffiliate.trim() || undefined,
+    });
   }
 
   function scrollToForm() {
@@ -287,10 +317,15 @@ export default function AffiliatePage() {
                 <div className="text-center py-8">
                   <CheckCircle2 size={40} className="mx-auto mb-4" style={{ color: GOLD }} />
                   <p className="text-[15px] font-semibold mb-2" style={{ color: CHARCOAL }}>
-                    Application sent.
+                    Application submitted successfully.
                   </p>
+                  {regCode && (
+                    <p className="text-[14px] font-medium mb-2" style={{ color: GOLD }}>
+                      Your referral code: {regCode}
+                    </p>
+                  )}
                   <p className="text-[13px] font-light" style={{ color: `${CHARCOAL}50` }}>
-                    We will review your application and reach out within 24\u201348 hours.
+                    Your account is pending review. We will activate it and reach out within 24\u201348 hours. Once approved, log in with your email and password to access your dashboard.
                   </p>
                   <button
                     onClick={() => setTab("login")}
@@ -319,6 +354,7 @@ export default function AffiliatePage() {
                       <input type="text" value={regName} onChange={e => setRegName(e.target.value)} placeholder="Full name *" required className="w-full px-5 py-4 text-[14px] font-light outline-none" style={inputStyle} />
                       <input type="email" value={regEmail} onChange={e => setRegEmail(e.target.value)} placeholder="Email address *" required className="w-full px-5 py-4 text-[14px] font-light outline-none" style={inputStyle} />
                       <input type="tel" value={regPhone} onChange={e => setRegPhone(e.target.value)} placeholder="Phone / WhatsApp *" required className="w-full px-5 py-4 text-[14px] font-light outline-none" style={inputStyle} />
+                      <input type="password" value={regPassword} onChange={e => setRegPassword(e.target.value)} placeholder="Create password (min 8 chars) *" required className="w-full px-5 py-4 text-[14px] font-light outline-none" style={inputStyle} />
                       <input type="text" value={regState} onChange={e => setRegState(e.target.value)} placeholder="State of residence" className="w-full px-5 py-4 text-[14px] font-light outline-none" style={inputStyle} />
                     </>
                   )}
@@ -346,8 +382,8 @@ export default function AffiliatePage() {
                         Back
                       </button>
                     )}
-                    <button type="submit" className="flex-1 py-4 rounded-full text-[14px] font-medium transition-opacity duration-200 hover:opacity-80" style={{ backgroundColor: CHARCOAL, color: MILK }}>
-                      {regStep < 3 ? "Continue" : "Submit Application"}
+                    <button type="submit" disabled={regLoading} className="flex-1 py-4 rounded-full text-[14px] font-medium transition-opacity duration-200 hover:opacity-80 disabled:opacity-50" style={{ backgroundColor: CHARCOAL, color: MILK }}>
+                      {regLoading ? "Submitting..." : regStep < 3 ? "Continue" : "Submit Application"}
                     </button>
                   </div>
                   <p className="text-[12px] text-center mt-4" style={{ color: `${CHARCOAL}40` }}>

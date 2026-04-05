@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import type { StaffUser } from "@/lib/types";
 import { trpc } from "@/lib/trpc";
 import PageMeta from "@/components/PageMeta";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,8 @@ import { useState } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
 import { BRAND } from "@/lib/brand";
+import DeptChatPanel from "@/components/DeptChatPanel";
+import AgentSuggestionCard from "@/components/AgentSuggestionCard";
 
 // ─── Palette (CSO = general/federal → Apple grey) ────────────────────────────
 const TEAL  = "#1B4D3E";   // HAMZURY green
@@ -93,6 +96,7 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function CSODashboard() {
   const { user, loading, logout } = useAuth({ redirectOnUnauthenticated: true });
+  const staffUser = user as StaffUser;
   const [activeSection, setActiveSection] = useState<Section>("overview");
   const [selectedDept, setSelectedDept]   = useState<Record<number, string>>({});
   const [taskDeptFilter, setTaskDeptFilter] = useState<string>("all");
@@ -108,6 +112,7 @@ export default function CSODashboard() {
   );
   const staffQuery        = trpc.staff.list.useQuery(undefined, { refetchInterval: 60000 });
   const appointmentsQuery = trpc.systemise.appointments.useQuery(undefined, { refetchInterval: 30000 });
+  const deptUnreadQuery   = trpc.deptChat.unreadCount.useQuery({ department: "CSO" }, { refetchInterval: 15000 });
 
   const assignMutation = trpc.leads.assign.useMutation({
     onSuccess: () => {
@@ -143,6 +148,13 @@ export default function CSODashboard() {
   });
   const [reworkNotes, setReworkNotes] = useState<Record<number, string>>({});
 
+  // Agent suggestions
+  const suggestionsQuery = trpc.agents.suggestions.useQuery({ department: "cso" });
+  const reviewMutation = trpc.agents.reviewSuggestion.useMutation({
+    onSuccess: () => suggestionsQuery.refetch(),
+    onError: (err: any) => { toast.error(err.message || "Something went wrong"); },
+  });
+
   // Quick entry form
   const [showQuickEntry, setShowQuickEntry] = useState(false);
   const [quickEntry, setQuickEntry] = useState({ name: "", phone: "", service: "", department: "bizdoc", notes: "" });
@@ -156,6 +168,11 @@ export default function CSODashboard() {
     },
     onError: () => toast.error("Failed to create client"),
   });
+
+  const weeklyTargetsQuery = trpc.weeklyTargets.byDepartment.useQuery(
+    { department: "cso" },
+    { refetchInterval: 60000 },
+  );
 
   const utils = trpc.useUtils();
   const subsQuery = trpc.subscriptions.list.useQuery(undefined, { refetchInterval: 30000 });
@@ -210,7 +227,7 @@ export default function CSODashboard() {
   const currentSection = SECTIONS.find(s => s.id === activeSection);
   const staffList = staffQuery.data || [];
   const realAppointments = appointmentsQuery.data || [];
-  const unreadUpdates = MOCK_UPDATES.filter(u => !u.acknowledged).length;
+  const unreadUpdates = deptUnreadQuery.data ?? 0;
 
   function renderSubscriptions() {
     const subs = subsQuery.data || [];
@@ -542,6 +559,14 @@ export default function CSODashboard() {
             {/* ── Overview ── */}
             {activeSection === "overview" && (
               <div className="space-y-6">
+                {/* Agent Suggestions */}
+                <AgentSuggestionCard
+                  suggestions={suggestionsQuery.data || []}
+                  onAccept={(id) => reviewMutation.mutate({ id, action: "accepted" })}
+                  onReject={(id) => reviewMutation.mutate({ id, action: "rejected" })}
+                  isLoading={suggestionsQuery.isLoading}
+                />
+
                 {/* Create Lead Button */}
                 <div className="flex justify-end">
                   <button
@@ -884,9 +909,39 @@ export default function CSODashboard() {
             {/* ── Subscriptions ── */}
             {activeSection === "subscriptions" && renderSubscriptions()}
 
+            {/* ── My Weekly Targets ── */}
+            <div className="mt-6 bg-white rounded-xl border p-6" style={{ borderColor: `${TEAL}15` }}>
+              <h2 className="text-base font-semibold mb-4" style={{ color: TEAL }}>My Weekly Targets</h2>
+              {weeklyTargetsQuery.isLoading ? (
+                <div className="flex items-center gap-2 text-sm opacity-40" style={{ color: TEAL }}>
+                  <Loader2 className="animate-spin" size={16} /> Loading targets...
+                </div>
+              ) : !weeklyTargetsQuery.data?.length ? (
+                <p className="text-sm text-gray-400">No targets set for this week.</p>
+              ) : (
+                <div className="space-y-2">
+                  {weeklyTargetsQuery.data.map((target: any) => (
+                    <div key={target.id} className="flex items-center justify-between px-4 py-3 rounded-lg border" style={{ borderColor: `${TEAL}10`, backgroundColor: MILK }}>
+                      <div>
+                        <div className="text-sm font-medium" style={{ color: TEAL }}>{target.title || target.description}</div>
+                        {target.metric && <div className="text-xs text-gray-500 mt-0.5">{target.metric}</div>}
+                      </div>
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{
+                        backgroundColor: target.status === "completed" ? "#DCFCE7" : target.status === "in_progress" ? "#DBEAFE" : "#FEF3C7",
+                        color: target.status === "completed" ? "#166534" : target.status === "in_progress" ? "#1E40AF" : "#92400E",
+                      }}>
+                        {target.status === "completed" ? "Done" : target.status === "in_progress" ? "In Progress" : "Pending"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
           </div>
         </ScrollArea>
       </div>
+      <DeptChatPanel department="cso" staffId={staffUser.staffRef || user?.openId || ""} staffName={user?.name || "CSO Staff"} />
     </div>
   );
 }
@@ -1322,6 +1377,7 @@ function CommissionsView() {
 }
 
 // ─── HELPERS VIEW ─────────────────────────────────────────────────────────────
+// MOCK_HELPERS is used as fallback when staffList is empty (acceptable for now)
 const MOCK_HELPERS = [
   { id: 1, name: "Aminu Sule",    email: "aminu@helper.com",   phone: "0801 234 5678", status: "Active",   leads: 5, lastActive: "2h ago" },
   { id: 2, name: "Blessing Obi",  email: "blessing@helper.com", phone: "0802 345 6789", status: "Active",   leads: 3, lastActive: "5h ago" },
@@ -1653,34 +1709,39 @@ function AttendanceView({ attendance, isLoading }: { attendance: any[]; isLoadin
 }
 
 // ─── DEPT UPDATES VIEW ────────────────────────────────────────────────────────
-const MOCK_UPDATES = [
-  { id: 1, dept: "BizDoc",    assignmentId: "ASG-001", time: "10 min ago",
-    message: "Work started on CAC registration — NorthStar Trading Co.",
-    statusChange: "In Progress", nextStep: "Awaiting certified copy from client", acknowledged: false },
-  { id: 2, dept: "Systemise", assignmentId: "ASG-002", time: "1h ago",
-    message: "Waiting for brand assets from client before continuing website build.",
-    statusChange: null, nextStep: "Client to upload logo files", acknowledged: false },
-  { id: 3, dept: "Skills",    assignmentId: "ASG-003", time: "3h ago",
-    message: "Ready for CSO review — Business Essentials Cohort 3 enrollment confirmed.",
-    statusChange: "Review", nextStep: "CSO to notify client of start date", acknowledged: true },
-  { id: 4, dept: "BizDoc",    assignmentId: "ASG-004", time: "Yesterday",
-    message: "Submitted to CAC — awaiting external approval.",
-    statusChange: null, nextStep: "Awaiting external approval (3–5 business days)", acknowledged: true },
-];
+// Real backend: uses deptChat.csoUpdates tRPC query (dept_messages table, toDepartment = "CSO")
 
 const DEPT_COLORS: Record<string, string> = { BizDoc: "#1B4D3E", Systemise: "#2563EB", Skills: "#8B6914" };
 
+function formatRelativeTime(date: string | Date): string {
+  const now = Date.now();
+  const then = new Date(date).getTime();
+  const diffMs = now - then;
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days === 1) return "Yesterday";
+  return `${days}d ago`;
+}
+
 function DeptUpdatesView() {
-  const [updates, setUpdates] = useState(MOCK_UPDATES);
-  const [filter, setFilter]   = useState<"all" | "unread">("all");
+  const [filter, setFilter] = useState<"all" | "unread">("all");
+  const utils = trpc.useUtils();
 
-  const visible    = filter === "unread" ? updates.filter(u => !u.acknowledged) : updates;
-  const unreadCount = updates.filter(u => !u.acknowledged).length;
+  const updatesQuery = trpc.deptChat.csoUpdates.useQuery({ limit: 30 }, { refetchInterval: 30_000 });
+  const acknowledgeMut = trpc.deptChat.acknowledge.useMutation({
+    onSuccess: () => {
+      utils.deptChat.csoUpdates.invalidate();
+      toast.success("Update acknowledged");
+    },
+  });
 
-  function acknowledge(id: number) {
-    setUpdates(prev => prev.map(u => u.id === id ? { ...u, acknowledged: true } : u));
-    toast.success("Update acknowledged");
-  }
+  const updates = updatesQuery.data ?? [];
+  const unreadCount = updates.filter(u => !u.isRead).length;
+  const visible = filter === "unread" ? updates.filter(u => !u.isRead) : updates;
 
   return (
     <div className="space-y-4">
@@ -1710,56 +1771,59 @@ function DeptUpdatesView() {
         </div>
       </div>
 
-      <div className="space-y-3">
-        {visible.length === 0 ? (
-          <div className="bg-white rounded-2xl p-12 text-center shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-            <CheckCircle2 size={36} className="mx-auto mb-3 opacity-20" style={{ color: "#22C55E" }} />
-            <p className="text-[14px] opacity-40" style={{ color: TEAL }}>All updates acknowledged</p>
-          </div>
-        ) : visible.map(u => (
-          <div
-            key={u.id}
-            className="bg-white rounded-2xl border overflow-hidden"
-            style={{ borderColor: u.acknowledged ? `${TEAL}08` : `${GOLD}30` }}
-          >
-            <div className="px-4 py-2.5 flex items-center justify-between border-b" style={{ borderColor: `${TEAL}06` }}>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: DEPT_COLORS[u.dept] ?? GOLD }} />
-                <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: DEPT_COLORS[u.dept] ?? GOLD }}>{u.dept}</span>
-                <span className="text-[10px] font-mono opacity-30" style={{ color: TEAL }}>{u.assignmentId}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] opacity-30" style={{ color: TEAL }}>{u.time}</span>
-                {!u.acknowledged && <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
-              </div>
-            </div>
-            <div className="px-4 py-3">
-              <p className="text-[13px] font-medium mb-2" style={{ color: TEAL }}>{u.message}</p>
-              {u.statusChange && (
-                <span className="text-[10px] font-bold px-2.5 py-1 rounded-full mr-2" style={{ backgroundColor: "#3B82F615", color: "#3B82F6" }}>
-                  Status → {u.statusChange}
-                </span>
-              )}
-              <p className="text-[12px] opacity-40 mt-2 flex items-center gap-1" style={{ color: TEAL }}>
-                <ChevronRight size={12} /> Next: {u.nextStep}
+      {updatesQuery.isLoading ? (
+        <div className="bg-white rounded-2xl p-12 text-center shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+          <Loader2 size={24} className="mx-auto mb-3 animate-spin opacity-30" style={{ color: TEAL }} />
+          <p className="text-[13px] opacity-40" style={{ color: TEAL }}>Loading updates...</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {visible.length === 0 ? (
+            <div className="bg-white rounded-2xl p-12 text-center shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+              <CheckCircle2 size={36} className="mx-auto mb-3 opacity-20" style={{ color: "#22C55E" }} />
+              <p className="text-[14px] opacity-40" style={{ color: TEAL }}>
+                {updates.length === 0 ? "No department updates yet" : "All updates acknowledged"}
               </p>
             </div>
-            {!u.acknowledged && (
-              <div className="px-4 py-2.5 border-t flex gap-2" style={{ borderColor: `${TEAL}06` }}>
-                <button onClick={() => acknowledge(u.id)}
-                  className="text-[11px] font-bold px-3 py-1.5 rounded-lg"
-                  style={{ backgroundColor: TEAL, color: GOLD }}>Acknowledge</button>
-                <button onClick={() => toast("Requesting more info from department")}
-                  className="text-[11px] font-bold px-3 py-1.5 rounded-lg border"
-                  style={{ borderColor: `${TEAL}20`, color: TEAL }}>Request More Info</button>
-                <button onClick={() => toast("Flagged for CEO review")}
-                  className="text-[11px] font-bold px-3 py-1.5 rounded-lg border"
-                  style={{ borderColor: "#EF444430", color: "#EF4444" }}>Escalate</button>
+          ) : visible.map(u => (
+            <div
+              key={u.id}
+              className="bg-white rounded-2xl border overflow-hidden"
+              style={{ borderColor: u.isRead ? `${TEAL}08` : `${GOLD}30` }}
+            >
+              <div className="px-4 py-2.5 flex items-center justify-between border-b" style={{ borderColor: `${TEAL}06` }}>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: DEPT_COLORS[u.fromDepartment] ?? GOLD }} />
+                  <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: DEPT_COLORS[u.fromDepartment] ?? GOLD }}>{u.fromDepartment}</span>
+                  <span className="text-[10px] font-mono opacity-30" style={{ color: TEAL }}>{u.threadId}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] opacity-30" style={{ color: TEAL }}>{formatRelativeTime(u.createdAt)}</span>
+                  {!u.isRead && <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
+                </div>
               </div>
-            )}
-          </div>
-        ))}
-      </div>
+              <div className="px-4 py-3">
+                <p className="text-[13px] font-medium mb-1" style={{ color: TEAL }}>{u.message}</p>
+                <p className="text-[11px] opacity-40" style={{ color: TEAL }}>— {u.fromName}</p>
+              </div>
+              {!u.isRead && (
+                <div className="px-4 py-2.5 border-t flex gap-2" style={{ borderColor: `${TEAL}06` }}>
+                  <button onClick={() => acknowledgeMut.mutate({ messageId: u.id })}
+                    disabled={acknowledgeMut.isPending}
+                    className="text-[11px] font-bold px-3 py-1.5 rounded-lg"
+                    style={{ backgroundColor: TEAL, color: GOLD }}>Acknowledge</button>
+                  <button onClick={() => toast("Requesting more info from department")}
+                    className="text-[11px] font-bold px-3 py-1.5 rounded-lg border"
+                    style={{ borderColor: `${TEAL}20`, color: TEAL }}>Request More Info</button>
+                  <button onClick={() => toast("Flagged for CEO review")}
+                    className="text-[11px] font-bold px-3 py-1.5 rounded-lg border"
+                    style={{ borderColor: "#EF444430", color: "#EF4444" }}>Escalate</button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -1774,6 +1838,7 @@ const APPOINTMENT_TYPES = [
   { value: "retention",  label: "Retention Check",  color: "#8B5CF6" },
 ];
 
+// MOCK_APPOINTMENTS is used as fallback when realAppointments is empty (acceptable for now)
 const MOCK_APPOINTMENTS = [
   { id: 1, client: "Kemi Adeyemi Properties", ref: "HMZ-26/3-1234", type: "discovery", date: "2026-03-23", time: "10:00 AM", duration: 30, notes: "Interested in CAC + trademark",      status: "confirmed" },
   { id: 2, client: "NorthStar Trading Co",    ref: "HMZ-26/3-5678", type: "follow_up", date: "2026-03-23", time: "2:00 PM",  duration: 20, notes: "Check on document upload",          status: "pending" },

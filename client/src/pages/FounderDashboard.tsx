@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
+import type { StaffUser } from "@/lib/types";
 import { Link } from "wouter";
 import PageMeta from "@/components/PageMeta";
+import DeptChatPanel from "@/components/DeptChatPanel";
+import AgentSuggestionCard from "@/components/AgentSuggestionCard";
 import NotificationBell from "@/components/NotificationBell";
 import { FINANCE_SUMMARY, SHARED_TASKS, formatNaira } from "@/lib/dashboardStore";
 import { toast } from "sonner";
@@ -72,11 +75,6 @@ const MOCK_ESCALATIONS = [
   { id: 3, type: "Brand Conflict", title: "External agency proposal does not meet brand guidelines", from: "BizDev", urgency: "medium", time: "1d ago" },
 ];
 
-const MOCK_EVENTS = [
-  { day: "Mon", date: "23", title: "Weekly Strategy Sync — All Dept Leads", time: "9:00 AM" },
-  { day: "Wed", date: "25", title: "BizDoc Client Review — Q1 Compliance Batch", time: "2:00 PM" },
-  { day: "Fri", date: "27", title: "HAMZURY Monthly All-Hands", time: "4:00 PM" },
-];
 
 const STAFF = [
   { name: "Idris Ibrahim", title: "Chief Executive Officer", dept: "CEO", color: "#2563EB" },
@@ -105,6 +103,7 @@ const FILES = [
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function FounderDashboard() {
   const { user, loading, logout } = useAuth({ redirectOnUnauthenticated: true });
+  const staffUser = user as StaffUser;
   const [activeSection, setActiveSection] = useState<Section>("overview");
   const [resolvedRefs, setResolvedRefs] = useState<string[]>([]);
 
@@ -233,6 +232,7 @@ export default function FounderDashboard() {
             {activeSection === "overview" && (
               <>
                 <OverviewSection stats={stats} leads={leads} commissions={commissions} activity={activity} />
+                <div className="mt-8"><AllTargetsOverview /></div>
                 <AdminTools />
               </>
             )}
@@ -256,6 +256,94 @@ export default function FounderDashboard() {
           </div>
         </ScrollArea>
       </div>
+
+      {/* Dept Chat Panel */}
+      <DeptChatPanel department="founder" staffId={staffUser.staffRef || ""} staffName={staffUser.name || "Founder"} />
+    </div>
+  );
+}
+
+// ─── All Targets Overview (Read-Only) ─────────────────────────────────────────
+function AllTargetsOverview() {
+  const targetsQuery = trpc.weeklyTargets.list.useQuery({});
+  const targets = targetsQuery.data || [];
+
+  const statusLabels: Record<string, { label: string; color: string }> = {
+    issued: { label: "Issued", color: "#3B82F6" },
+    in_progress: { label: "In Progress", color: "#EAB308" },
+    submitted: { label: "Submitted", color: "#8B5CF6" },
+    approved: { label: "Approved", color: "#22C55E" },
+    revision_requested: { label: "Revision", color: "#EF4444" },
+  };
+
+  // Group by department
+  const byDept: Record<string, Record<string, number>> = {};
+  for (const t of targets) {
+    if (!byDept[t.department]) byDept[t.department] = {};
+    const s = t.status || "issued";
+    byDept[t.department][s] = (byDept[t.department][s] || 0) + 1;
+  }
+
+  // Overall status counts
+  const overall: Record<string, number> = {};
+  for (const t of targets) {
+    const s = t.status || "issued";
+    overall[s] = (overall[s] || 0) + 1;
+  }
+
+  return (
+    <div className="bg-white rounded-2xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+      <div className="flex items-center gap-2 mb-4">
+        <Target size={16} style={{ color: GOLD }} />
+        <h2 className="text-sm uppercase tracking-wider opacity-40 font-normal" style={{ color: CHOCO }}>All Targets Overview</h2>
+        <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: `${GOLD}15`, color: GOLD }}>
+          {targets.length} total
+        </span>
+      </div>
+
+      {targetsQuery.isLoading ? (
+        <p className="text-xs opacity-40 py-4 text-center" style={{ color: CHOCO }}>Loading targets...</p>
+      ) : targets.length === 0 ? (
+        <p className="text-xs opacity-40 py-4 text-center" style={{ color: CHOCO }}>No weekly targets issued yet.</p>
+      ) : (
+        <>
+          {/* Overall status summary */}
+          <div className="flex flex-wrap gap-2 mb-5">
+            {Object.entries(statusLabels).map(([key, { label, color }]) => (
+              <div key={key} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg" style={{ backgroundColor: `${color}10` }}>
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+                <span className="text-xs font-medium" style={{ color }}>{overall[key] || 0}</span>
+                <span className="text-[10px] opacity-60" style={{ color: CHOCO }}>{label}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Per-department breakdown */}
+          <div className="space-y-2">
+            {Object.entries(byDept).sort(([a], [b]) => a.localeCompare(b)).map(([dept, counts]) => {
+              const total = Object.values(counts).reduce((a, b) => a + b, 0);
+              const approved = counts["approved"] || 0;
+              const pct = total > 0 ? Math.round((approved / total) * 100) : 0;
+              return (
+                <div key={dept} className="flex items-center gap-3 py-2 border-b last:border-0" style={{ borderColor: `${CHOCO}06` }}>
+                  <p className="text-xs font-medium w-24 capitalize" style={{ color: CHOCO }}>{dept}</p>
+                  <div className="flex-1 flex gap-1.5">
+                    {Object.entries(counts).map(([status, count]) => {
+                      const meta = statusLabels[status] || { label: status, color: "#999" };
+                      return (
+                        <span key={status} className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: `${meta.color}12`, color: meta.color }}>
+                          {count} {meta.label}
+                        </span>
+                      );
+                    })}
+                  </div>
+                  <span className="text-[10px] opacity-40" style={{ color: CHOCO }}>{pct}% approved</span>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -266,6 +354,7 @@ function AdminTools() {
     onSuccess: (d: any) => alert(`Seed complete: ${d.staffCreated} staff created`),
     onError: (e: any) => alert(e.message),
   });
+  // TODO: tRPC client types lag behind server — staff.clearClientData exists in server/routers.ts
   const clearMutation = (trpc.staff as any).clearClientData?.useMutation?.({
     onSuccess: () => alert("All client data cleared."),
     onError: (e: any) => alert(e?.message || "Failed"),
@@ -593,6 +682,8 @@ function CommissionsSection({ commissions }: { commissions: any[] }) {
     onSuccess: () => toast.success("Commission approved"),
     onError: (err: any) => toast.error(err.message),
   });
+  const suggestionsQuery = trpc.agents.suggestions.useQuery({ department: "founder" });
+  const reviewSuggestion = trpc.agents.reviewSuggestion.useMutation({ onSuccess: () => suggestionsQuery.refetch() });
   const pending = commissions.filter((c: any) => c.status === "pending");
 
   const statusBadge = (status: string) => {
@@ -613,6 +704,14 @@ function CommissionsSection({ commissions }: { commissions: any[] }) {
 
   return (
     <div className="space-y-6 max-w-4xl">
+      {/* AI Agent Suggestions */}
+      <AgentSuggestionCard
+        suggestions={suggestionsQuery.data || []}
+        onAccept={(id) => reviewSuggestion.mutate({ id, action: "accept" })}
+        onReject={(id) => reviewSuggestion.mutate({ id, action: "reject" })}
+        isLoading={suggestionsQuery.isLoading}
+      />
+
       <div>
         <h2 className="text-sm uppercase tracking-wider mb-1 opacity-40 font-normal" style={{ color: CHOCO }}>Commissions</h2>
         <p className="text-xs opacity-30" style={{ color: CHOCO }}>
@@ -747,9 +846,6 @@ function StaffSection() {
 
 // ─── Calendar Section ────────────────────────────────────────────────────────
 function CalendarSection() {
-  const days  = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const dates = ["23", "24", "25", "26", "27", "28", "29"];
-
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
@@ -759,48 +855,10 @@ function CalendarSection() {
         </p>
       </div>
 
-      {/* Week strip */}
-      <div className="bg-white rounded-2xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-        <div className="flex justify-between mb-4 gap-1">
-          {days.map((d, i) => {
-            const hasEvent = MOCK_EVENTS.some(e => e.day === d);
-            return (
-              <div
-                key={d}
-                className="flex-1 flex flex-col items-center py-2 rounded-xl"
-                style={{ backgroundColor: hasEvent ? `${GOLD}12` : "transparent" }}
-              >
-                <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: CHOCO, opacity: 0.4 }}>{d}</p>
-                <p className="text-base font-normal" style={{ color: hasEvent ? GOLD : CHOCO, opacity: hasEvent ? 1 : 0.5 }}>{dates[i]}</p>
-                {hasEvent && <div className="w-1.5 h-1.5 rounded-full mt-1" style={{ backgroundColor: GOLD }} />}
-              </div>
-            );
-          })}
-        </div>
+      <div className="bg-white rounded-2xl p-8 shadow-[0_1px_3px_rgba(0,0,0,0.04)] flex flex-col items-center justify-center text-center">
+        <CalendarDays size={32} style={{ color: GOLD, opacity: 0.5 }} />
+        <p className="text-sm mt-3 font-normal" style={{ color: CHOCO, opacity: 0.6 }}>Calendar integration coming soon.</p>
       </div>
-
-      {/* Events */}
-      <div className="space-y-3">
-        <p className="text-xs uppercase tracking-wider opacity-40 font-normal" style={{ color: CHOCO }}>This Week's Events</p>
-        {MOCK_EVENTS.map((e, i) => (
-          <div key={i} className="bg-white rounded-2xl p-4 flex items-center gap-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${GOLD}15` }}>
-              <CalendarDays size={16} style={{ color: GOLD }} />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-normal" style={{ color: CHOCO }}>{e.title}</p>
-              <p className="text-xs opacity-40 mt-0.5" style={{ color: CHOCO }}>{e.day} {e.date} Mar · {e.time}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <Button
-        style={{ backgroundColor: CHOCO, color: GOLD }}
-        onClick={() => toast("Calendar event creation coming soon")}
-      >
-        + Add Event
-      </Button>
     </div>
   );
 }

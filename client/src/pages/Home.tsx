@@ -155,7 +155,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: MILK, fontFamily: "'Inter', sans-serif" }}>
-      <SplashScreen text="HAMZURY" color={CHARCOAL} />
+      <SplashScreen text="HAMZURY" color={CHARCOAL} departmentName="Hamzury" tagline="Structure for ambitious businesses." />
       <PageMeta
         title="HAMZURY | Compliance, Systems & Skills for Businesses"
         description="Compliance, systems, and skills for Nigerian businesses. BizDoc, Systemize, and Hamzury Skills under one roof."
@@ -252,9 +252,6 @@ export default function Home() {
                 <span className="text-[13px] font-medium">Chat with us</span>
               </button>
               {[
-                  { label: "BizDoc",    href: "/bizdoc" },
-                  { label: "Systemise", href: "/systemise" },
-                  { label: "Skills",    href: "/skills" },
                   { label: "Pricing",   href: "/pricing" },
                   { label: "Team",      href: "/team" },
                   { label: "Founder",   href: "/founder" },

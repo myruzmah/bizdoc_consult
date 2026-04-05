@@ -120,6 +120,13 @@
       "when": 1775107168492,
       "tag": "0016_right_mister_fear",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "5",
+      "when": 1775380718236,
+      "tag": "0017_premium_speed",
+      "breakpoints": true
     }
   ]
 }

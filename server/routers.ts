@@ -92,10 +92,16 @@ import {
   listMediaAssets, createMediaAsset, deleteMediaAsset,
   // Social Platform Stats (Media)
   listSocialPlatformStats, createSocialPlatformStat, upsertSocialPlatformStat,
+  // Weekly Targets
+  createWeeklyTarget, getWeeklyTargets, getWeeklyTargetsByDepartment, updateWeeklyTarget, getTargetSubmissionStatus,
+  // Inter-Department Chat
+  createDeptMessage, getDeptMessages, getDeptThreads, getUnreadDeptMessageCount, markDeptMessagesRead,
+  // Agent Suggestions
+  getAgentSuggestions, reviewAgentSuggestion,
 } from "./db";
 import { storagePut } from "./storage";
 import { encryptCredential, decryptCredential, maskPassword } from "./credentials";
-import { clientCredentials, tasks } from "../drizzle/schema";
+import { clientCredentials, tasks, affiliates, deptMessages } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { ENV } from "./_core/env";
 import { sendPaymentClaimedAlert, sendNewLeadAlert } from "./email";
@@ -2048,6 +2054,46 @@ NEVER: hype words, urgency pressure, [READY] or [SHOW_PAYMENT] before client sig
         return safe;
       }),
 
+    /** Public: self-service affiliate application. Creates account with status "pending". */
+    selfRegister: publicProcedure
+      .input(z.object({
+        name: z.string().min(1),
+        email: z.string().email(),
+        phone: z.string().min(1),
+        password: z.string().min(8),
+        state: z.string().optional(),
+        instagram: z.string().optional(),
+        linkedin: z.string().optional(),
+        twitter: z.string().optional(),
+        marketingPlan: z.string().optional(),
+        audienceSize: z.string().optional(),
+        hoursPerWeek: z.string().optional(),
+        whyAffiliate: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const existing = await getAffiliateByEmail(input.email);
+        if (existing) throw new TRPCError({ code: "CONFLICT", message: "This email is already registered. Please log in instead." });
+        const affiliate = await createAffiliate({
+          name: input.name,
+          email: input.email,
+          password: input.password,
+          phone: input.phone,
+        });
+        // Set status to "pending" for review
+        const db = await getDb();
+        if (db) {
+          await db.update(affiliates).set({ status: "pending" }).where(eq(affiliates.id, affiliate.id));
+        }
+        // Send notification to CSO for review
+        await createNotification({
+          userId: "cso",
+          title: "New Affiliate Application",
+          message: `${input.name} (${input.email}, ${input.phone}) applied to the affiliate program. State: ${input.state || "N/A"}. Marketing plan: ${input.marketingPlan || "N/A"}. Why: ${input.whyAffiliate || "N/A"}. Review and approve from the affiliate section.`,
+          type: "system",
+        });
+        return { success: true, code: affiliate.code };
+      }),
+
     upgradeTier: protectedProcedure
       .input(z.object({ affiliateId: z.number() }))
       .mutation(async ({ input, ctx }) => {
@@ -2954,6 +3000,24 @@ Respond in JSON format: { "caption": "...", "hashtags": "#tag1 #tag2 ..." }`;
             log.details?.startsWith("[Muse]")
         ).slice(0, 100);
       }),
+
+    /** Get pending AI suggestions for a department */
+    suggestions: protectedProcedure
+      .input(z.object({ department: z.string() }))
+      .query(async ({ input }) => {
+        return getAgentSuggestions(input.department);
+      }),
+
+    /** Accept or reject an AI suggestion */
+    reviewSuggestion: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        action: z.enum(["accepted", "rejected"]),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        await reviewAgentSuggestion(input.id, input.action, (ctx as any).user?.name || (ctx as any).user?.email || "staff");
+        return { success: true };
+      }),
   }),
 
   // ─── Leave Requests ────────────────────────────────────────────────────────
@@ -3582,6 +3646,172 @@ Respond in JSON format: { "caption": "...", "hashtags": "#tag1 #tag2 ..." }`;
       platform: z.string(), handle: z.string().optional(), followers: z.number().optional(),
       growth: z.string().optional(), postsCount: z.number().optional(), reach: z.number().optional(),
     })).mutation(({ input }) => createSocialPlatformStat(input as any)),
+  }),
+
+  // ─── Weekly Targets (CEO → Departments → HR tracks) ──────────────────────
+  weeklyTargets: router({
+    // CEO issues target
+    create: founderCEOProcedure
+      .input(z.object({
+        weekOf: z.string(),
+        department: z.string(),
+        targetType: z.string(),
+        description: z.string(),
+        assignedTo: z.string().optional(),
+        deadline: z.string().default("Friday 2pm"),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const result = await createWeeklyTarget({
+          ...input,
+          assignedBy: ctx.user?.name || ctx.user?.email || "CEO",
+          status: "issued",
+        });
+        // Notify the department
+        await createNotification({
+          userId: input.department,
+          type: "assignment",
+          title: "New Weekly Target",
+          message: `${input.targetType}: ${input.description.slice(0, 100)}`,
+          link: `/${input.department}/dashboard`,
+        });
+        return result;
+      }),
+
+    // List targets (filterable)
+    list: protectedProcedure
+      .input(z.object({ weekOf: z.string().optional() }).optional())
+      .query(async ({ input }) => {
+        return getWeeklyTargets(input?.weekOf);
+      }),
+
+    // List by department
+    byDepartment: protectedProcedure
+      .input(z.object({ department: z.string(), weekOf: z.string().optional() }))
+      .query(async ({ input }) => {
+        return getWeeklyTargetsByDepartment(input.department, input.weekOf);
+      }),
+
+    // Staff submits their target outcome
+    submit: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        submissionNote: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        return updateWeeklyTarget(input.id, {
+          status: "submitted",
+          submissionNote: input.submissionNote,
+        });
+      }),
+
+    // CEO reviews target
+    review: founderCEOProcedure
+      .input(z.object({
+        id: z.number(),
+        status: z.enum(["approved", "revision_requested"]),
+        outcome: z.enum(["hit", "missed", "partial"]).optional(),
+        reviewNote: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        return updateWeeklyTarget(input.id, {
+          status: input.status,
+          outcome: input.outcome,
+          reviewNote: input.reviewNote,
+        });
+      }),
+
+    // HR submission status view
+    submissionStatus: seniorProcedure
+      .input(z.object({ weekOf: z.string() }))
+      .query(async ({ input }) => {
+        return getTargetSubmissionStatus(input.weekOf);
+      }),
+  }),
+
+  // ─── Inter-Department Chat ───────────────────────────────────────────────
+  deptChat: router({
+    // Send a message
+    send: protectedProcedure
+      .input(z.object({
+        threadId: z.string(),
+        toDepartment: z.string().optional(),
+        toStaffId: z.string().optional(),
+        message: z.string().min(1),
+        messageType: z.enum(["text", "file", "task_ref", "system"]).default("text"),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const user = ctx.user!;
+        const result = await createDeptMessage({
+          threadId: input.threadId,
+          fromStaffId: user.email || String(user.id),
+          fromName: user.name || user.email || "Staff",
+          fromDepartment: (user as any).department || "general",
+          toDepartment: input.toDepartment || null,
+          toStaffId: input.toStaffId || null,
+          message: input.message,
+          messageType: input.messageType,
+          isRead: false,
+        });
+        // Notify recipient department
+        if (input.toDepartment) {
+          await createNotification({
+            userId: input.toDepartment,
+            type: "system",
+            title: `Message from ${user.name || "Staff"}`,
+            message: input.message.slice(0, 100),
+          });
+        }
+        return result;
+      }),
+
+    // Get messages for a thread
+    thread: protectedProcedure
+      .input(z.object({ threadId: z.string() }))
+      .query(async ({ input }) => {
+        return getDeptMessages({ threadId: input.threadId });
+      }),
+
+    // Get thread list for a department
+    threads: protectedProcedure
+      .input(z.object({ department: z.string() }))
+      .query(async ({ input }) => {
+        return getDeptThreads(input.department);
+      }),
+
+    // Get unread count
+    unreadCount: protectedProcedure
+      .input(z.object({ department: z.string(), staffId: z.string().optional() }))
+      .query(async ({ input }) => {
+        return getUnreadDeptMessageCount(input.department, input.staffId);
+      }),
+
+    // Mark thread as read
+    markRead: protectedProcedure
+      .input(z.object({ threadId: z.string(), staffId: z.string() }))
+      .mutation(async ({ input }) => {
+        await markDeptMessagesRead(input.threadId, input.staffId);
+        return { success: true };
+      }),
+
+    // CSO dashboard: fetch recent dept updates targeted at CSO
+    csoUpdates: csoProcedure
+      .input(z.object({ limit: z.number().min(1).max(100).default(30) }).optional())
+      .query(async ({ input }) => {
+        const limit = input?.limit ?? 30;
+        return getDeptMessages({ toDepartment: "CSO", limit });
+      }),
+
+    // CSO dashboard: acknowledge (mark read) a single dept message by id
+    acknowledge: csoProcedure
+      .input(z.object({ messageId: z.number() }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+        await db.update(deptMessages)
+          .set({ isRead: true, readAt: new Date() })
+          .where(eq(deptMessages.id, input.messageId));
+        return { success: true };
+      }),
   }),
 
 });
