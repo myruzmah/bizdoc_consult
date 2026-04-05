@@ -12,6 +12,7 @@ import { getSessionCookieOptions } from "./cookies";
 import * as db from "../db";
 import { seedStaffUsers, syncStaffRoster } from "../seed-staff";
 import { runMigrations, seedTaxClients, seedMediaClients } from "../db";
+import { seedRealClients } from "../seed-real-clients";
 import { invokeLLMStream } from "./llm";
 import { buildSystemPrompt } from "../config/chat-config";
 import { startAgentScheduler } from "../agents/agent-runner";
@@ -743,6 +744,7 @@ Sitemap: ${base}/sitemap.xml
       await syncStaffRoster();
       await seedTaxClients();
       await seedMediaClients();
+      await seedRealClients();
       // Start AI agent scheduler (background automation)
       await startAgentScheduler();
     } catch (err) {

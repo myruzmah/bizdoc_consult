@@ -1,6 +1,7 @@
 /**
  * HAMZURY — Real Client Data Seed Script (v2)
- * Run: pnpm exec tsx server/seed-real-clients.ts
+ * Run standalone: pnpm exec tsx server/seed-real-clients.ts
+ * Or import: import { seedRealClients } from "./seed-real-clients";
  *
  * Seeds ALL real clients provided by Founder on 5 April 2026.
  * Creates leads, tasks, subscriptions, and skills applications.
@@ -12,7 +13,7 @@ import { eq } from "drizzle-orm";
 import { leads, tasks, subscriptions, skillsApplications } from "../drizzle/schema";
 
 function getDb() {
-  const url = process.env.DATABASE_URL;
+  const url = process.env.DATABASE_URL || process.env.MYSQL_URL;
   if (!url) throw new Error("DATABASE_URL not set");
   return drizzle(url);
 }
@@ -56,7 +57,7 @@ async function safeTask(db: ReturnType<typeof drizzle>, data: any) {
   await db.insert(tasks).values(insertData);
 }
 
-async function main() {
+export async function seedRealClients() {
   const db = getDb();
   let leadsCount = 0;
   let tasksCount = 0;
@@ -458,11 +459,12 @@ async function main() {
   // SUMMARY
   // ═══════════════════════════════════════════════════════════
   console.log(`[seed-real-clients] Done — ${leadsCount} leads, ${tasksCount} tasks, ${subsCount} subscriptions, ${skillsCount} skills apps.`);
-
-  process.exit(0);
 }
 
-main().catch((e) => {
-  console.error("❌ Seed failed:", e);
-  process.exit(1);
-});
+// Auto-run when called directly (not imported)
+const isDirectRun = process.argv[1]?.includes("seed-real-clients");
+if (isDirectRun) {
+  seedRealClients()
+    .then(() => process.exit(0))
+    .catch((e) => { console.error("❌ Seed failed:", e); process.exit(1); });
+}
