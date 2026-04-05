@@ -41,6 +41,11 @@ export default function FinanceDashboard() {
   const [paymentRef, setPaymentRef] = useState("");
   const [subsFilter, setSubsFilter] = useState<"all" | "active" | "paused" | "cancelled" | "overdue">("all");
 
+  const weeklyTargetsQuery = trpc.weeklyTargets.byDepartment.useQuery(
+    { department: "finance" },
+    { refetchInterval: 60000 },
+  );
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#FFFAF6" }}>
@@ -49,11 +54,6 @@ export default function FinanceDashboard() {
     );
   }
   if (!user) return null;
-
-  const weeklyTargetsQuery = trpc.weeklyTargets.byDepartment.useQuery(
-    { department: "finance" },
-    { refetchInterval: 60000 },
-  );
 
   const commissions = commissionsQuery.data || [];
   const stats = statsQuery.data;
