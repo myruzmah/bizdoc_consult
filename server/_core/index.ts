@@ -157,15 +157,8 @@ async function startServer() {
       if (!user.isActive) {
         return res.status(403).json({ error: "Your account is pending activation. Contact HR." });
       }
-      // Check lockout
-      if (user.lockedUntil && new Date() < new Date(user.lockedUntil)) {
-        const minutesLeft = Math.ceil((new Date(user.lockedUntil).getTime() - Date.now()) / 60000);
-        return res.status(429).json({ error: `Too many failed attempts. Try again in ${minutesLeft} minute${minutesLeft > 1 ? "s" : ""}.` });
-      }
-
       const valid = await db.verifyPassword(password, user.passwordHash, user.passwordSalt);
       if (!valid) {
-        await db.incrementStaffFailedAttempts(user.id);
         return res.status(401).json({ error: "Invalid Staff ID or password." });
       }
 
