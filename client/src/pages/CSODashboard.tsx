@@ -33,6 +33,7 @@ type Section =
   | "overview"
   | "discovery"
   | "assign"
+  | "assigntasks"
   | "review"
   | "pipeline"
   | "tasks"
@@ -49,6 +50,7 @@ const SECTIONS: { id: Section; label: string; icon: React.ReactNode }[] = [
   { id: "overview",    label: "Overview",       icon: <LayoutDashboard size={16} /> },
   { id: "discovery",   label: "Discovery",      icon: <Target size={16} /> },
   { id: "assign",      label: "Assign Leads",   icon: <Send size={16} /> },
+  { id: "assigntasks", label: "Assign Tasks",   icon: <Briefcase size={16} /> },
   { id: "review",      label: "Pending Review", icon: <CheckCircle2 size={16} /> },
   { id: "pipeline",    label: "Lead Pipeline",  icon: <FileSearch size={16} /> },
   { id: "tasks",       label: "All Tasks",      icon: <Briefcase size={16} /> },
@@ -724,6 +726,16 @@ export default function CSODashboard() {
               />
             )}
 
+            {/* ── Assign Tasks ── */}
+            {activeSection === "assigntasks" && (
+              <AssignTasksPanel
+                tasks={allTasks}
+                staffMembers={internalStaff}
+                onAssign={taskAssignMutation.mutate}
+                isPending={taskAssignMutation.isPending}
+              />
+            )}
+
             {/* ── Pending Review ── */}
             {activeSection === "review" && (
               <div className="space-y-4">
@@ -1003,6 +1015,123 @@ function LeadScore({ lead }: { lead: any }) {
     >
       {score}
     </span>
+  );
+}
+
+// ─── ASSIGN TASKS PANEL ──────────────────────────────────────────────────────
+function AssignTasksPanel({ tasks, staffMembers, onAssign, isPending }: {
+  tasks: any[];
+  staffMembers: any[];
+  onAssign: (data: { id: number; assignedTo: number; department?: string }) => void;
+  isPending: boolean;
+}) {
+  const [deptFilter, setDeptFilter] = useState("all");
+  const [selectedAssignments, setSelectedAssignments] = useState<Record<number, string>>({});
+
+  // Tasks that are not completed — candidates for assignment
+  const assignable = tasks.filter(t => t.status !== "Completed");
+  const filtered = deptFilter === "all" ? assignable : assignable.filter(t => t.department === deptFilter);
+
+  // Department leads and senior staff
+  const deptLeads = staffMembers.filter(s =>
+    ["founder", "ceo", "cso", "systemise_head", "tech_lead", "media", "bizdev", "compliance_staff", "finance", "hr", "skills_staff"].includes(s.role)
+  );
+
+  return (
+    <div className="bg-white rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+      <div className="p-4 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3" style={{ borderColor: `${TEAL}08` }}>
+        <h3 className="text-[13px] font-bold uppercase tracking-wider flex items-center gap-2" style={{ color: TEAL }}>
+          <Briefcase size={15} style={{ color: GOLD }} /> Assign Tasks to Department Leads
+        </h3>
+        <div className="flex gap-2 flex-wrap">
+          {["all", "bizdoc", "systemise", "media", "skills"].map(d => (
+            <button
+              key={d}
+              onClick={() => setDeptFilter(d)}
+              className="text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full transition-all"
+              style={{
+                backgroundColor: deptFilter === d ? TEAL : "transparent",
+                color: deptFilter === d ? GOLD : TEAL,
+                border: `1px solid ${TEAL}20`,
+              }}
+            >
+              {d === "all" ? "All" : d}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="divide-y" style={{ borderColor: `${TEAL}06` }}>
+        {filtered.length === 0 ? (
+          <div className="p-14 text-center">
+            <Briefcase size={44} className="mx-auto mb-4" style={{ color: GOLD, opacity: 0.2 }} />
+            <p className="text-[15px] font-medium opacity-50" style={{ color: TEAL }}>No tasks to assign</p>
+            <p className="text-[12px] opacity-30 mt-2">Active tasks will appear here for assignment.</p>
+          </div>
+        ) : filtered.map((task: any) => {
+          const sc = STATUS_COLORS[task.status] || { bg: "#f3f4f6", text: "#6b7280" };
+          const dept = DEPARTMENTS.find(d => d.value === task.department);
+          const assignedStaff = task.assignedTo ? staffMembers.find((s: any) => s.staffId === task.assignedTo) : null;
+
+          return (
+            <div key={task.id} className="px-4 py-3 flex flex-col gap-2 hover:bg-gray-50/50 transition-colors">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="text-[11px] font-bold tracking-wider font-mono opacity-40" style={{ color: TEAL }}>{task.ref}</span>
+                    {dept && (
+                      <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded" style={{ backgroundColor: `${dept.color}12`, color: dept.color }}>
+                        {dept.value}
+                      </span>
+                    )}
+                    {assignedStaff && (
+                      <span className="text-[10px] font-medium px-1.5 py-0.5 rounded" style={{ backgroundColor: `${GOLD}15`, color: GOLD }}>
+                        Assigned: {assignedStaff.name}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[14px] font-semibold truncate" style={{ color: TEAL }}>{task.clientName}</p>
+                  <p className="text-[12px] opacity-50 truncate">{task.service}</p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: sc.bg, color: sc.text }}>
+                    {task.status}
+                  </span>
+                </div>
+              </div>
+              <div className="flex gap-2 items-center flex-wrap">
+                <select
+                  value={selectedAssignments[task.id] || ""}
+                  onChange={e => setSelectedAssignments(prev => ({ ...prev, [task.id]: e.target.value }))}
+                  className="flex-1 min-w-[180px] px-3 py-1.5 rounded-lg border text-[12px] outline-none"
+                  style={{ borderColor: `${TEAL}18`, color: TEAL, backgroundColor: MILK }}
+                >
+                  <option value="">Select department lead / staff...</option>
+                  {deptLeads.map((s: any) => (
+                    <option key={s.staffId} value={s.staffId}>
+                      {s.name} — {s.dept} ({s.role})
+                    </option>
+                  ))}
+                </select>
+                <button
+                  disabled={!selectedAssignments[task.id] || isPending}
+                  onClick={() => {
+                    const staffId = Number(selectedAssignments[task.id]);
+                    if (!staffId) return;
+                    onAssign({ id: task.id, assignedTo: staffId });
+                    setSelectedAssignments(prev => { const n = { ...prev }; delete n[task.id]; return n; });
+                  }}
+                  className="text-[11px] font-bold px-4 py-1.5 rounded-lg transition-opacity disabled:opacity-30"
+                  style={{ backgroundColor: TEAL, color: GOLD }}
+                >
+                  {isPending ? "Assigning..." : "Assign"}
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
