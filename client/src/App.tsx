@@ -48,6 +48,12 @@ import SkillsStartups from "./pages/SkillsStartups";
 import SkillsAlumni from "./pages/SkillsAlumni";
 import SkillsHALS from "./pages/SkillsHALS";
 import ClientOnboarding from "./pages/ClientOnboarding";
+import TilzSpaPortal from "./pages/TilzSpaPortal";
+import TilzSpaFounder from "./pages/TilzSpaFounder";
+import TilzSpaFounderDashboard from "./pages/TilzSpaFounderDashboard";
+import TilzSpaFinanceDashboard from "./pages/TilzSpaFinanceDashboard";
+import TilzSpaReceptionistDashboard from "./pages/TilzSpaReceptionistDashboard";
+import TilzSpaWhatsApp from "./pages/TilzSpaWhatsApp";
 import CookieBanner from "./components/CookieBanner";
 import ChatWidget from "./components/ChatWidget";
 import { trpc } from "./lib/trpc";
@@ -170,6 +176,15 @@ function Router() {
       </Route>
       {/* Client Onboarding Form — public, ref-based (wildcard for refs with slashes like HMZ-26/4-5623) */}
       <Route path="/start/*" component={ClientOnboarding} />
+
+      {/* Client Showcase Pages */}
+      {/* HAMZURY Client Portals — Verified Client Sites */}
+      <Route path={"/clients/tilz-spa"} component={TilzSpaPortal} />
+      <Route path={"/clients/tilz-spa/founder"} component={TilzSpaFounder} />
+      <Route path={"/clients/tilz-spa/dashboard/founder"} component={TilzSpaFounderDashboard} />
+      <Route path={"/clients/tilz-spa/dashboard/finance"} component={TilzSpaFinanceDashboard} />
+      <Route path={"/clients/tilz-spa/dashboard/receptionist"} component={TilzSpaReceptionistDashboard} />
+      <Route path={"/clients/tilz-spa/dashboard/whatsapp"} component={TilzSpaWhatsApp} />
 
       {/* Client Portal — dashboard only, clients enter ref via Track section */}
       <Route path={"/client/dashboard"} component={ClientDashboard} />

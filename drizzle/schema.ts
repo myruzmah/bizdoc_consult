@@ -1359,3 +1359,177 @@ export const agentSuggestions = mysqlTable("agent_suggestions", {
 });
 export type AgentSuggestion = typeof agentSuggestions.$inferSelect;
 export type InsertAgentSuggestion = typeof agentSuggestions.$inferInsert;
+
+// ============================================================================
+// TILZ SPA BY TILDA — Client Portal Tables
+// Luxury spa business in Wuse 2, Abuja
+// Services: Spa treatments, Sauna, Barbing Salon
+// ============================================================================
+
+/**
+ * Spa client records
+ */
+export const spaClients = mysqlTable("spa_clients", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  phone: varchar("phone", { length: 50 }).notNull(),
+  email: varchar("email", { length: 320 }),
+  gender: mysqlEnum("gender", ["male", "female", "other"]).notNull(),
+  preferences: text("preferences"),
+  birthday: varchar("birthday", { length: 20 }),
+  referralSource: varchar("referralSource", { length: 100 }),
+  totalSpent: decimal("totalSpent", { precision: 10, scale: 2 }).default("0").notNull(),
+  visitCount: int("visitCount").default(0).notNull(),
+  lastVisit: timestamp("lastVisit"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type SpaClient = typeof spaClients.$inferSelect;
+export type InsertSpaClient = typeof spaClients.$inferInsert;
+
+/**
+ * Spa service catalogue
+ */
+export const spaServices = mysqlTable("spa_services", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  category: mysqlEnum("spaServiceCategory", ["spa", "sauna", "barbing", "facial", "bridal", "couples"]).notNull(),
+  description: text("description").notNull(),
+  duration: int("duration").notNull(),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type SpaService = typeof spaServices.$inferSelect;
+export type InsertSpaService = typeof spaServices.$inferInsert;
+
+/**
+ * Spa appointment bookings
+ */
+export const spaAppointments = mysqlTable("spa_appointments", {
+  id: int("id").autoincrement().primaryKey(),
+  clientId: int("clientId").notNull().references(() => spaClients.id),
+  serviceId: int("serviceId").notNull().references(() => spaServices.id),
+  appointmentDate: timestamp("appointmentDate").notNull(),
+  endTime: timestamp("endTime"),
+  status: mysqlEnum("appointmentStatus", ["pending", "confirmed", "checked_in", "in_progress", "completed", "cancelled", "no_show"]).default("pending").notNull(),
+  therapist: varchar("therapist", { length: 255 }),
+  notes: text("notes"),
+  source: mysqlEnum("appointmentSource", ["whatsapp", "walk_in", "instagram", "phone", "website"]).notNull(),
+  reminderSent: boolean("reminderSent").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type SpaAppointment = typeof spaAppointments.$inferSelect;
+export type InsertSpaAppointment = typeof spaAppointments.$inferInsert;
+
+/**
+ * Spa payment transactions
+ */
+export const spaTransactions = mysqlTable("spa_transactions", {
+  id: int("id").autoincrement().primaryKey(),
+  appointmentId: int("appointmentId").references(() => spaAppointments.id),
+  clientId: int("clientId").notNull().references(() => spaClients.id),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  paymentMethod: mysqlEnum("spaPaymentMethod", ["cash", "transfer", "pos", "online"]).notNull(),
+  status: mysqlEnum("spaTransactionStatus", ["pending", "completed", "refunded"]).default("pending").notNull(),
+  description: varchar("description", { length: 500 }).notNull(),
+  processedBy: varchar("processedBy", { length: 255 }),
+  transactionDate: timestamp("transactionDate").defaultNow().notNull(),
+});
+export type SpaTransaction = typeof spaTransactions.$inferSelect;
+export type InsertSpaTransaction = typeof spaTransactions.$inferInsert;
+
+/**
+ * Spa product inventory tracking
+ */
+export const spaInventory = mysqlTable("spa_inventory", {
+  id: int("id").autoincrement().primaryKey(),
+  productName: varchar("productName", { length: 255 }).notNull(),
+  category: varchar("category", { length: 100 }).notNull(),
+  quantity: int("quantity").notNull(),
+  reorderLevel: int("reorderLevel").default(5).notNull(),
+  unitPrice: decimal("unitPrice", { precision: 10, scale: 2 }).notNull(),
+  supplier: varchar("supplier", { length: 255 }),
+  lastRestocked: timestamp("lastRestocked"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type SpaInventoryItem = typeof spaInventory.$inferSelect;
+export type InsertSpaInventoryItem = typeof spaInventory.$inferInsert;
+
+/**
+ * Spa staff / employees
+ */
+export const spaStaff = mysqlTable("spa_staff", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  phone: varchar("phone", { length: 50 }).notNull(),
+  role: mysqlEnum("spaStaffRole", ["founder", "receptionist", "therapist", "barber", "manager"]).notNull(),
+  email: varchar("email", { length: 320 }),
+  passwordHash: varchar("passwordHash", { length: 255 }).notNull(),
+  passwordSalt: varchar("passwordSalt", { length: 128 }).notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type SpaStaffMember = typeof spaStaff.$inferSelect;
+export type InsertSpaStaffMember = typeof spaStaff.$inferInsert;
+
+/**
+ * WhatsApp automation message log
+ */
+export const spaWhatsappMessages = mysqlTable("spa_whatsapp_messages", {
+  id: int("id").autoincrement().primaryKey(),
+  clientId: int("clientId").references(() => spaClients.id),
+  phone: varchar("phone", { length: 50 }).notNull(),
+  direction: mysqlEnum("messageDirection", ["inbound", "outbound"]).notNull(),
+  messageType: mysqlEnum("spaMessageType", ["greeting", "booking_request", "confirmation", "reminder", "follow_up", "review_request", "custom"]).notNull(),
+  content: text("content").notNull(),
+  status: mysqlEnum("spaMessageStatus", ["sent", "delivered", "read", "failed"]).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type SpaWhatsappMessage = typeof spaWhatsappMessages.$inferSelect;
+export type InsertSpaWhatsappMessage = typeof spaWhatsappMessages.$inferInsert;
+
+/**
+ * Client reviews and feedback
+ */
+export const spaReviews = mysqlTable("spa_reviews", {
+  id: int("id").autoincrement().primaryKey(),
+  clientId: int("clientId").notNull().references(() => spaClients.id),
+  appointmentId: int("appointmentId").references(() => spaAppointments.id),
+  rating: int("rating").notNull(),
+  comment: text("comment"),
+  platform: mysqlEnum("reviewPlatform", ["google", "instagram", "whatsapp", "in_person"]).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type SpaReview = typeof spaReviews.$inferSelect;
+export type InsertSpaReview = typeof spaReviews.$inferInsert;
+
+/**
+ * Spa business expenses
+ */
+export const spaExpenses = mysqlTable("spa_expenses", {
+  id: int("id").autoincrement().primaryKey(),
+  category: mysqlEnum("spaExpenseCategory", ["rent", "utilities", "products", "salaries", "marketing", "equipment", "other"]).notNull(),
+  description: varchar("description", { length: 500 }).notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  paidBy: varchar("paidBy", { length: 255 }).notNull(),
+  expenseDate: timestamp("expenseDate").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type SpaExpense = typeof spaExpenses.$inferSelect;
+export type InsertSpaExpense = typeof spaExpenses.$inferInsert;
+
+/**
+ * Spa audit / activity log
+ */
+export const spaActivityLog = mysqlTable("spa_activity_log", {
+  id: int("id").autoincrement().primaryKey(),
+  staffId: int("staffId"),
+  action: varchar("action", { length: 255 }).notNull(),
+  entityType: varchar("entityType", { length: 50 }).notNull(),
+  entityId: int("entityId"),
+  details: text("details"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type SpaActivityLogEntry = typeof spaActivityLog.$inferSelect;
+export type InsertSpaActivityLogEntry = typeof spaActivityLog.$inferInsert;
