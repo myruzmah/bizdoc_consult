@@ -6,6 +6,61 @@ import {
   ArrowLeft, Shield, ExternalLink,
 } from "lucide-react";
 
+// ─── Auth Gate ─────────────────────────────────────────────────────────────
+const AUTH_KEY = "tilz-spa-auth";
+const AUTH_EXPIRY_MS = 8 * 60 * 60 * 1000;
+const VALID_CREDS = { email: "founder@tilzspa.com", password: "TilzSpa@2026", role: "founder" };
+
+function getAuth(): { role: string; email: string; loginTime: number } | null {
+  try {
+    const raw = localStorage.getItem(AUTH_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (Date.now() - data.loginTime > AUTH_EXPIRY_MS) { localStorage.removeItem(AUTH_KEY); return null; }
+    return data;
+  } catch { return null; }
+}
+
+function TilzSpaLoginGate({ onAuth }: { onAuth: () => void }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email === VALID_CREDS.email && password === VALID_CREDS.password) {
+      localStorage.setItem(AUTH_KEY, JSON.stringify({ role: VALID_CREDS.role, email, loginTime: Date.now() }));
+      onAuth();
+    } else {
+      setError("Invalid credentials");
+    }
+  };
+
+  return (
+    <div style={{ backgroundColor: "#F5F0E8", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+      <form onSubmit={handleSubmit} style={{ backgroundColor: "#FFFFFF", borderRadius: 20, padding: "48px 36px", maxWidth: 400, width: "100%", boxShadow: "0 8px 32px rgba(60,36,21,0.10)", textAlign: "center" }}>
+        <div style={{ marginBottom: 8 }}>
+          <span style={{ fontSize: 28, fontWeight: 700, color: "#3C2415", letterSpacing: 1 }}>Tilz Spa</span>
+        </div>
+        <p style={{ fontSize: 14, color: "#B76E79", fontWeight: 600, marginBottom: 32 }}>WhatsApp Dashboard</p>
+        <div style={{ marginBottom: 16, textAlign: "left" }}>
+          <label style={{ fontSize: 12, fontWeight: 600, color: "#3C2415", display: "block", marginBottom: 6 }}>Email</label>
+          <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="founder@tilzspa.com"
+            style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: "1px solid #C4A88240", fontSize: 14, color: "#3C2415", backgroundColor: "#FAF7F2", outline: "none", boxSizing: "border-box" }} />
+        </div>
+        <div style={{ marginBottom: 24, textAlign: "left" }}>
+          <label style={{ fontSize: 12, fontWeight: 600, color: "#3C2415", display: "block", marginBottom: 6 }}>Password</label>
+          <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="Enter password"
+            style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: "1px solid #C4A88240", fontSize: 14, color: "#3C2415", backgroundColor: "#FAF7F2", outline: "none", boxSizing: "border-box" }} />
+        </div>
+        {error && <p style={{ color: "#DC2626", fontSize: 13, marginBottom: 16, fontWeight: 500 }}>{error}</p>}
+        <button type="submit" style={{ width: "100%", padding: "13px 0", borderRadius: 12, border: "none", backgroundColor: "#3C2415", color: "#F5F0E8", fontSize: 15, fontWeight: 700, cursor: "pointer", letterSpacing: 0.5 }}>Sign In</button>
+        <p style={{ marginTop: 32, fontSize: 11, color: "#C4A88280" }}>Powered by <span style={{ color: "#D4AF6F", fontWeight: 600 }}>HAMZURY</span></p>
+      </form>
+    </div>
+  );
+}
+
 const CHOCOLATE  = "#3C2415";
 const CAPPUCCINO = "#C4A882";
 const GOLD       = "#D4AF6F";
@@ -70,8 +125,13 @@ const NAV_ITEMS: { id: Section; label: string; icon: React.ReactNode }[] = [
 /* ──────────────────────── Component ──────────────────────── */
 
 export default function TilzSpaWhatsApp() {
+  const [authed, setAuthed] = useState(() => !!getAuth());
   const [section, setSection] = useState<Section>("setup");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const handleLogout = () => { localStorage.removeItem(AUTH_KEY); setAuthed(false); };
+
+  if (!authed) return <TilzSpaLoginGate onAuth={() => setAuthed(true)} />;
   const [checklist, setChecklist] = useState<boolean[]>(SETUP_STEPS.map(() => false));
   const [templates, setTemplates] = useState<Record<string, string>>({ ...DEFAULT_TEMPLATES });
   const [savedNote, setSavedNote] = useState<string | null>(null);
@@ -127,6 +187,13 @@ export default function TilzSpaWhatsApp() {
       </nav>
 
       <div className="mt-auto pt-6 px-2">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 w-full rounded-xl px-3 py-2 text-left text-[12px] font-medium transition-colors mb-3"
+          style={{ color: `${CAPPUCCINO}80` }}
+        >
+          <ArrowLeft size={14} /> Sign Out
+        </button>
         <p className="text-[11px]" style={{ color: `${CAPPUCCINO}80` }}>
           Powered by <Link href="/"><span className="underline cursor-pointer" style={{ color: GOLD }}>HAMZURY</span></Link>
         </p>
