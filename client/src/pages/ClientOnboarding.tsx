@@ -46,8 +46,10 @@ export default function ClientOnboarding() {
 
   // Form state
   const [form, setForm] = useState({
-    // Business
-    businessName: "",
+    // Business — 3 CAC name options
+    businessName1: "",
+    businessName2: "",
+    businessName3: "",
     businessAddress: "",
     businessNature: "",
     businessEmail: "",
@@ -55,13 +57,16 @@ export default function ClientOnboarding() {
     director1Name: "",
     director1Phone: "",
     director1IdType: "NIN",
+    director1IdNumber: "",
     director2Name: "",
     director2Phone: "",
     director2IdType: "NIN",
+    director2IdNumber: "",
     sharesplit: "100/0",
     // Trademark
     brandNames: "",
     hasLogo: "no",
+    trademarkClass: "",
     trademarkNotes: "",
     // Branding
     colorPreference: "",
@@ -87,7 +92,7 @@ export default function ClientOnboarding() {
       const d = trackQuery.data;
       setForm(prev => ({
         ...prev,
-        businessName: d.businessName || prev.businessName,
+        businessName1: d.businessName || prev.businessName1,
       }));
     }
   }, [trackQuery.data]);
@@ -140,7 +145,7 @@ export default function ClientOnboarding() {
 
   const canNext = () => {
     if (step === 0) return true; // welcome
-    if (step === 1) return form.businessName.trim().length > 1 && form.businessAddress.trim().length > 3;
+    if (step === 1) return form.businessName1.trim().length > 1 && form.businessAddress.trim().length > 3;
     if (step === 2) return form.director1Name.trim().length > 2;
     if (step === 3) return form.brandNames.trim().length > 1;
     if (step === 4) return true; // digital is optional
@@ -241,10 +246,15 @@ export default function ClientOnboarding() {
                 <h2 className="text-[18px] font-semibold" style={{ color: GREEN }}>Your Business</h2>
                 <p className="text-[13px] mt-1" style={{ color: "#999" }}>Basic details so we register everything correctly.</p>
               </div>
-              <Field label="Business Name (as it should appear on CAC)" value={form.businessName} onChange={v => u("businessName", v)} placeholder="e.g. Ilumni Ltd" required />
-              <Field label="Business Address" value={form.businessAddress} onChange={v => u("businessAddress", v)} placeholder="Full registered address" required />
-              <Field label="Nature of Business" value={form.businessNature} onChange={v => u("businessNature", v)} placeholder="e.g. Technology consulting, Fashion retail..." />
-              <Field label="Business Email" value={form.businessEmail} onChange={v => u("businessEmail", v)} placeholder="contact@yourbusiness.com" type="email" />
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-wider mb-3" style={{ color: GOLD }}>CAC requires 3 name options — in case your first choice is taken</p>
+              </div>
+              <Field label="1st Choice — Preferred Business Name" value={form.businessName1} onChange={v => u("businessName1", v)} placeholder="e.g. Ilumni Consulting Ltd" required />
+              <Field label="2nd Choice — Alternative Name" value={form.businessName2} onChange={v => u("businessName2", v)} placeholder="e.g. Ilumni Solutions Ltd" />
+              <Field label="3rd Choice — Backup Name" value={form.businessName3} onChange={v => u("businessName3", v)} placeholder="e.g. Ilumni Group Ltd" />
+              <Field label="Business Address" value={form.businessAddress} onChange={v => u("businessAddress", v)} placeholder="Full registered address — e.g. 12 Aminu Kano Crescent, Wuse 2, Abuja" required />
+              <Field label="Nature of Business" value={form.businessNature} onChange={v => u("businessNature", v)} placeholder="e.g. Technology consulting, Fashion retail, Import & Export..." />
+              <Field label="Business Email" value={form.businessEmail} onChange={v => u("businessEmail", v)} placeholder="e.g. hello@yourbusiness.com" type="email" />
             </div>
           )}
 
@@ -255,15 +265,18 @@ export default function ClientOnboarding() {
                 <h2 className="text-[18px] font-semibold" style={{ color: GREEN }}>Registration Details</h2>
                 <p className="text-[13px] mt-1" style={{ color: "#999" }}>For CAC and compliance filing. Add at least one director.</p>
               </div>
-              <Field label="Director 1 — Full Name" value={form.director1Name} onChange={v => u("director1Name", v)} placeholder="As it appears on ID" required />
-              <Field label="Director 1 — Phone" value={form.director1Phone} onChange={v => u("director1Phone", v)} placeholder="08X XXXX XXXX" />
+              <Field label="Director 1 — Full Name" value={form.director1Name} onChange={v => u("director1Name", v)} placeholder="Full legal name as it appears on your ID" required />
+              <Field label="Director 1 — Phone" value={form.director1Phone} onChange={v => u("director1Phone", v)} placeholder="e.g. 08109825623" />
               <SelectField label="Director 1 — ID Type" value={form.director1IdType} onChange={v => u("director1IdType", v)} options={["NIN", "International Passport", "Voter's Card", "Driver's License"]} />
+              <Field label="Director 1 — ID Number" value={form.director1IdNumber} onChange={v => u("director1IdNumber", v)} placeholder="e.g. 12345678901 (11-digit NIN)" />
 
               <div className="pt-2" style={{ borderTop: `1px solid ${GREEN}08` }}>
                 <p className="text-[11px] font-medium uppercase tracking-wider mb-3" style={{ color: GOLD }}>Second Director (optional)</p>
               </div>
               <Field label="Director 2 — Full Name" value={form.director2Name} onChange={v => u("director2Name", v)} placeholder="Leave blank if sole proprietor" />
-              <Field label="Director 2 — Phone" value={form.director2Phone} onChange={v => u("director2Phone", v)} placeholder="08X XXXX XXXX" />
+              <Field label="Director 2 — Phone" value={form.director2Phone} onChange={v => u("director2Phone", v)} placeholder="e.g. 08012345678" />
+              <SelectField label="Director 2 — ID Type" value={form.director2IdType} onChange={v => u("director2IdType", v)} options={["NIN", "International Passport", "Voter's Card", "Driver's License"]} />
+              <Field label="Director 2 — ID Number" value={form.director2IdNumber} onChange={v => u("director2IdNumber", v)} placeholder="e.g. A12345678 (passport) or 12345678901 (NIN)" />
 
               <SelectField label="Shareholding Split" value={form.sharesplit} onChange={v => u("sharesplit", v)} options={["100/0 (Sole)", "60/40", "50/50", "70/30", "80/20", "Other"]} />
             </div>
@@ -276,16 +289,28 @@ export default function ClientOnboarding() {
                 <h2 className="text-[18px] font-semibold" style={{ color: GREEN }}>Brand & Trademark</h2>
                 <p className="text-[13px] mt-1" style={{ color: "#999" }}>Help us understand your vision so we protect and build it right.</p>
               </div>
-              <Field label="Brand Name(s) to Register" value={form.brandNames} onChange={v => u("brandNames", v)} placeholder="e.g. Ilumni, Ilumni Consulting" required />
+              <Field label="Brand Name(s) to Trademark" value={form.brandNames} onChange={v => u("brandNames", v)} placeholder="e.g. Ilumni, Ilumni Consulting — list all names you want protected" required />
               <SelectField label="Do you have a logo already?" value={form.hasLogo} onChange={v => u("hasLogo", v)} options={["no", "yes — I'll send it", "yes — but I want a new one"]} />
-              <TextArea label="Trademark Notes" value={form.trademarkNotes} onChange={v => u("trademarkNotes", v)} placeholder="Any specific classes or products to protect? (We'll advise if unsure)" />
+              <SelectField label="Trademark Class" value={form.trademarkClass} onChange={v => u("trademarkClass", v)} options={[
+                "",
+                "Class 9 — Software, Apps & Tech Products",
+                "Class 16 — Printed Materials & Stationery",
+                "Class 25 — Clothing, Footwear & Fashion",
+                "Class 35 — Advertising, Business & Retail Services",
+                "Class 36 — Financial & Insurance Services",
+                "Class 41 — Education, Training & Entertainment",
+                "Class 42 — IT, Web & Design Services",
+                "Class 43 — Food, Restaurant & Hospitality",
+                "Not sure — Please advise me",
+              ]} />
+              <TextArea label="Trademark Notes" value={form.trademarkNotes} onChange={v => u("trademarkNotes", v)} placeholder="e.g. I want to protect my brand name for consulting services in Nigeria. Not sure? Just type 'please advise' and we'll handle it." />
 
               <div className="pt-2" style={{ borderTop: `1px solid ${GREEN}08` }}>
                 <p className="text-[11px] font-medium uppercase tracking-wider mb-3" style={{ color: GOLD }}>Brand personality</p>
               </div>
-              <Field label="Colour Preferences" value={form.colorPreference} onChange={v => u("colorPreference", v)} placeholder="e.g. Navy blue & gold, earthy tones, no preference..." />
-              <Field label="Brands You Admire" value={form.competitorBrands} onChange={v => u("competitorBrands", v)} placeholder="e.g. Apple, GTBank, Flutterwave..." />
-              <Field label="Who is Your Target Audience?" value={form.targetAudience} onChange={v => u("targetAudience", v)} placeholder="e.g. Business owners in Lagos, 25-45, tech-savvy" />
+              <Field label="Colour Preferences" value={form.colorPreference} onChange={v => u("colorPreference", v)} placeholder="e.g. Navy blue & gold, Black & red, earthy tones, no preference..." />
+              <Field label="Brands You Admire" value={form.competitorBrands} onChange={v => u("competitorBrands", v)} placeholder="e.g. Apple, Nike, GTBank, Flutterwave — helps us understand your taste" />
+              <Field label="Who is Your Target Audience?" value={form.targetAudience} onChange={v => u("targetAudience", v)} placeholder="e.g. Young professionals in Lagos, Small business owners, Parents 30-45" />
               <SelectField label="How Should Your Brand Feel?" value={form.brandPersonality} onChange={v => u("brandPersonality", v)} options={["", "Premium & Authoritative", "Friendly & Approachable", "Bold & Disruptive", "Clean & Minimal", "Warm & Trustworthy", "Other"]} />
             </div>
           )}
@@ -314,12 +339,17 @@ export default function ClientOnboarding() {
                 <p className="text-[13px] mt-1" style={{ color: "#999" }}>Review your details. You can go back to edit anything.</p>
               </div>
 
-              <SummaryRow label="Business Name" value={form.businessName} />
+              <SummaryRow label="Business Name (1st)" value={form.businessName1} />
+              {form.businessName2 && <SummaryRow label="Business Name (2nd)" value={form.businessName2} />}
+              {form.businessName3 && <SummaryRow label="Business Name (3rd)" value={form.businessName3} />}
               <SummaryRow label="Address" value={form.businessAddress} />
               <SummaryRow label="Director 1" value={form.director1Name} />
+              {form.director1IdNumber && <SummaryRow label="Director 1 ID" value={`${form.director1IdType}: ${form.director1IdNumber}`} />}
               {form.director2Name && <SummaryRow label="Director 2" value={form.director2Name} />}
+              {form.director2IdNumber && <SummaryRow label="Director 2 ID" value={`${form.director2IdType}: ${form.director2IdNumber}`} />}
               <SummaryRow label="Shares" value={form.sharesplit} />
               <SummaryRow label="Brand Names" value={form.brandNames} />
+              {form.trademarkClass && <SummaryRow label="Trademark Class" value={form.trademarkClass} />}
               <SummaryRow label="Has Logo" value={form.hasLogo} />
               {form.colorPreference && <SummaryRow label="Colours" value={form.colorPreference} />}
               {form.targetAudience && <SummaryRow label="Target Audience" value={form.targetAudience} />}
