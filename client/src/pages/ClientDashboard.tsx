@@ -608,12 +608,63 @@ export default function ClientDashboard() {
         <div style={{ maxWidth: 480, margin: "0 auto", padding: "0 20px", paddingBottom: 140 }}>
 
           {/* 1. WELCOME */}
-          <div style={{ paddingTop: 40, paddingBottom: 36, textAlign: "center" }}>
+          <div style={{ paddingTop: 40, paddingBottom: 20, textAlign: "center" }}>
             <h1 style={{ fontSize: 28, fontWeight: 700, color: DARK, letterSpacing: "-0.02em", marginBottom: 6 }}>Welcome, {firstName}</h1>
             <p style={{ fontSize: 20, fontWeight: 500, color: GOLD, marginBottom: 16 }}>{businessName}</p>
             <p style={{ fontSize: 13, color: MUTED, fontStyle: "italic", lineHeight: 1.7, maxWidth: 360, margin: "0 auto", marginBottom: 8 }}>"{FOUNDER_QUOTES[quoteIdx]}"</p>
             <p style={{ fontSize: 11, color: `${MUTED}80`, fontWeight: 500, letterSpacing: "0.04em" }}>— Muhammad Hamzury</p>
           </div>
+
+          {/* STATUS LEGEND + PROJECT OVERVIEW */}
+          {(() => {
+            const allItems = [...brandItems, ...complianceItems, ...workspaceItems, ...digitalItems, ...templateItems, ...deliveryItems.filter(d => d.id !== "pending_delivery")];
+            const delivered = allItems.filter(i => i.status === "done").length;
+            const inProgress = allItems.filter(i => i.status === "active").length;
+            const pending = allItems.filter(i => i.status === "pending").length;
+            const total = allItems.length;
+            const pct = total > 0 ? Math.round((delivered / total) * 100) : 0;
+            return (
+              <div style={{ marginBottom: 28 }}>
+                {/* Legend */}
+                <div style={{ display: "flex", justifyContent: "center", gap: 20, marginBottom: 20 }}>
+                  {[
+                    { color: GREEN, label: "Delivered" },
+                    { color: GOLD, label: "In Progress" },
+                    { color: GREY, label: "Not Started", hollow: true },
+                  ].map(s => (
+                    <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <div style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: s.hollow ? "transparent" : s.color, border: s.hollow ? `2px solid ${GREY}` : "none" }} />
+                      <span style={{ fontSize: 11, color: MUTED, fontWeight: 500 }}>{s.label}</span>
+                    </div>
+                  ))}
+                </div>
+                {/* Overview card */}
+                <div style={{ padding: "20px 24px", borderRadius: 16, backgroundColor: WHITE, border: `1px solid ${GREY}20`, boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: DARK }}>Project Overview</span>
+                    <span style={{ fontSize: 22, fontWeight: 700, color: pct >= 80 ? GREEN : pct >= 40 ? GOLD : DARK }}>{pct}%</span>
+                  </div>
+                  {/* Progress bar */}
+                  <div style={{ height: 6, borderRadius: 3, backgroundColor: `${GREY}30`, marginBottom: 16, overflow: "hidden" }}>
+                    <div style={{ height: "100%", borderRadius: 3, background: `linear-gradient(90deg, ${GREEN}, ${GREEN}cc)`, width: `${pct}%`, transition: "width 0.8s ease" }} />
+                  </div>
+                  {/* Stats */}
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    {[
+                      { n: delivered, label: "Delivered", color: GREEN },
+                      { n: inProgress, label: "Building", color: GOLD },
+                      { n: pending, label: "Upcoming", color: MUTED },
+                    ].map(s => (
+                      <div key={s.label} style={{ textAlign: "center", flex: 1 }}>
+                        <p style={{ fontSize: 20, fontWeight: 700, color: s.color, marginBottom: 2 }}>{s.n}</p>
+                        <p style={{ fontSize: 10, color: MUTED, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.06em" }}>{s.label}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* 2. PROJECT TIMELINE */}
           <ProgressLine label="Project Timeline" icon={Clock} items={timelineItems} selectedId={expandedSection?.section === "timeline" ? expandedSection.itemId : null} onSelect={id => id ? sel("timeline", id) : setExpandedSection(null)}>
