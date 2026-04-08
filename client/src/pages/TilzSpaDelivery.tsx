@@ -5,7 +5,7 @@ import {
   Share2, Rocket, LayoutDashboard, DollarSign, CalendarCheck,
   MessageSquare, CreditCard, Phone, MapPin, Lock, Play,
   ArrowRight, Star, Shield, TrendingUp, Camera, Repeat, Headphones,
-  Download, ExternalLink, Eye,
+  Download, ExternalLink, Eye, Users,
 } from "lucide-react";
 
 // ── BRAND COLOURS ───────────────────────────────────────────────────────────
@@ -174,6 +174,7 @@ export default function TilzSpaDelivery() {
   const [heroLoaded, setHeroLoaded] = useState(false);
   const deliverableStagger = useStaggerReveal(DELIVERABLES.length, 0.05);
   const upsellStagger = useStaggerReveal(UPSELLS.length, 0.08);
+  const growStagger = useStaggerReveal(3, 0.08);
 
   useEffect(() => {
     injectKeyframes();
@@ -1221,6 +1222,241 @@ export default function TilzSpaDelivery() {
               <strong style={{ color: C.chocolate }}> Muhammad Hamzury</strong> towards your project.
             </p>
           </div>
+        </div>
+      </Section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          9.5. HELP US GROW — Testimonial & Referral
+      ═══════════════════════════════════════════════════════════════════ */}
+      <Section bg={C.white} id="help-us-grow">
+        <h2 style={sectionTitle("Help Us Grow")}>Help Us Grow</h2>
+        <p style={sectionSub()}>
+          If you enjoyed working with us, here's how to make our day
+        </p>
+
+        <div
+          ref={growStagger.containerRef}
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+            gap: 20,
+          }}
+        >
+          {/* Card 1: Record a Quick Video */}
+          {(() => {
+            const isVisible = growStagger.visibleIndices.has(0);
+            return (
+              <div
+                style={{
+                  background: C.ivory,
+                  borderRadius: 16,
+                  padding: "32px 28px",
+                  opacity: isVisible ? 1 : 0,
+                  transform: isVisible ? "translateY(0)" : "translateY(24px)",
+                  transition: "all 0.7s cubic-bezier(0.22,1,0.36,1)",
+                  border: `1px solid ${C.cream}`,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 16,
+                }}
+              >
+                <div style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 12,
+                  background: `linear-gradient(135deg, ${C.cream}, ${C.ivory})`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}>
+                  <Camera size={22} color={C.gold} strokeWidth={1.5} />
+                </div>
+                <h3 style={{ fontSize: 17, fontWeight: 600, color: C.chocolate }}>
+                  Record a Quick Video
+                </h3>
+                <p style={{ fontSize: 14, color: "#8a7a6a", lineHeight: 1.6 }}>
+                  Share a 30-60 second video of your experience with HAMZURY
+                </p>
+                <div style={{
+                  background: C.cream,
+                  borderRadius: 12,
+                  padding: "16px 20px",
+                  borderLeft: `3px solid ${C.gold}`,
+                }}>
+                  <p style={{ fontSize: 12, color: "#6a5a4a", lineHeight: 1.7, fontStyle: "italic" }}>
+                    "Hi, I'm [your name] from [business name]. I worked with HAMZURY on [service]. What I loved most was [your favourite part]. If you're looking for [what you needed], I'd recommend HAMZURY."
+                  </p>
+                </div>
+                <p style={{ fontSize: 13, color: C.cappuccino, lineHeight: 1.6 }}>
+                  Post on your Instagram/TikTok and tag <strong style={{ color: C.chocolate }}>@hamzury</strong>
+                </p>
+                <a
+                  href="https://wa.me/2348067149356?text=Hello%20HAMZURY%2C%20I'd%20like%20to%20send%20you%20my%20video%20testimonial%20for%20Tilz%20Spa"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    marginTop: "auto",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 8,
+                    padding: "14px 28px",
+                    background: C.chocolate,
+                    color: C.cream,
+                    borderRadius: 50,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    textDecoration: "none",
+                    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                    boxShadow: "0 4px 16px rgba(60,36,21,0.15)",
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; }}
+                >
+                  <Camera size={16} />
+                  Record Now
+                </a>
+              </div>
+            );
+          })()}
+
+          {/* Card 2: Leave a Google Review */}
+          {(() => {
+            const isVisible = growStagger.visibleIndices.has(1);
+            return (
+              <div
+                style={{
+                  background: C.ivory,
+                  borderRadius: 16,
+                  padding: "32px 28px",
+                  opacity: isVisible ? 1 : 0,
+                  transform: isVisible ? "translateY(0)" : "translateY(24px)",
+                  transition: "all 0.7s cubic-bezier(0.22,1,0.36,1)",
+                  border: `1px solid ${C.cream}`,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 16,
+                }}
+              >
+                <div style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 12,
+                  background: `linear-gradient(135deg, ${C.cream}, ${C.ivory})`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}>
+                  <Star size={22} color={C.gold} strokeWidth={1.5} />
+                </div>
+                <h3 style={{ fontSize: 17, fontWeight: 600, color: C.chocolate }}>
+                  Leave a Google Review
+                </h3>
+                <p style={{ fontSize: 14, color: "#8a7a6a", lineHeight: 1.6 }}>
+                  A 5-star review helps other business owners find us
+                </p>
+                <a
+                  href="#"
+                  style={{
+                    marginTop: "auto",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 8,
+                    padding: "14px 28px",
+                    background: C.chocolate,
+                    color: C.cream,
+                    borderRadius: 50,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    textDecoration: "none",
+                    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                    boxShadow: "0 4px 16px rgba(60,36,21,0.15)",
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; }}
+                >
+                  <Star size={16} />
+                  Leave Review
+                </a>
+              </div>
+            );
+          })()}
+
+          {/* Card 3: Refer a Friend */}
+          {(() => {
+            const isVisible = growStagger.visibleIndices.has(2);
+            return (
+              <div
+                style={{
+                  background: C.ivory,
+                  borderRadius: 16,
+                  padding: "32px 28px",
+                  opacity: isVisible ? 1 : 0,
+                  transform: isVisible ? "translateY(0)" : "translateY(24px)",
+                  transition: "all 0.7s cubic-bezier(0.22,1,0.36,1)",
+                  border: `1px solid ${C.cream}`,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 16,
+                }}
+              >
+                <div style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 12,
+                  background: `linear-gradient(135deg, ${C.cream}, ${C.ivory})`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}>
+                  <Users size={22} color={C.gold} strokeWidth={1.5} />
+                </div>
+                <h3 style={{ fontSize: 17, fontWeight: 600, color: C.chocolate }}>
+                  Refer a Friend
+                </h3>
+                <p style={{ fontSize: 14, color: "#8a7a6a", lineHeight: 1.6 }}>
+                  Know someone who needs business structure? Refer them and earn
+                </p>
+                <div style={{
+                  background: C.cream,
+                  borderRadius: 12,
+                  padding: "16px 20px",
+                  borderLeft: `3px solid ${C.gold}`,
+                }}>
+                  <p style={{ fontSize: 13, color: "#6a5a4a", lineHeight: 1.7 }}>
+                    For every referral that converts, you get <strong style={{ color: C.chocolate }}>{"\u20A6"}20,000 off</strong> your next service
+                  </p>
+                </div>
+                <a
+                  href="https://wa.me/2348067149356?text=Hello%20HAMZURY%2C%20I%20was%20referred%20by%20Tilz%20Spa"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    marginTop: "auto",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 8,
+                    padding: "14px 28px",
+                    background: C.chocolate,
+                    color: C.cream,
+                    borderRadius: 50,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    textDecoration: "none",
+                    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                    boxShadow: "0 4px 16px rgba(60,36,21,0.15)",
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; }}
+                >
+                  <Users size={16} />
+                  Refer Now
+                </a>
+              </div>
+            );
+          })()}
         </div>
       </Section>
 
