@@ -79,11 +79,7 @@ export default function Home() {
   const [, setLocation] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [activeTab, setActiveTab] = useState<"bizdoc" | "systemise" | "skills" | "track" | null>(null);
-  const [trackRef, setTrackRef] = useState("");
-  const [trackLoading, setTrackLoading] = useState(false);
-  const [trackNotFound, setTrackNotFound] = useState(false);
-  const [trackResult, setTrackResult] = useState<null | { ref: string; clientName: string | null; businessName: string | null; service: string | null; status: string; progress: number }>(null);
+  const [activeTab, setActiveTab] = useState<"bizdoc" | "systemise" | "skills" | null>(null);
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const [partnershipOpen, setPartnershipOpen] = useState(false);
 
@@ -107,44 +103,6 @@ export default function Home() {
     finally { setStaffLoading(false); }
   }
 
-  const trackQuery = trpc.tracking.lookup.useQuery(
-    { ref: trackRef },
-    { enabled: false, retry: false }
-  );
-
-  function handleTrack() {
-    if (trackRef.trim().length < 4) return;
-    setTrackLoading(true);
-    setTrackNotFound(false);
-    setTrackResult(null);
-    trackQuery.refetch().then(res => {
-      setTrackLoading(false);
-      if (res.data?.found) {
-        const d = res.data;
-        // Store session for dashboard access
-        localStorage.setItem("hamzury-client-session", JSON.stringify({
-          ref: d.ref, phone: trackRef, name: d.clientName,
-          businessName: d.businessName, service: d.service,
-          status: d.status, expiresAt: Date.now() + 24 * 60 * 60 * 1000
-        }));
-        // Show result card with status overview
-        setTrackResult({
-          ref: d.ref,
-          clientName: d.clientName || null,
-          businessName: d.businessName || null,
-          service: d.service || null,
-          status: d.status,
-          progress: (d as any).statusIndex != null ? Math.round((((d as any).statusIndex + 1) / ((d as any).statusTotal || 5)) * 100) : 20,
-        });
-      } else {
-        setTrackNotFound(true);
-      }
-    }).catch(() => { setTrackLoading(false); setTrackNotFound(true); });
-  }
-
-  function openTrackTab() {
-    setTimeout(() => document.getElementById("track")?.scrollIntoView({ behavior: "smooth" }), 50);
-  }
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
@@ -307,12 +265,6 @@ export default function Home() {
               >
                 Explore Services
               </button>
-              <button onClick={openTrackTab}
-                className="inline-flex items-center gap-2 px-7 h-12 rounded-full font-medium text-[14px] transition-all duration-200 hover:bg-black/[0.04]"
-                style={{ color: CHARCOAL, border: `1.5px solid ${CHARCOAL}25` }}
-              >
-                Track
-              </button>
             </div>
           </div>
         </div>
@@ -363,88 +315,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── TRACK (minimal) ─── */}
+      {/* ─── STAFF LOGIN ─── */}
       <section id="track" className="px-4 md:px-8" style={{ paddingTop: 120, paddingBottom: 120, backgroundColor: WHITE }}>
         <div ref={fadeTrack.ref} style={fadeTrack.style} className="max-w-md mx-auto text-center">
-          <h2 className="text-2xl font-semibold tracking-tight mb-10" style={{ color: CHARCOAL, letterSpacing: "-0.03em" }}>
-            Track
-          </h2>
-
-          <div className="flex gap-2 mb-3">
-            <input type="text" placeholder="HMZ-26/3-XXXX"
-              className="flex-1 rounded-full px-5 h-12 text-sm outline-none font-mono"
-              style={{ backgroundColor: MILK, color: CHARCOAL, border: "none" }}
-              value={trackRef}
-              onChange={e => {
-                let raw = e.target.value.replace(/[^0-9]/g, "");
-                if (raw.length > 8) raw = raw.slice(0, 8);
-                let formatted = "HMZ-";
-                if (raw.length > 0) formatted += raw.slice(0, 2);
-                if (raw.length > 2) formatted += "/" + raw.slice(2, 3);
-                if (raw.length > 3) formatted += "-" + raw.slice(3);
-                setTrackRef(formatted);
-                setTrackNotFound(false);
-                setTrackResult(null);
-              }}
-              onKeyDown={e => e.key === "Enter" && handleTrack()} />
-            <button onClick={handleTrack} disabled={trackLoading}
-              className="px-6 h-12 rounded-full text-sm font-medium transition-opacity duration-200 hover:opacity-90 disabled:opacity-40 shrink-0"
-              style={{ backgroundColor: CHARCOAL, color: WHITE }}>
-              {trackLoading ? "..." : "Access"}
-            </button>
-          </div>
-
-          <p className="text-[13px] mb-6" style={{ color: CHARCOAL, opacity: 0.3 }}>
-            Enter your reference to see your dashboard.
-          </p>
-
-          {/* Not found */}
-          {trackNotFound && (
-            <p className="text-[13px] mb-4" style={{ color: CHARCOAL, opacity: 0.5 }}>
-              No file found. You will receive your reference after payment.
-            </p>
-          )}
-
-          {/* Result card */}
-          {trackResult && (
-            <div className="rounded-[20px] p-6 text-left mt-6" style={{ backgroundColor: MILK, boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
-              <p className="text-[11px] font-semibold tracking-wider uppercase mb-1" style={{ color: GOLD }}>
-                {trackResult.ref}
-              </p>
-              <p className="text-[17px] font-semibold mb-0.5" style={{ color: CHARCOAL }}>
-                {trackResult.businessName || trackResult.clientName || "Your File"}
-              </p>
-              <p className="text-[13px] mb-4" style={{ color: CHARCOAL, opacity: 0.45 }}>{trackResult.service}</p>
-              <div className="mb-4">
-                <div className="flex justify-between text-[11px] mb-1.5" style={{ color: `${CHARCOAL}60` }}>
-                  <span>{trackResult.status}</span>
-                  <span style={{ color: GOLD }}>{trackResult.progress}%</span>
-                </div>
-                <div className="h-1 rounded-full" style={{ backgroundColor: `${CHARCOAL}08` }}>
-                  <div className="h-full rounded-full transition-all duration-500" style={{ width: `${trackResult.progress}%`, backgroundColor: GOLD }} />
-                </div>
-              </div>
-              <a href="/client/dashboard"
-                onClick={e => {
-                  e.preventDefault();
-                  localStorage.setItem("hamzury-client-session", JSON.stringify({
-                    ref: trackResult.ref, phone: trackRef, name: trackResult.clientName,
-                    businessName: trackResult.businessName, service: trackResult.service,
-                    status: trackResult.status, expiresAt: Date.now() + 24 * 60 * 60 * 1000
-                  }));
-                  window.location.href = "/client/dashboard";
-                }}
-                className="block w-full h-11 rounded-full text-sm font-medium text-center leading-[44px] transition-opacity duration-200 hover:opacity-90"
-                style={{ backgroundColor: CHARCOAL, color: WHITE }}>
-                Open Full Dashboard
-              </a>
-            </div>
-          )}
-
           {/* Staff login toggle */}
-          <div className="mt-12">
+          <div>
             <button onClick={() => setStaffMode(s => !s)} className="text-[11px] tracking-[0.15em] uppercase transition-opacity hover:opacity-70" style={{ color: CHARCOAL, opacity: 0.2 }}>
-              {staffMode ? "Back to Track" : "Staff?"}
+              {staffMode ? "Close" : "Staff?"}
             </button>
             {staffMode && (
               <form onSubmit={handleStaffLogin} className="mt-4 space-y-3 max-w-xs mx-auto">
