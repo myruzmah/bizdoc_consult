@@ -4,7 +4,7 @@ import {
   Send, MessageSquare,
   CreditCard, Copy,
   ArrowRight, ChevronRight,
-  Shield, Globe, Zap, TrendingUp, Clock,
+  Shield, Globe, Zap, TrendingUp,
   Users, Sparkles, Palette, Briefcase,
   X, FileText, Lock, Package, Bot,
   BookOpen, Building2, FileCheck, Award,
@@ -253,11 +253,98 @@ const REQ_SECTIONS = [
     ] },
 ] as const;
 
+/* ── Process steps per service (for sub-circles) ── */
+const SERVICE_STEPS: Record<string, { label: string; detail: string }[]> = {
+  cac: [{ label: "Name Search", detail: "Checking name availability with CAC." }, { label: "Documents", detail: "Preparing incorporation documents." }, { label: "Filing", detail: "Submitting to CAC portal." }, { label: "Certificate", detail: "Certificate of Incorporation delivered." }],
+  tin: [{ label: "Application", detail: "Registering with FIRS." }, { label: "VAT Setup", detail: "Setting up VAT registration." }, { label: "TIN Issued", detail: "TIN number delivered." }],
+  tcc: [{ label: "Tax Review", detail: "Reviewing 3 years of tax records." }, { label: "FIRS Filing", detail: "Submitting to FIRS." }, { label: "Certificate", detail: "Tax Clearance Certificate delivered." }],
+  licence: [{ label: "Assessment", detail: "Sector requirements assessed." }, { label: "Application", detail: "Filing the licence application." }, { label: "Issued", detail: "Licence collected and delivered." }],
+  contracts: [{ label: "Drafting", detail: "Drafting legal agreements." }, { label: "Review", detail: "Legal review and revision." }, { label: "Signed", detail: "Final documents delivered." }],
+  annual: [{ label: "Preparation", detail: "Preparing annual return filing." }, { label: "Filing", detail: "Submitted to CAC." }, { label: "Confirmed", detail: "Status letter received." }],
+  scuml: [{ label: "EFCC Reg", detail: "Registering with EFCC." }, { label: "Certificate", detail: "SCUML certificate collected." }],
+  brand_id: [{ label: "Research", detail: "Studying your market and competitors." }, { label: "Concepts", detail: "Logo and brand concepts created." }, { label: "Refinement", detail: "Revisions based on your feedback." }, { label: "Delivered", detail: "Full brand kit delivered." }],
+  positioning: [{ label: "Analysis", detail: "Market and competitor analysis." }, { label: "Framework", detail: "Messaging framework built." }, { label: "Delivered", detail: "Positioning strategy delivered." }],
+  website: [{ label: "Wireframe", detail: "Page structure and layout planned." }, { label: "Design", detail: "Visual design and branding applied." }, { label: "Build", detail: "Development and content integration." }, { label: "Launch", detail: "Domain connected, site live." }],
+  content_strategy: [{ label: "Audit", detail: "Current content assessed." }, { label: "Calendar", detail: "Content calendar built." }, { label: "Delivered", detail: "Strategy document delivered." }],
+  pitch_deck: [{ label: "Story", detail: "Narrative and flow designed." }, { label: "Design", detail: "Visual slides created." }, { label: "Delivered", detail: "Investor-ready deck delivered." }],
+  workspace: [{ label: "Setup", detail: "Email and cloud accounts created." }, { label: "Config", detail: "Team access configured." }, { label: "Live", detail: "Workspace fully operational." }],
+  crm: [{ label: "Setup", detail: "CRM platform configured." }, { label: "Pipeline", detail: "Lead stages and automation set." }, { label: "Training", detail: "Team trained on the system." }],
+  automation: [{ label: "Flows", detail: "Automation workflows designed." }, { label: "Build", detail: "Bots and sequences built." }, { label: "Live", detail: "Automation running." }],
+  dashboard: [{ label: "Design", detail: "Dashboard layout planned." }, { label: "Build", detail: "Data integrations connected." }, { label: "Live", detail: "Dashboard accessible." }],
+  ai_agent: [{ label: "Training", detail: "AI trained on your data." }, { label: "Testing", detail: "Bot tested with real queries." }, { label: "Live", detail: "AI agent serving customers." }],
+  research: [{ label: "Collection", detail: "Data gathered from market." }, { label: "Analysis", detail: "Insights compiled." }, { label: "Report", detail: "Research report delivered." }],
+  materials: [{ label: "Design", detail: "Materials designed to brand." }, { label: "Review", detail: "Revisions applied." }, { label: "Delivered", detail: "Print-ready files delivered." }],
+  templates: [{ label: "Drafting", detail: "Templates created." }, { label: "Review", detail: "Legal review completed." }, { label: "Delivered", detail: "Ready-to-use templates delivered." }],
+  social_setup: [{ label: "Profiles", detail: "Accounts created and branded." }, { label: "Content", detail: "Initial posts published." }, { label: "Live", detail: "All platforms active." }],
+  content: [{ label: "Shoot", detail: "Photo/video content produced." }, { label: "Edit", detail: "Content edited and polished." }, { label: "Published", detail: "Content live on platforms." }],
+  seo: [{ label: "Audit", detail: "Current ranking assessed." }, { label: "Optimize", detail: "On-page SEO applied." }, { label: "Tracking", detail: "Monthly SEO reporting active." }],
+  social_mgmt: [{ label: "Calendar", detail: "Monthly content planned." }, { label: "Posting", detail: "Daily content going out." }, { label: "Reporting", detail: "Performance reports delivered." }],
+  reputation: [{ label: "Audit", detail: "Online presence assessed." }, { label: "Strategy", detail: "Review management plan set." }, { label: "Active", detail: "Ongoing reputation management." }],
+  founder: [{ label: "Enrolled", detail: "Program access granted." }, { label: "Learning", detail: "Modules in progress." }, { label: "Capstone", detail: "Final project submitted." }, { label: "Certified", detail: "Certificate issued." }],
+  team: [{ label: "Curriculum", detail: "Custom training designed." }, { label: "Training", detail: "Sessions in progress." }, { label: "Certified", detail: "Team certified." }],
+  ai_skills: [{ label: "Enrolled", detail: "Program access granted." }, { label: "Learning", detail: "AI modules in progress." }, { label: "Certified", detail: "Certificate issued." }],
+  growth: [{ label: "Assessment", detail: "Current capacity evaluated." }, { label: "Strategy", detail: "Growth plan built." }, { label: "Executing", detail: "Expansion in progress." }],
+};
+
 /* ══════════════════════════════════════════════════════════════════════ */
 /*  PROGRESS LINE — Core visual component                               */
 /* ══════════════════════════════════════════════════════════════════════ */
 
 type LineItem = { id: string; label: string; status: "done" | "active" | "pending"; };
+
+/* ── SubLine — nested mini circles inside expanded sections ── */
+type SubItem = { id: string; label: string; status: "done" | "active" | "pending"; detail?: string; };
+
+function SubLine({ items, selectedId, onSelect }: { items: SubItem[]; selectedId: string | null; onSelect: (id: string | null) => void; }) {
+  const activeCount = items.filter(i => i.status !== "pending").length;
+  return (
+    <div>
+      {/* Scrollable sub-circles */}
+      <div className="hide-scrollbar" style={{ overflowX: "auto", padding: "4px 0 8px" }}>
+        <div style={{ position: "relative", minWidth: Math.max(items.length * 56, 200), height: 20, margin: "0 4px" }}>
+          <div style={{ position: "absolute", top: 7, left: 4, right: 4, height: 2, backgroundColor: `${GREY}50`, borderRadius: 1 }} />
+          <div style={{ position: "absolute", top: 7, left: 4, height: 2, width: items.length > 1 ? `${(Math.max(0, activeCount - 1) / (items.length - 1)) * 100}%` : "0%", backgroundColor: GREEN, borderRadius: 1, transition: "width 0.5s ease" }} />
+          <div style={{ display: "flex", justifyContent: "space-between", position: "relative" }}>
+            {items.map(item => {
+              const isDone = item.status === "done";
+              const isActive = item.status === "active";
+              const isSel = selectedId === item.id;
+              return (
+                <button key={item.id} onClick={() => onSelect(isSel ? null : item.id)} title={item.label}
+                  style={{ width: 16, height: 16, borderRadius: 8, border: "none", backgroundColor: isDone ? GREEN : isActive ? GOLD : WHITE, boxShadow: isSel ? `0 0 0 2px ${GOLD}40` : isDone || isActive ? "none" : `inset 0 0 0 1.5px ${GREY}`, cursor: "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>
+                  {isDone && <CheckCircle size={9} style={{ color: WHITE }} />}
+                  {isActive && <div style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: WHITE }} />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        {/* Sub-labels */}
+        <div style={{ display: "flex", justifyContent: "space-between", minWidth: Math.max(items.length * 56, 200), padding: "2px 4px 0" }}>
+          {items.map(item => (
+            <span key={item.id} style={{ fontSize: 8, color: selectedId === item.id ? GOLD : MUTED, fontWeight: selectedId === item.id ? 600 : 400, textAlign: "center", width: `${100 / items.length}%`, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {item.label}
+            </span>
+          ))}
+        </div>
+      </div>
+      {/* Sub-detail expand */}
+      {selectedId && (() => {
+        const item = items.find(i => i.id === selectedId);
+        if (!item?.detail) return null;
+        return (
+          <div style={{ marginTop: 8, padding: "10px 12px", borderRadius: 8, backgroundColor: `${BG}`, animation: "fadeUp 0.2s ease", fontSize: 12, color: DARK, lineHeight: 1.6 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+              {item.status === "done" ? <CheckCircle size={11} style={{ color: GREEN }} /> : item.status === "active" ? <div style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: GOLD }} /> : <Circle size={11} style={{ color: GREY }} />}
+              <span style={{ fontSize: 11, fontWeight: 600, color: item.status === "done" ? GREEN : item.status === "active" ? GOLD : MUTED }}>{item.status === "done" ? "Completed" : item.status === "active" ? "In Progress" : "Upcoming"}</span>
+            </div>
+            {item.detail}
+          </div>
+        );
+      })()}
+    </div>
+  );
+}
 
 function ProgressLine({ label, icon: Icon, items, selectedId, onSelect, children }: {
   label: string; icon: React.ElementType; items: LineItem[];
@@ -335,6 +422,7 @@ export default function ClientDashboard() {
   const [session, setSession] = useState<ClientSession | null>(null);
   const [sessionLoaded, setSessionLoaded] = useState(false);
   const [expandedSection, setExpandedSection] = useState<{ section: string; itemId: string } | null>(null);
+  const [subSelected, setSubSelected] = useState<string | null>(null);
   const [copiedAcct, setCopiedAcct] = useState(false);
   const [claimedInvoices, setClaimedInvoices] = useState<Set<string>>(new Set());
   const [reqForm, setReqForm] = useState<Record<string, string>>({});
@@ -361,7 +449,7 @@ export default function ClientDashboard() {
   const submitMutation = trpc.onboarding.submit.useMutation({ onSuccess: () => { setReqSubmitted(true); setReqSubmitting(false); }, onError: () => setReqSubmitting(false) });
 
   function handleLogout() { localStorage.removeItem("hamzury-client-session"); if (session?.ref) localStorage.removeItem(`hamzury-dashboard-chat-${session.ref}`); window.location.href = "/client"; }
-  const sel = (section: string, itemId: string) => setExpandedSection(p => p?.section === section && p?.itemId === itemId ? null : { section, itemId });
+  const sel = (section: string, itemId: string) => { setSubSelected(null); setExpandedSection(p => p?.section === section && p?.itemId === itemId ? null : { section, itemId }); };
   const toggleCart = (id: string) => setCartItems(p => { const n = new Set(p); if (n.has(id)) n.delete(id); else n.add(id); return n; });
 
   useEffect(() => { if (!session?.ref) return; const saved = loadChatMessages(session.ref); if (saved.length > 0) { setChatMessages(saved); setAutoGreeted(true); } }, [session?.ref]);
@@ -490,6 +578,19 @@ export default function ClientDashboard() {
 
   const mkItems = (defs: { id: string; label: string }[]): LineItem[] => defs.map(d => ({ ...d, status: activeItems[d.id] === "delivered" ? "done" as const : activeItems[d.id] ? "active" as const : "pending" as const }));
 
+  /* Generate sub-items for a service's process steps based on its state */
+  const getSubItems = (serviceId: string): SubItem[] => {
+    const steps = SERVICE_STEPS[serviceId];
+    if (!steps) return [];
+    const state = activeItems[serviceId];
+    if (state === "delivered") return steps.map((s, i) => ({ id: `${serviceId}_${i}`, label: s.label, status: "done" as const, detail: s.detail }));
+    if (state === "in_progress") {
+      const mid = Math.max(1, Math.floor(steps.length * 0.5));
+      return steps.map((s, i) => ({ id: `${serviceId}_${i}`, label: s.label, status: i < mid ? "done" as const : i === mid ? "active" as const : "pending" as const, detail: s.detail }));
+    }
+    return steps.map((s, i) => ({ id: `${serviceId}_${i}`, label: s.label, status: i === 0 && state === "paid" ? "active" as const : "pending" as const, detail: s.detail }));
+  };
+
   const brandItems = mkItems([{ id: "brand_id", label: "Identity" }, { id: "positioning", label: "Position" }, { id: "content_strategy", label: "Content" }, { id: "pitch_deck", label: "Pitch" }]);
   const systemsItems = mkItems([{ id: "website", label: "Website" }, { id: "workspace", label: "Email" }, { id: "crm", label: "CRM" }, { id: "dashboard", label: "Dashboard" }, { id: "automation", label: "Automation" }, { id: "ai_agent", label: "AI Agent" }, { id: "research", label: "Research" }]);
   const complianceItems = mkItems([{ id: "cac", label: "CAC" }, { id: "tin", label: "TIN" }, { id: "tcc", label: "TCC" }, { id: "licence", label: "Licence" }, { id: "contracts", label: "Legal" }, { id: "annual", label: "Returns" }, { id: "scuml", label: "SCUML" }]);
@@ -528,33 +629,7 @@ export default function ClientDashboard() {
     setTimeout(() => handleChatSend(`I want to activate these services: ${names}. Total estimate: ${formatNaira(cartTotal)}. How do I pay?`), 300);
   }
 
-  function renderServiceDetail(id: string) {
-    const sv = SERVICE_DETAILS[id];
-    const folder = SERVICE_FOLDERS[id];
-    const state = activeItems[id];
-    if (!sv) return <p style={{ fontSize: 13, color: MUTED }}>Details coming soon.</p>;
-    const hasIt = !!state && state !== "inactive";
-    const isInCart = cartItems.has(id);
-    return (
-      <div>
-        <p style={{ fontSize: 13, fontWeight: 500, color: DARK, marginBottom: 6 }}>{sv.pitch}</p>
-        <p style={{ fontSize: 12, color: MUTED, lineHeight: 1.6, marginBottom: 10 }}>{sv.why}</p>
-        {folder && <div style={{ marginBottom: 10 }}>
-          {folder.items.map((item, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0" }}>
-              {state === "delivered" ? <CheckCircle size={12} style={{ color: GREEN }} /> : state === "in_progress" ? <div style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: GOLD }} /> : <Circle size={12} style={{ color: GREY }} />}
-              <span style={{ fontSize: 12, color: state === "delivered" ? GREEN : DARK }}>{item}</span>
-            </div>
-          ))}
-        </div>}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: GOLD }}>{sv.price}</span>
-          {hasIt ? <span style={{ fontSize: 11, color: GREEN, fontWeight: 500 }}>{state === "delivered" ? "✓ Delivered" : "⏳ In Progress"}</span>
-            : <button onClick={() => toggleCart(id)} style={{ fontSize: 12, fontWeight: 500, padding: "6px 14px", borderRadius: 8, border: isInCart ? `1px solid ${GREEN}` : `1px solid ${GOLD}`, backgroundColor: isInCart ? `${GREEN}10` : "transparent", color: isInCart ? GREEN : GOLD, cursor: "pointer" }}>{isInCart ? "✓ Added" : "Add to Cart"}</button>}
-        </div>
-      </div>
-    );
-  }
+
 
   /* ── Chat Panel ── */
   const ChatPanel = ({ isMobile = false }: { isMobile?: boolean }) => (
@@ -613,7 +688,7 @@ export default function ClientDashboard() {
             <p style={{ fontSize: 11, color: `${MUTED}80`, fontWeight: 500, letterSpacing: "0.04em" }}>— Muhammad Hamzury</p>
           </div>
 
-          {/* STATUS LEGEND + PROJECT OVERVIEW */}
+          {/* PROJECT OVERVIEW — Legend + Stats + Phase Timeline */}
           {(() => {
             const allItems = [...brandItems, ...systemsItems, ...complianceItems, ...contentItems, ...staffItems, ...deliveryItems.filter(d => d.id !== "pending_delivery")];
             const delivered = allItems.filter(i => i.status === "done").length;
@@ -621,6 +696,7 @@ export default function ClientDashboard() {
             const pending = allItems.filter(i => i.status === "pending").length;
             const total = allItems.length;
             const pct = total > 0 ? Math.round((delivered / total) * 100) : 0;
+            const phaseDesc: Record<string, string> = { brand_phase: "Brand identity, logo, guidelines, positioning.", digital_phase: "Website, social media, content strategy.", ops_phase: "Dashboards, CRM, automation, workspace.", growth_phase: "Training, scaling, ongoing management." };
             return (
               <div style={{ marginBottom: 28 }}>
                 {/* Legend */}
@@ -646,8 +722,8 @@ export default function ClientDashboard() {
                   <div style={{ height: 6, borderRadius: 3, backgroundColor: `${GREY}30`, marginBottom: 16, overflow: "hidden" }}>
                     <div style={{ height: "100%", borderRadius: 3, background: `linear-gradient(90deg, ${GREEN}, ${GREEN}cc)`, width: `${pct}%`, transition: "width 0.8s ease" }} />
                   </div>
-                  {/* Stats */}
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  {/* Stats row */}
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 18 }}>
                     {[
                       { n: delivered, label: "Delivered", color: GREEN },
                       { n: inProgress, label: "Building", color: GOLD },
@@ -659,50 +735,75 @@ export default function ClientDashboard() {
                       </div>
                     ))}
                   </div>
+                  {/* Phase timeline — embedded */}
+                  <div style={{ borderTop: `1px solid ${GREY}20`, paddingTop: 14 }}>
+                    <p style={{ fontSize: 10, fontWeight: 600, color: MUTED, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Project Phases</p>
+                    <div style={{ position: "relative", padding: "0 4px" }}>
+                      <div style={{ position: "absolute", top: 7, left: 4, right: 4, height: 2, backgroundColor: `${GREY}50`, borderRadius: 1 }} />
+                      {(() => { const ac = timelineItems.filter(i => i.status !== "pending").length; return <div style={{ position: "absolute", top: 7, left: 4, height: 2, width: timelineItems.length > 1 ? `${(Math.max(0, ac - 1) / (timelineItems.length - 1)) * 100}%` : "0%", backgroundColor: GREEN, borderRadius: 1, transition: "width 0.5s ease" }} />; })()}
+                      <div style={{ display: "flex", justifyContent: "space-between", position: "relative" }}>
+                        {timelineItems.map(item => {
+                          const isDone = item.status === "done";
+                          const isActive = item.status === "active";
+                          return (
+                            <div key={item.id} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+                              <div style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: isDone ? GREEN : isActive ? GOLD : WHITE, boxShadow: isDone || isActive ? "none" : `inset 0 0 0 1.5px ${GREY}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                {isDone && <CheckCircle size={9} style={{ color: WHITE }} />}
+                                {isActive && <div style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: WHITE }} />}
+                              </div>
+                              <span style={{ fontSize: 9, color: isDone ? GREEN : isActive ? GOLD : MUTED, fontWeight: 500 }}>{item.label}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    {task.deadline && <p style={{ fontSize: 10, color: GOLD, fontWeight: 500, marginTop: 10, textAlign: "center" }}>Target completion: {formatDate(task.deadline)}</p>}
+                  </div>
                 </div>
               </div>
             );
           })()}
 
-          {/* 2. PROJECT TIMELINE */}
-          <ProgressLine label="Project Timeline" icon={Clock} items={timelineItems} selectedId={expandedSection?.section === "timeline" ? expandedSection.itemId : null} onSelect={id => id ? sel("timeline", id) : setExpandedSection(null)}>
-            {(item) => {
-              const desc: Record<string, string> = { brand_phase: "Brand identity, logo, guidelines, positioning — the foundation of how your business looks.", digital_phase: "Website, social media setup, content strategy — making you visible online.", ops_phase: "Dashboards, CRM, automation, workspace — the systems that run your business.", growth_phase: "Training, scaling strategy, retainer — growing beyond the foundation." };
-              return (<div>
-                <p style={{ fontSize: 13, fontWeight: 500, color: DARK, marginBottom: 4 }}>{item.status === "done" ? "✓ Completed" : item.status === "active" ? "⏳ In Progress" : "Upcoming"}</p>
-                <p style={{ fontSize: 12, color: MUTED, lineHeight: 1.6 }}>{desc[item.id] || "Part of your project journey."}</p>
-                {task.deadline && <p style={{ fontSize: 11, color: GOLD, marginTop: 8, fontWeight: 500 }}>Target: {formatDate(task.deadline)}</p>}
-              </div>);
-            }}
-          </ProgressLine>
-
-          {/* 3. REQUIREMENTS */}
+          {/* 3. REQUIREMENTS — sub-circles per field */}
           <ProgressLine label="Requirements" icon={FileCheck} items={reqItems} selectedId={expandedSection?.section === "req" ? expandedSection.itemId : null} onSelect={id => id ? sel("req", id) : setExpandedSection(null)}>
             {(item) => {
               const sec = REQ_SECTIONS.find(s => s.id === item.id);
               if (!sec) return null;
-              if (hasSubmittedReqs) {
-                return (<div><p style={{ fontSize: 12, color: GREEN, fontWeight: 500, marginBottom: 8 }}>✓ Submitted</p>
-                  {sec.fields.map(f => { const val = existingReqs?.[f.key] || existingReqs?.[f.label] || ""; if (!val) return null; return (<div key={f.key} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderBottom: `1px solid ${GREY}20` }}><span style={{ fontSize: 11, color: MUTED }}>{f.label}</span><span style={{ fontSize: 12, color: DARK, fontWeight: 500, textAlign: "right", maxWidth: "60%" }}>{val}</span></div>); })}
-                </div>);
-              }
-              return (<div>
-                <p style={{ fontSize: 12, color: MUTED, marginBottom: 12, lineHeight: 1.5 }}>{sec.why}</p>
-                {sec.fields.map(f => (<div key={f.key} style={{ marginBottom: 12 }}>
-                  <label style={{ fontSize: 11, color: MUTED, fontWeight: 500, display: "block", marginBottom: 4 }}>{f.label} {"required" in f && f.required && <span style={{ color: GOLD }}>*</span>}</label>
-                  {"select" in f && f.select ? (
-                    <select value={reqForm[f.key] || ""} onChange={e => setReqForm(p => ({ ...p, [f.key]: e.target.value }))} style={{ width: "100%", fontSize: 13, padding: "10px 12px", borderRadius: 8, border: `1px solid ${GREY}60`, backgroundColor: WHITE, color: DARK, outline: "none" }}>
-                      <option value="">{f.placeholder}</option>
-                      {f.select.map(o => <option key={o} value={o}>{o}</option>)}
-                    </select>
-                  ) : "textarea" in f && f.textarea ? (
-                    <textarea value={reqForm[f.key] || ""} onChange={e => setReqForm(p => ({ ...p, [f.key]: e.target.value }))} placeholder={f.placeholder} rows={3} style={{ width: "100%", fontSize: 13, padding: "10px 12px", borderRadius: 8, border: `1px solid ${GREY}60`, backgroundColor: WHITE, color: DARK, outline: "none", resize: "vertical", fontFamily: "inherit" }} />
-                  ) : (
-                    <input type="text" value={reqForm[f.key] || ""} onChange={e => setReqForm(p => ({ ...p, [f.key]: e.target.value }))} placeholder={f.placeholder} style={{ width: "100%", fontSize: 13, padding: "10px 12px", borderRadius: 8, border: `1px solid ${GREY}60`, backgroundColor: WHITE, color: DARK, outline: "none" }} />
-                  )}
-                </div>))}
-                {sec.id === "notes" && <button onClick={handleSubmitReqs} disabled={reqSubmitting || !reqForm.businessName1} style={{ width: "100%", padding: "12px", borderRadius: 10, border: "none", backgroundColor: reqSubmitting ? GREY : GOLD, color: WHITE, fontSize: 13, fontWeight: 600, cursor: reqSubmitting ? "default" : "pointer", marginTop: 8 }}>{reqSubmitting ? "Submitting..." : "Submit Requirements"}</button>}
-              </div>);
+              const fieldSubs: SubItem[] = sec.fields.map(f => {
+                const val = hasSubmittedReqs ? (existingReqs?.[f.key] || existingReqs?.[f.label] || "") : (reqForm[f.key] || "");
+                return { id: f.key, label: f.label.split(" ").slice(0, 2).join(" "), status: val.trim() ? "done" as const : "pending" as const, detail: f.label };
+              });
+              return (
+                <div>
+                  <p style={{ fontSize: 12, color: MUTED, marginBottom: 10, lineHeight: 1.5 }}>{sec.why}</p>
+                  <SubLine items={fieldSubs} selectedId={subSelected} onSelect={setSubSelected} />
+                  {/* Show form/value for selected sub-field */}
+                  {subSelected && (() => {
+                    const f = sec.fields.find(f => f.key === subSelected);
+                    if (!f) return null;
+                    if (hasSubmittedReqs) {
+                      const val = existingReqs?.[f.key] || existingReqs?.[f.label] || "";
+                      return val ? <div style={{ marginTop: 8, padding: "10px 12px", borderRadius: 8, backgroundColor: `${GREEN}08` }}><span style={{ fontSize: 11, color: MUTED }}>{f.label}:</span> <span style={{ fontSize: 12, color: DARK, fontWeight: 500 }}>{val}</span></div> : null;
+                    }
+                    return (
+                      <div style={{ marginTop: 8 }}>
+                        <label style={{ fontSize: 11, color: MUTED, fontWeight: 500, display: "block", marginBottom: 4 }}>{f.label} {"required" in f && f.required && <span style={{ color: GOLD }}>*</span>}</label>
+                        {"select" in f && f.select ? (
+                          <select value={reqForm[f.key] || ""} onChange={e => setReqForm(p => ({ ...p, [f.key]: e.target.value }))} style={{ width: "100%", fontSize: 13, padding: "10px 12px", borderRadius: 8, border: `1px solid ${GREY}60`, backgroundColor: WHITE, color: DARK, outline: "none" }}>
+                            <option value="">{f.placeholder}</option>
+                            {f.select.map(o => <option key={o} value={o}>{o}</option>)}
+                          </select>
+                        ) : "textarea" in f && f.textarea ? (
+                          <textarea value={reqForm[f.key] || ""} onChange={e => setReqForm(p => ({ ...p, [f.key]: e.target.value }))} placeholder={f.placeholder} rows={3} style={{ width: "100%", fontSize: 13, padding: "10px 12px", borderRadius: 8, border: `1px solid ${GREY}60`, backgroundColor: WHITE, color: DARK, outline: "none", resize: "vertical", fontFamily: "inherit" }} />
+                        ) : (
+                          <input type="text" value={reqForm[f.key] || ""} onChange={e => setReqForm(p => ({ ...p, [f.key]: e.target.value }))} placeholder={f.placeholder} style={{ width: "100%", fontSize: 13, padding: "10px 12px", borderRadius: 8, border: `1px solid ${GREY}60`, backgroundColor: WHITE, color: DARK, outline: "none" }} />
+                        )}
+                      </div>
+                    );
+                  })()}
+                  {sec.id === "notes" && !hasSubmittedReqs && <button onClick={handleSubmitReqs} disabled={reqSubmitting || !reqForm.businessName1} style={{ width: "100%", padding: "12px", borderRadius: 10, border: "none", backgroundColor: reqSubmitting ? GREY : GOLD, color: WHITE, fontSize: 13, fontWeight: 600, cursor: reqSubmitting ? "default" : "pointer", marginTop: 12 }}>{reqSubmitting ? "Submitting..." : "Submit Requirements"}</button>}
+                </div>
+              );
             }}
           </ProgressLine>
 
@@ -740,70 +841,46 @@ export default function ClientDashboard() {
             }}
           </ProgressLine>
 
-          {/* 5. BRAND */}
-          <ProgressLine label="Brand Positioning" icon={Palette} items={brandItems} selectedId={expandedSection?.section === "brand" ? expandedSection.itemId : null} onSelect={id => id ? sel("brand", id) : setExpandedSection(null)}>
-            {(item) => {
-              const sv = SERVICE_DETAILS[item.id];
-              const folder = SERVICE_FOLDERS[item.id];
-              const state = activeItems[item.id];
-              if (!sv) return <p style={{ fontSize: 13, color: MUTED }}>Details coming soon.</p>;
-              const hasIt = !!state && state !== "inactive";
-              const isInCart = cartItems.has(item.id);
-              const isDelivered = state === "delivered";
-              return (
-                <div>
-                  {/* Brand header with accent bar */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-                    <div style={{ width: 4, height: 32, borderRadius: 2, backgroundColor: isDelivered ? GREEN : state === "in_progress" ? GOLD : GREY }} />
-                    <div>
-                      <p style={{ fontSize: 14, fontWeight: 600, color: DARK, margin: 0 }}>{sv.pitch}</p>
-                      {isDelivered && <p style={{ fontSize: 11, color: GREEN, fontWeight: 500, margin: "2px 0 0" }}>✓ Delivered</p>}
-                      {state === "in_progress" && <p style={{ fontSize: 11, color: GOLD, fontWeight: 500, margin: "2px 0 0" }}>⏳ In Progress</p>}
+          {/* 5–9. ALL SERVICE SECTIONS — unified SubLine render */}
+          {([
+            { key: "brand", label: "Brand & Identity", icon: Palette, items: brandItems },
+            { key: "sys", label: "Systems & Tools", icon: Globe, items: systemsItems },
+            { key: "comp", label: "Documents & Compliance", icon: Shield, items: complianceItems },
+            { key: "cnt", label: "Content & Materials", icon: FileText, items: contentItems },
+            { key: "staff", label: "Training & Growth", icon: Users, items: staffItems },
+          ] as const).map(sec => (
+            <ProgressLine key={sec.key} label={sec.label} icon={sec.icon} items={sec.items} selectedId={expandedSection?.section === sec.key ? expandedSection.itemId : null} onSelect={id => id ? sel(sec.key, id) : setExpandedSection(null)}>
+              {(item) => {
+                const sv = SERVICE_DETAILS[item.id];
+                const state = activeItems[item.id];
+                const hasIt = !!state && state !== "inactive";
+                const isInCart = cartItems.has(item.id);
+                const isDelivered = state === "delivered";
+                const subs = getSubItems(item.id);
+                return (
+                  <div>
+                    {/* Header with accent */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                      <div style={{ width: 4, height: 28, borderRadius: 2, backgroundColor: isDelivered ? GREEN : state === "in_progress" ? GOLD : GREY }} />
+                      <div>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: DARK, margin: 0 }}>{sv?.pitch || item.label}</p>
+                        <p style={{ fontSize: 11, color: isDelivered ? GREEN : state === "in_progress" ? GOLD : MUTED, fontWeight: 500, margin: "2px 0 0" }}>{isDelivered ? "✓ Delivered" : state === "in_progress" ? "⏳ In Progress" : "Upcoming"}</p>
+                      </div>
+                    </div>
+                    {sv && <p style={{ fontSize: 12, color: MUTED, lineHeight: 1.6, marginBottom: 10 }}>{sv.why}</p>}
+                    {/* Process sub-circles */}
+                    {subs.length > 0 && <SubLine items={subs} selectedId={subSelected} onSelect={setSubSelected} />}
+                    {/* Price + action */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 10 }}>
+                      {sv && <span style={{ fontSize: 13, fontWeight: 600, color: GOLD }}>{sv.price}</span>}
+                      {hasIt ? <span style={{ fontSize: 11, padding: "4px 12px", borderRadius: 6, backgroundColor: isDelivered ? `${GREEN}10` : `${GOLD}10`, color: isDelivered ? GREEN : GOLD, fontWeight: 600 }}>{isDelivered ? "Completed" : "Building"}</span>
+                        : sv ? <button onClick={() => toggleCart(item.id)} style={{ fontSize: 12, fontWeight: 500, padding: "6px 14px", borderRadius: 8, border: isInCart ? `1px solid ${GREEN}` : `1px solid ${GOLD}`, backgroundColor: isInCart ? `${GREEN}10` : "transparent", color: isInCart ? GREEN : GOLD, cursor: "pointer" }}>{isInCart ? "✓ Added" : "Add to Cart"}</button> : null}
                     </div>
                   </div>
-                  <p style={{ fontSize: 12, color: MUTED, lineHeight: 1.6, marginBottom: 12 }}>{sv.why}</p>
-                  {/* Deliverables checklist */}
-                  {folder && <div style={{ padding: "10px 14px", borderRadius: 10, backgroundColor: `${BG}`, marginBottom: 12 }}>
-                    <p style={{ fontSize: 10, fontWeight: 600, color: MUTED, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Deliverables</p>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 16px" }}>
-                      {folder.items.map((fi, i) => (
-                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, padding: "3px 0" }}>
-                          {isDelivered ? <CheckCircle size={11} style={{ color: GREEN }} /> : state === "in_progress" ? <div style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: GOLD }} /> : <Circle size={11} style={{ color: `${GREY}80` }} />}
-                          <span style={{ fontSize: 11, color: isDelivered ? DARK : `${MUTED}`, fontWeight: isDelivered ? 500 : 400 }}>{fi}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>}
-                  {/* Price + action */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: GOLD }}>{sv.price}</span>
-                    {hasIt ? <span style={{ fontSize: 11, padding: "4px 12px", borderRadius: 6, backgroundColor: isDelivered ? `${GREEN}10` : `${GOLD}10`, color: isDelivered ? GREEN : GOLD, fontWeight: 600 }}>{isDelivered ? "Completed" : "Building"}</span>
-                      : <button onClick={() => toggleCart(item.id)} style={{ fontSize: 12, fontWeight: 500, padding: "6px 14px", borderRadius: 8, border: isInCart ? `1px solid ${GREEN}` : `1px solid ${GOLD}`, backgroundColor: isInCart ? `${GREEN}10` : "transparent", color: isInCart ? GREEN : GOLD, cursor: "pointer" }}>{isInCart ? "✓ Added" : "Add to Cart"}</button>}
-                  </div>
-                </div>
-              );
-            }}
-          </ProgressLine>
-
-          {/* 6. SYSTEMS & TOOLS */}
-          <ProgressLine label="Systems & Tools" icon={Globe} items={systemsItems} selectedId={expandedSection?.section === "sys" ? expandedSection.itemId : null} onSelect={id => id ? sel("sys", id) : setExpandedSection(null)}>
-            {(item) => renderServiceDetail(item.id)}
-          </ProgressLine>
-
-          {/* 7. COMPLIANCE */}
-          <ProgressLine label="Documents & Compliance" icon={Shield} items={complianceItems} selectedId={expandedSection?.section === "comp" ? expandedSection.itemId : null} onSelect={id => id ? sel("comp", id) : setExpandedSection(null)}>
-            {(item) => renderServiceDetail(item.id)}
-          </ProgressLine>
-
-          {/* 8. CONTENT & MATERIALS */}
-          <ProgressLine label="Content & Materials" icon={FileText} items={contentItems} selectedId={expandedSection?.section === "cnt" ? expandedSection.itemId : null} onSelect={id => id ? sel("cnt", id) : setExpandedSection(null)}>
-            {(item) => renderServiceDetail(item.id)}
-          </ProgressLine>
-
-          {/* 9. TRAINING */}
-          <ProgressLine label="Training & Growth" icon={Users} items={staffItems} selectedId={expandedSection?.section === "staff" ? expandedSection.itemId : null} onSelect={id => id ? sel("staff", id) : setExpandedSection(null)}>
-            {(item) => renderServiceDetail(item.id)}
-          </ProgressLine>
+                );
+              }}
+            </ProgressLine>
+          ))}
 
           {/* Cart badge */}
           {cartItems.size > 0 && <div style={{ position: "sticky", bottom: 80, zIndex: 20, display: "flex", justifyContent: "center", marginBottom: -20 }}>
@@ -841,45 +918,66 @@ export default function ClientDashboard() {
           </ProgressLine>
 
           {/* 13. SUBSCRIPTION — Continuous Management */}
-          {subscriptionItems.length > 0 && (
-            <ProgressLine label="Continuous Updates" icon={Zap} items={subscriptionItems} selectedId={expandedSection?.section === "sub" ? expandedSection.itemId : null} onSelect={id => id ? sel("sub", id) : setExpandedSection(null)}>
-              {(item) => {
-                const SUB_INFO: Record<string, { title: string; desc: string; items: string[] }> = {
-                  sub_website: { title: "Website Management", desc: "Your website stays fresh, fast, and optimised. We handle updates, content changes, performance monitoring, and security patches.", items: ["Monthly content updates", "Performance monitoring", "Security patches", "SEO optimisation", "Bug fixes & improvements"] },
-                  sub_social: { title: "Social Media Management", desc: "Consistent posting, engagement, and growth strategy. Your brand stays visible and active across all platforms.", items: ["Daily content posting", "Engagement management", "Monthly content calendar", "Monthly performance report", "Hashtag & trend strategy"] },
-                  sub_dashboard: { title: "Dashboard Management", desc: "Your business dashboards are kept current — data updated, reports generated, and insights surfaced weekly.", items: ["Weekly data updates", "Client tracking maintenance", "Revenue reports", "Task management sync", "Custom report generation"] },
-                  sub_tax: { title: "Tax Pro Max", desc: "End-to-end tax compliance management. We file, track, and optimise your taxes so you never miss a deadline.", items: ["Quarterly tax filing", "TCC processing", "Annual returns", "Tax savings optimisation", "Portal access management"] },
-                  sub_crm: { title: "CRM & Lead Management", desc: "Your leads are tracked, nurtured, and followed up automatically. No opportunity falls through the cracks.", items: ["Lead pipeline management", "Follow-up automation", "Conversion tracking", "Monthly funnel reports", "New lead capture forms"] },
-                  sub_auto: { title: "WhatsApp Automation", desc: "Your WhatsApp stays intelligent — auto-replies updated, booking flows optimised, new sequences added as your business grows.", items: ["Auto-reply updates", "New booking flows", "Follow-up sequences", "Broadcast campaigns", "Analytics & optimisation"] },
-                };
-                const info = SUB_INFO[item.id];
-                if (!info) return null;
-                const isDone = item.status === "done";
-                return (
-                  <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                      <div style={{ width: 4, height: 28, borderRadius: 2, backgroundColor: isDone ? GREEN : GOLD }} />
-                      <div>
-                        <p style={{ fontSize: 14, fontWeight: 600, color: DARK, margin: 0 }}>{info.title}</p>
-                        <p style={{ fontSize: 11, color: isDone ? GREEN : GOLD, fontWeight: 500, margin: "2px 0 0" }}>{isDone ? "✓ Active & managed" : "⏳ Being set up"}</p>
-                      </div>
-                    </div>
-                    <p style={{ fontSize: 12, color: MUTED, lineHeight: 1.6, marginBottom: 10 }}>{info.desc}</p>
-                    <div style={{ padding: "10px 14px", borderRadius: 10, backgroundColor: BG }}>
-                      <p style={{ fontSize: 10, fontWeight: 600, color: MUTED, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>What's included</p>
-                      {info.items.map((it, i) => (
-                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, padding: "3px 0" }}>
-                          <CheckCircle size={10} style={{ color: isDone ? GREEN : GOLD }} />
-                          <span style={{ fontSize: 11, color: DARK }}>{it}</span>
+          {subscriptionItems.length > 0 && (() => {
+            const SUB_INFO: Record<string, { title: string; desc: string; monthly: { month: string; tasks: string[] }[] }> = {
+              sub_website: { title: "Website Management", desc: "Your website stays fresh, fast, and optimised.", monthly: [
+                { month: "Jan", tasks: ["Initial setup & launch"] }, { month: "Feb", tasks: ["Content updates", "Speed optimisation"] }, { month: "Mar", tasks: ["SEO review", "Security patches"] },
+                { month: "Apr", tasks: ["Performance report", "Bug fixes"] }, { month: "May", tasks: ["New features", "Content refresh"] }, { month: "Jun", tasks: ["Mid-year audit"] },
+              ]},
+              sub_social: { title: "Social Media Management", desc: "Consistent posting and engagement across all platforms.", monthly: [
+                { month: "Jan", tasks: ["Account setup & branding"] }, { month: "Feb", tasks: ["Content calendar launched", "Daily posting begins"] }, { month: "Mar", tasks: ["Engagement strategy", "First report"] },
+                { month: "Apr", tasks: ["Hashtag optimisation", "Growth review"] }, { month: "May", tasks: ["Campaign planning", "Content refresh"] }, { month: "Jun", tasks: ["Mid-year analytics"] },
+              ]},
+              sub_dashboard: { title: "Dashboard Management", desc: "Dashboards kept current with weekly data and insights.", monthly: [
+                { month: "Jan", tasks: ["Dashboard setup"] }, { month: "Feb", tasks: ["Data pipeline live", "First weekly report"] }, { month: "Mar", tasks: ["KPI tracking tuned"] },
+                { month: "Apr", tasks: ["Custom reports added"] }, { month: "May", tasks: ["Team views configured"] }, { month: "Jun", tasks: ["Mid-year review"] },
+              ]},
+              sub_tax: { title: "Tax Pro Max", desc: "End-to-end tax compliance — we file, track, and optimise.", monthly: [
+                { month: "Jan", tasks: ["Tax calendar set"] }, { month: "Feb", tasks: ["First monthly filing"] }, { month: "Mar", tasks: ["Q1 review & filing"] },
+                { month: "Apr", tasks: ["Monthly filing", "TCC check"] }, { month: "May", tasks: ["Monthly filing"] }, { month: "Jun", tasks: ["Q2 review & annual prep"] },
+              ]},
+              sub_crm: { title: "CRM & Leads", desc: "Leads tracked, nurtured, and followed up automatically.", monthly: [
+                { month: "Jan", tasks: ["CRM configured"] }, { month: "Feb", tasks: ["Pipeline stages set", "Automation live"] }, { month: "Mar", tasks: ["First funnel report"] },
+                { month: "Apr", tasks: ["Follow-up sequences tuned"] }, { month: "May", tasks: ["New capture forms"] }, { month: "Jun", tasks: ["Conversion review"] },
+              ]},
+              sub_auto: { title: "WhatsApp Automation", desc: "Auto-replies, booking flows, and sequences kept intelligent.", monthly: [
+                { month: "Jan", tasks: ["WhatsApp setup"] }, { month: "Feb", tasks: ["Auto-replies live", "Booking flow built"] }, { month: "Mar", tasks: ["Follow-up sequences"] },
+                { month: "Apr", tasks: ["Broadcast campaign"] }, { month: "May", tasks: ["Flow optimisation"] }, { month: "Jun", tasks: ["Analytics review"] },
+              ]},
+            };
+            const now = new Date();
+            const currentMonth = now.getMonth(); // 0-indexed
+            return (
+              <ProgressLine label="Continuous Updates" icon={Zap} items={subscriptionItems} selectedId={expandedSection?.section === "sub" ? expandedSection.itemId : null} onSelect={id => id ? sel("sub", id) : setExpandedSection(null)}>
+                {(item) => {
+                  const info = SUB_INFO[item.id];
+                  if (!info) return null;
+                  const isDone = item.status === "done";
+                  const monthSubs: SubItem[] = info.monthly.map((m, i) => ({
+                    id: `${item.id}_m${i}`,
+                    label: m.month,
+                    status: i < currentMonth ? "done" as const : i === currentMonth ? "active" as const : "pending" as const,
+                    detail: m.tasks.join(" · "),
+                  }));
+                  return (
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                        <div style={{ width: 4, height: 28, borderRadius: 2, backgroundColor: isDone ? GREEN : GOLD }} />
+                        <div>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: DARK, margin: 0 }}>{info.title}</p>
+                          <p style={{ fontSize: 11, color: isDone ? GREEN : GOLD, fontWeight: 500, margin: "2px 0 0" }}>{isDone ? "✓ Active & managed" : "⏳ Being set up"}</p>
                         </div>
-                      ))}
+                      </div>
+                      <p style={{ fontSize: 12, color: MUTED, lineHeight: 1.6, marginBottom: 10 }}>{info.desc}</p>
+                      {/* Monthly timeline sub-circles */}
+                      <SubLine items={monthSubs} selectedId={subSelected} onSelect={setSubSelected} />
+                      <p style={{ fontSize: 10, color: MUTED, fontStyle: "italic", marginTop: 6 }}>Continuously managed — we handle everything.</p>
                     </div>
-                    <p style={{ fontSize: 10, color: MUTED, fontStyle: "italic", marginTop: 8 }}>This is a continuously managed service — we handle everything.</p>
-                  </div>
-                );
-              }}
-            </ProgressLine>
-          )}
+                  );
+                }}
+              </ProgressLine>
+            );
+          })()}
 
           {/* 14. REFERENCE */}
           <div style={{ textAlign: "center", padding: "24px 0 16px", borderTop: `1px solid ${GREY}20` }}>
